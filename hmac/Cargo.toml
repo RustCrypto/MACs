@@ -1,0 +1,19 @@
+[package]
+name = "hmac"
+version = "0.1.1"
+authors = ["The RustCrypto Devs"]
+license = "MIT/Apache-2.0"
+description = "Generic implementation of Hash-based Message Authentication Code (HMAC)"
+documentation = "https://docs.rs/hmac"
+repository = "https://github.com/RustCrypto/utils"
+keywords = ["crypto", "mac", "hmac", "digest"]
+
+[dependencies]
+crypto-mac = "0.3"
+generic-array = "0.7"
+digest = "0.5"
+
+[dev-dependencies]
+crypto-tests = "^0.4.1"
+md-5 = "0.4"
+sha2 = "0.5"
