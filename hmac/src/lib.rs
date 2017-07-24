@@ -52,7 +52,7 @@ extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
 pub use crypto_mac::MacResult;
-use digest::{Input, FixedOutput};
+use digest::{Input, BlockInput, FixedOutput};
 use generic_array::{ArrayLength, GenericArray};
 use core::cmp::min;
 
@@ -61,7 +61,8 @@ const OPAD: u8 = 0x5c;
 
 /// The `Hmac` struct represents an HMAC using a given hash function `D`.
 pub struct Hmac<D>
-    where D: Input + FixedOutput + Default, D::BlockSize: ArrayLength<u8>
+    where D: Input + BlockInput + FixedOutput + Default,
+          D::BlockSize: ArrayLength<u8>
 {
     digest: D,
     key: GenericArray<u8, D::BlockSize>,
@@ -71,7 +72,8 @@ pub struct Hmac<D>
 /// underlying Digest. If the provided key is smaller than that, we just pad it
 /// with zeros. If its larger, we hash it and then pad it with zeros.
 fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
-    where D: Input + FixedOutput + Default, D::BlockSize: ArrayLength<u8>
+    where D: Input + BlockInput + FixedOutput + Default,
+          D::BlockSize: ArrayLength<u8>
 {
     let mut exp_key = GenericArray::default();
     
@@ -79,7 +81,7 @@ fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
         exp_key[..key.len()].copy_from_slice(key);
     } else {
         let mut digest = D::default();
-        digest.digest(key);
+        digest.process(key);
         let output = digest.fixed_result();
         let n = min(output.len(), exp_key.len());
         exp_key[..n].copy_from_slice(&output[..n]);
@@ -88,7 +90,8 @@ fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
 }
 
 impl <D> Hmac<D>
-    where D: Input + FixedOutput + Default, D::BlockSize: ArrayLength<u8>
+    where D: Input + BlockInput + FixedOutput + Default,
+          D::BlockSize: ArrayLength<u8>
 {
     fn derive_key(&self, mask: u8) -> GenericArray<u8, D::BlockSize> {
         let mut key = self.key.clone();
@@ -100,7 +103,7 @@ impl <D> Hmac<D>
 }
 
 impl <D> Mac for Hmac<D>
-    where D: Input + FixedOutput + Default,
+    where D: Input + BlockInput + FixedOutput + Default,
           D::BlockSize: ArrayLength<u8>,
           D::OutputSize: ArrayLength<u8>
 {
@@ -112,20 +115,20 @@ impl <D> Mac for Hmac<D>
             key: expand_key::<D>(key),
         };
         let i_key_pad = hmac.derive_key(IPAD);
-        hmac.digest.digest(&i_key_pad);
+        hmac.digest.process(&i_key_pad);
         hmac
     }
 
     fn input(&mut self, data: &[u8]) {
-        self.digest.digest(data);
+        self.digest.process(data);
     }
 
     fn result(self) -> MacResult<D::OutputSize> {
         let o_key_pad = self.derive_key(OPAD);
         let output = self.digest.fixed_result();
         let mut digest = D::default();
-        digest.digest(&o_key_pad);
-        digest.digest(&output);
+        digest.process(&o_key_pad);
+        digest.process(&output);
         MacResult::new(digest.fixed_result())
     }
 }
