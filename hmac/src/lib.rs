@@ -1,25 +1,25 @@
 //! Generic implementation of Hash-based Message Authentication Code (HMAC).
-//! 
+//!
 //! To use it you'll need a cryptographic hash function implementation from
 //! RustCrypto project. You can either import specific crate (e.g. `sha2`), or
 //! meta-crate `crypto-hashes` which reexport all related crates.
-//! 
+//!
 //! # Usage
 //! Let us demonstrate how to use HMAC using SHA256 as an example.
-//! 
+//!
 //! To get the authentication code:
-//! 
+//!
 //! ```rust,ignore
 //! extern crate sha2;
 //! extern crate hmac;
-//! 
+//!
 //! use hmac::{Hmac, Mac};
 //! use sha2::Sha256;
-//! 
+//!
 //! // Create `Mac` trait implementation, namely HMAC-SHA256
 //! let mac = Hmac::<Sha256>::new(b"my secret and secure key");
 //! mac.input(b"input message");
-//! 
+//!
 //! // `result` has type `MacResult` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.result();
@@ -28,15 +28,15 @@
 //! // provided by the `MacResult`.
 //! let code_bytes = resul.code();
 //! ```
-//! 
+//!
 //! To verify the message:
-//! 
+//!
 //! ```rust,ignore
 //! let mac = Hmac::<Sha256>::new(b"my secret and secure key");
-//! 
+//!
 //! mac.input(b"input message");
-//! 
-//! let is_code_correct = mac.verify(code_bytes); 
+//!
+//! let is_code_correct = mac.verify(code_bytes);
 //! ```
 //!
 //! # Block and input sizes
@@ -60,11 +60,13 @@ const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5c;
 
 /// The `Hmac` struct represents an HMAC using a given hash function `D`.
+#[derive(Clone, Debug)]
 pub struct Hmac<D>
     where D: Input + BlockInput + FixedOutput + Default,
           D::BlockSize: ArrayLength<u8>
 {
     digest: D,
+    opad_digest: D,
     key: GenericArray<u8, D::BlockSize>,
 }
 
@@ -76,7 +78,7 @@ fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
           D::BlockSize: ArrayLength<u8>
 {
     let mut exp_key = GenericArray::default();
-    
+
     if key.len() <= exp_key.len() {
         exp_key[..key.len()].copy_from_slice(key);
     } else {
@@ -109,26 +111,29 @@ impl <D> Mac for Hmac<D>
 {
     type OutputSize = D::OutputSize;
 
+    #[inline]
     fn new(key: &[u8]) -> Hmac<D> {
         let mut hmac = Hmac {
             digest: D::default(),
+            opad_digest: D::default(),
             key: expand_key::<D>(key),
         };
         let i_key_pad = hmac.derive_key(IPAD);
         hmac.digest.process(&i_key_pad);
+        let o_key_pad = hmac.derive_key(OPAD);
+        hmac.opad_digest.process(&o_key_pad);
         hmac
     }
 
+    #[inline]
     fn input(&mut self, data: &[u8]) {
         self.digest.process(data);
     }
 
-    fn result(self) -> MacResult<D::OutputSize> {
-        let o_key_pad = self.derive_key(OPAD);
+    #[inline]
+    fn result(mut self) -> MacResult<D::OutputSize> {
         let output = self.digest.fixed_result();
-        let mut digest = D::default();
-        digest.process(&o_key_pad);
-        digest.process(&output);
-        MacResult::new(digest.fixed_result())
+        self.opad_digest.process(&output);
+        MacResult::new(self.opad_digest.fixed_result())
     }
 }
