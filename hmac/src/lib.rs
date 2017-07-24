@@ -38,6 +38,12 @@
 //! 
 //! let is_code_correct = mac.verify(code_bytes); 
 //! ```
+//!
+//! # Block and input sizes
+//! Usually it is assumed that block size is larger than output size, due to the
+//! generic nature of the implementation this edge case must be handled as well
+//! to remove potential panic scenario. This is done by truncating hash output
+//! to the hash block size if needed.
 
 #![no_std]
 extern crate generic_array;
@@ -48,6 +54,7 @@ pub use crypto_mac::Mac;
 pub use crypto_mac::MacResult;
 use digest::{Input, FixedOutput};
 use generic_array::{ArrayLength, GenericArray};
+use core::cmp::min;
 
 const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5c;
@@ -76,7 +83,8 @@ fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
         let mut digest = D::default();
         digest.digest(key);
         let output = digest.fixed_result();
-        exp_key[..output.len()].copy_from_slice(output.as_slice());
+        let n = min(output.len(), exp_key.len());
+        exp_key[..n].copy_from_slice(&output[..n]);
     }
     exp_key
 }
