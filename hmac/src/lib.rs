@@ -9,34 +9,45 @@
 //!
 //! To get the authentication code:
 //!
-//! ```rust,ignore
-//! extern crate sha2;
+//! ```rust
 //! extern crate hmac;
+//! extern crate sha2;
 //!
-//! use hmac::{Hmac, Mac};
 //! use sha2::Sha256;
+//! use hmac::{Hmac, Mac};
 //!
+//! # fn main() {
 //! // Create `Mac` trait implementation, namely HMAC-SHA256
-//! let mac = Hmac::<Sha256>::new(b"my secret and secure key");
+//! let mut mac = Hmac::<Sha256>::new(b"my secret and secure key").unwrap();
 //! mac.input(b"input message");
 //!
 //! // `result` has type `MacResult` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.result();
-//! // To get &[u8] use `code` method, but be carefull, since incorrect use
-//! // of the code value may permit timing attacks which defeat the security
-//! // provided by the `MacResult`.
-//! let code_bytes = resul.code();
+//! // To get underlying array use `code` method, but be carefull, since
+//! // incorrect use of the code value may permit timing attacks which defeat
+//! // the security provided by the `MacResult`
+//! let code_bytes = result.code();
+//! # }
 //! ```
 //!
 //! To verify the message:
 //!
-//! ```rust,ignore
-//! let mac = Hmac::<Sha256>::new(b"my secret and secure key");
+//! ```rust
+//! # extern crate hmac;
+//! # extern crate sha2;
+//! # use sha2::Sha256;
+//! # use hmac::{Hmac, Mac};
+//! # fn main() {
+//! let mut mac = Hmac::<Sha256>::new(b"my secret and secure key").unwrap();
 //!
 //! mac.input(b"input message");
 //!
-//! let is_code_correct = mac.verify(code_bytes);
+//! # let mac2 = mac.clone();
+//! # let code_bytes = mac2.result().code();
+//! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
+//! mac.verify(&code_bytes).unwrap();
+//! # }
 //! ```
 //!
 //! # Block and input sizes
@@ -46,14 +57,13 @@
 //! to the hash block size if needed.
 
 #![no_std]
-extern crate generic_array;
 extern crate digest;
-extern crate crypto_mac;
+pub extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
-pub use crypto_mac::MacResult;
+use crypto_mac::{InvalidKeyLength, MacResult};
 use digest::{Input, BlockInput, FixedOutput};
-use generic_array::{ArrayLength, GenericArray};
+use digest::generic_array::{ArrayLength, GenericArray};
 use core::cmp::min;
 
 const IPAD: u8 = 0x36;
@@ -112,7 +122,7 @@ impl <D> Mac for Hmac<D>
     type OutputSize = D::OutputSize;
 
     #[inline]
-    fn new(key: &[u8]) -> Hmac<D> {
+    fn new(key: &[u8]) -> Result<Hmac<D>, InvalidKeyLength> {
         let mut hmac = Hmac {
             digest: D::default(),
             opad_digest: D::default(),
@@ -122,7 +132,7 @@ impl <D> Mac for Hmac<D>
         hmac.digest.process(&i_key_pad);
         let o_key_pad = hmac.derive_key(OPAD);
         hmac.opad_digest.process(&o_key_pad);
-        hmac
+        Ok(hmac)
     }
 
     #[inline]

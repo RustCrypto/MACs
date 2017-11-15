@@ -1,12 +1,12 @@
 #![no_std]
 #[macro_use]
-extern crate crypto_tests;
-extern crate hmac;
-extern crate md_5 as md5;
+extern crate crypto_mac;
+extern crate md5;
 extern crate sha2;
+extern crate hmac;
 
-use crypto_tests::mac::{mac_test, MacTest};
 use hmac::Hmac;
+use hmac::crypto_mac::dev::{mac_test, Test};
 
 #[test]
 fn hmac_md5() {
