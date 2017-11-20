@@ -13,5 +13,5 @@ crypto-mac = "0.5"
 block-cipher-trait = "0.5"
 
 [dev-dependencies]
-crypto-mac = { version = "0.5.1", features = ["dev"] }
+crypto-mac = { version = "0.5.2", features = ["dev"] }
 aesni = "0.2"

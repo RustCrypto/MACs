@@ -152,7 +152,6 @@ impl <C> Mac for Pmac<C>
 {
     type OutputSize = C::BlockSize;
 
-    #[inline]
     fn new(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         let cipher = C::new(key).map_err(|_| InvalidKeyLength)?;
 
@@ -209,7 +208,6 @@ impl <C> Mac for Pmac<C>
         }
     }
 
-    #[inline]
     fn result(mut self) -> MacResult<Self::OutputSize> {
         let mut tag = self.tag.clone();
         // Special case for empty input
