@@ -48,6 +48,7 @@
 //! ```
 #![no_std]
 extern crate block_cipher_trait;
+extern crate dbl;
 pub extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
@@ -55,21 +56,19 @@ use crypto_mac::{InvalidKeyLength, MacResult};
 use block_cipher_trait::{BlockCipher, NewVarKey};
 use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
 use block_cipher_trait::generic_array::typenum::Unsigned;
+use dbl::Dbl;
 
 use core::slice;
-
-mod double;
-
-pub use double::Doublable;
 
 type Block<N> = GenericArray<u8, N>;
 type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
 
-/// Will use only cached table up to 16*2^20 = 16 MB of input data.
-/// (for 128 bit cipher) In future it can be parameter of Pmac
+/// Will use only precomputed table up to 16*2^20 = 16 MB of input data
+/// (for 128 bit cipher), after that will dynamically calculate L value if
+/// needed. In future it can become parameter of `Pmac`.
 const LC_SIZE: usize = 20;
 
-/// Generic CMAC instance
+/// Generic PMAC instance
 #[derive(Clone)]
 pub struct Pmac<C: BlockCipher + NewVarKey> {
     cipher: C,
@@ -90,7 +89,7 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 }
 
 impl<C> Pmac<C>
-    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Doublable
+    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Dbl
 {
     /// Process full buffer and update tag
     #[inline(always)]
@@ -137,7 +136,7 @@ impl<C> Pmac<C>
         } else {
             let mut block = self.l_cache[LC_SIZE-1].clone();
             for _ in LC_SIZE-1..ntz {
-                block = block.double();
+                block = block.dbl();
             }
             block
         }
@@ -145,7 +144,7 @@ impl<C> Pmac<C>
 }
 
 impl <C> Mac for Pmac<C>
-    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Doublable
+    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Dbl
 {
     type OutputSize = C::BlockSize;
 
@@ -158,10 +157,10 @@ impl <C> Mac for Pmac<C>
         let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
         l_cache[0] = l0.clone();
         for i in 1..LC_SIZE {
-            l_cache[i] = l_cache[i-1].clone().double();
+            l_cache[i] = l_cache[i-1].clone().dbl();
         }
 
-        let l_inv = l0.clone().inv_double();
+        let l_inv = l0.clone().inv_dbl();
 
         Ok(Self {
             cipher, l_inv, l_cache,
