@@ -3,11 +3,16 @@ use super::Block;
 
 use core::mem;
 
-/// Block doublable over Galois Field.
+const C64: u64 = 0b1_1011;
+const C128: u64 = 0b1000_0111;
+const C256: u64 = 0b100_0010_0101;
+
+/// Some block operations over Galois Field.
 ///
 /// This trait is implemented for 64, 128 and 256 bit block sizes.
+/// IMPORTANT: block must be aligned
 pub trait Doublable {
-    /// Return doubled value of the block.
+    /// Multiply block by x
     ///
     /// If most significant bit of the block equals to zero will return
     /// `block<<1`, otherwise `(block<<1)^C`, where `C` is the non-leading
@@ -15,6 +20,10 @@ pub trait Doublable {
     /// polynomial with the minimal number of ones.
     fn double(self) -> Self;
 
+    /// Divide block by x
+    ///
+    /// If least significant bit of the block equals to zero will return
+    /// `block>>1`, otherwise `(block>>1)^(1<<n)^(C>>1)`
     fn inv_double(self) -> Self;
 }
 
@@ -22,16 +31,21 @@ impl Doublable for Block<U8> {
     fn double(self) -> Self {
         let mut val: u64 = unsafe { mem::transmute(self) };
         val = val.to_be();
-        val = if val >> 63 == 1 {
-            (val << 1) ^ 0b11011
-        } else {
-            val << 1
-        };
+        let a = val >> 63;
+        val <<= 1;
+        val ^= a * C64;
         unsafe { mem::transmute(val.to_be()) }
     }
 
     fn inv_double(self) -> Self {
-        self
+        let mut val: u64 = unsafe { mem::transmute(self) };
+        val = val.to_be();
+
+        let a = val & 1;
+        val >>= 1;
+        val ^= a*((1 << 63) ^ (C64 >> 1));
+
+        unsafe { mem::transmute(val.to_be()) }
     }
 }
 
@@ -47,26 +61,33 @@ impl Doublable for Block<U16> {
         let mut val: [u64; 2] = unsafe { mem::transmute(self) };
         to_be(&mut val);
 
-        let mut flag = false;
+        let b = val[1] >> 63;
+        let a = val[0] >> 63;
 
-        for v in val.iter_mut().rev() {
-            let mut t = *v << 1;
-            if flag { t += 1; }
-
-            flag = (*v >> 63) == 1;
-            *v = t;
-        }
-
-        if flag {
-            val[1] ^= 0b10000111;
-        }
+        val[0] <<= 1;
+        val[0] ^= b;
+        val[1] <<= 1;
+        val[1] ^= a*C128;
 
         to_be(&mut val);
         unsafe { mem::transmute(val) }
     }
 
     fn inv_double(self) -> Self {
-        self
+        let mut val: [u64; 2] = unsafe { mem::transmute(self) };
+        to_be(&mut val);
+
+        let a = (val[0] & 1) << 63;
+        let b = val[1] & 1;
+
+        val[0] >>= 1;
+        val[1] >>= 1;
+        val[1] ^= a;
+        val[0] ^= b*(1 << 63);
+        val[1] ^= b*(C128 >> 1);
+
+        to_be(&mut val);
+        unsafe { mem::transmute(val) }
     }
 }
 
@@ -75,24 +96,45 @@ impl Doublable for Block<U32> {
         let mut val: [u64; 4] = unsafe { mem::transmute(self) };
         to_be(&mut val);
 
-        let mut flag = false;
-        for v in val.iter_mut().rev() {
-            let mut t = *v << 1;
-            if flag { t += 1; }
+        let a = val[0] >> 63;
+        let b = val[1] >> 63;
+        let c = val[2] >> 63;
+        let d = val[3] >> 63;
 
-            flag = (*v >> 63) == 1;
-            *v = t;
-        }
-
-        if flag {
-            val[3] ^= 0b100_0010_0101;
-        }
+        val[0] <<= 1;
+        val[0] ^= b;
+        val[1] <<= 1;
+        val[1] ^= c;
+        val[2] <<= 1;
+        val[2] ^= d;
+        val[3] <<= 1;
+        val[3] ^= a*C256;
 
         to_be(&mut val);
         unsafe { mem::transmute(val) }
     }
 
     fn inv_double(self) -> Self {
-        self
+        let mut val: [u64; 4] = unsafe { mem::transmute(self) };
+        to_be(&mut val);
+
+        let a = (val[0] & 1) << 63;
+        let b = (val[1] & 1) << 63;
+        let c = (val[2] & 1) << 63;
+        let d = val[3] & 1;
+
+        val[0] >>= 1;
+        val[1] >>= 1;
+        val[2] >>= 1;
+        val[3] >>= 1;
+        val[1] ^= a;
+        val[2] ^= b;
+        val[3] ^= c;
+
+        val[0] ^= d*(1 << 63);
+        val[3] ^= d*(C256 >> 1);
+
+        to_be(&mut val);
+        unsafe { mem::transmute(val) }
     }
 }

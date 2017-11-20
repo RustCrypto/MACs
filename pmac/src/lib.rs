@@ -65,15 +65,20 @@ pub use double::Doublable;
 type Block<N> = GenericArray<u8, N>;
 type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
 
+// in future it can be parameter of Pmac
+const LC_SIZE: usize = 16;
+
 /// Generic CMAC instance
 #[derive(Clone)]
 pub struct Pmac<C: BlockCipher + NewVarKey> {
     cipher: C,
     l_inv: Block<C::BlockSize>,
-    l: Block<C::BlockSize>,
+    l_cache: [Block<C::BlockSize>; LC_SIZE],
     buffer: ParBlocks<C::BlockSize, C::ParBlocks>,
     tag: Block<C::BlockSize>,
+    offset: Block<C::BlockSize>,
     pos: usize,
+    counter: usize,
 }
 
 #[inline(always)]
@@ -87,21 +92,22 @@ impl<C> Pmac<C>
     where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Doublable
 {
     /// Process full buffer and update tag
+    #[inline(always)]
     fn process_buffer(&mut self) {
-        // generate L values for xoring with buffer
-        let ls = {
+        // generate values for xoring with buffer
+        let t = {
             let mut buf = ParBlocks::<C::BlockSize, C::ParBlocks>::default();
-            let mut l_temp = self.l.clone();
             for val in buf.iter_mut() {
-                *val = l_temp.clone();
-                l_temp = l_temp.double();
+                let l = self.get_l(self.counter);
+                xor(&mut self.offset, &l);
+                *val = self.offset.clone();
+                self.counter += 1;
             }
-            self.l = l_temp;
             buf
         };
         // Create local buffer copy and xor Ls into it
         let mut buf = self.buffer.clone();
-        for (a, b) in buf.iter_mut().zip(ls.iter()) {
+        for (a, b) in buf.iter_mut().zip(t.iter()) {
             xor(a, b);
         }
         // encrypt blocks in the buffer
@@ -125,6 +131,20 @@ impl<C> Pmac<C>
             )
         }
     }
+
+    #[inline(always)]
+    fn get_l(&self, counter: usize) -> Block<C::BlockSize> {
+        let ntz = counter.trailing_zeros() as usize;
+        if ntz < LC_SIZE {
+            self.l_cache[ntz].clone()
+        } else {
+            let mut block = self.l_cache[LC_SIZE-1].clone();
+            for _ in LC_SIZE-1..ntz {
+                block = block.double();
+            }
+            block
+        }
+    }
 }
 
 impl <C> Mac for Pmac<C>
@@ -136,13 +156,22 @@ impl <C> Mac for Pmac<C>
     fn new(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         let cipher = C::new(key).map_err(|_| InvalidKeyLength)?;
 
-        let mut l = Default::default();
-        cipher.encrypt_block(&mut l);
-        let l_inv = l.clone().inv_double();
+        let mut l0 = Default::default();
+        cipher.encrypt_block(&mut l0);
+
+        let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
+        l_cache[0] = l0.clone();
+        for i in 1..LC_SIZE {
+            l_cache[i] = l_cache[i-1].clone().double();
+        }
+
+        let l_inv = l0.clone().inv_double();
 
         Ok(Self {
-            cipher, l_inv, l,
-            buffer: Default::default(), tag: Default::default(), pos: 0,
+            cipher, l_inv, l_cache,
+            buffer: Default::default(), tag: Default::default(),
+            offset: Default::default(),
+            pos: 0, counter: 1,
         })
     }
 
@@ -156,8 +185,6 @@ impl <C> Mac for Pmac<C>
             let (l, r) = data.split_at(rem);
             data = r;
             self.as_mut_bytes()[p..].clone_from_slice(l);
-            self.pos = 0;
-            self.process_buffer();
         } else {
             self.as_mut_bytes()[p..p+data.len()]
                 .clone_from_slice(data);
@@ -166,14 +193,17 @@ impl <C> Mac for Pmac<C>
         }
 
         while data.len() >= n {
+            self.process_buffer();
+
             let (l, r) = data.split_at(n);
             self.as_mut_bytes().clone_from_slice(l);
             data = r;
-
-            self.process_buffer();
         }
 
+        self.pos = n;
+
         if data.len() != 0 {
+            self.process_buffer();
             self.as_mut_bytes()[..data.len()].clone_from_slice(data);
             self.pos = data.len();
         }
@@ -181,17 +211,45 @@ impl <C> Mac for Pmac<C>
 
     #[inline]
     fn result(mut self) -> MacResult<Self::OutputSize> {
-        let n = self.pos/C::BlockSize::to_usize();
-        assert!(n <= C::ParBlocks::to_usize(),
-            "invalid buffer positions");
-        for i in 0..n {
-            let mut buf = self.buffer[i].clone();
-            xor(&mut buf, &self.l);
-            self.l = self.l.double();
-            self.cipher.encrypt_block(&mut buf);
-            xor(&mut self.tag, &buf);
+        let mut tag = self.tag.clone();
+        // Special case for empty input
+        if self.pos == 0 {
+            tag[0] = 0x80;
+            self.cipher.encrypt_block(&mut tag);
+            return MacResult::new(tag);
         }
 
-        MacResult::new(self.tag)
+        let bs = C::BlockSize::to_usize();
+        let k = self.pos % bs;
+        let is_full = k == 0;
+        // number of full blocks excluding last
+        let n = if is_full { (self.pos/bs) - 1 } else { self.pos/bs };
+        assert!(n < C::ParBlocks::to_usize(), "invalid buffer positions");
+
+        for i in 0..n {
+            let mut buf = self.buffer[i].clone();
+
+            let l = self.get_l(self.counter);
+            xor(&mut self.offset, &l);
+            xor(&mut buf, &self.offset);
+            self.cipher.encrypt_block(&mut buf);
+
+            xor(&mut tag, &buf);
+            self.counter += 1;
+        }
+
+        if is_full {
+            xor(&mut tag, &self.buffer[n]);
+            xor(&mut tag, &self.l_inv);
+        } else {
+            let mut block = self.buffer[n].clone();
+            block[k] = 0x80;
+            for v in block[k+1..].iter_mut() { *v = 0; }
+            xor(&mut tag, &block);
+        }
+
+        self.cipher.encrypt_block(&mut tag);
+
+        MacResult::new(tag)
     }
 }
