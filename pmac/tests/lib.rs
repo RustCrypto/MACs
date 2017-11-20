@@ -1,5 +1,4 @@
-//! Tests from NIST SP 800-38B:
-//! https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/
+//! Tests taken from: http://web.cs.ucdavis.edu/~rogaway/ocb/pmac-test.htm
 #![no_std]
 #[macro_use]
 extern crate crypto_mac;
