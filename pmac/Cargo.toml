@@ -1,0 +1,17 @@
+[package]
+name = "pmac"
+version = "0.1.0"
+authors = ["RustCrypto Developers"]
+license = "MIT/Apache-2.0"
+description = "Generic implementation of Parallelizable Message Authentication Code"
+documentation = "https://docs.rs/cmac"
+repository = "https://github.com/RustCrypto/MACs"
+keywords = ["crypto", "mac", "pmac"]
+
+[dependencies]
+crypto-mac = "0.5"
+block-cipher-trait = "0.5"
+
+[dev-dependencies]
+crypto-mac = { version = "0.5.1", features = ["dev"] }
+aesni = "0.2"

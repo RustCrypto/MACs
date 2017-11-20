@@ -2,6 +2,7 @@
 members = [
     "cmac",
     "hmac",
+    "pmac",
 ]
 
 [patch.crates-io]
