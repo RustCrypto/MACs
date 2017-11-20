@@ -65,8 +65,9 @@ pub use double::Doublable;
 type Block<N> = GenericArray<u8, N>;
 type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
 
-// in future it can be parameter of Pmac
-const LC_SIZE: usize = 16;
+/// Will use only cached table up to 16*2^20 = 16 MB of input data.
+/// In future it can be parameter of Pmac
+const LC_SIZE: usize = 20;
 
 /// Generic CMAC instance
 #[derive(Clone)]
