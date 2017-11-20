@@ -11,6 +11,7 @@ keywords = ["crypto", "mac", "cmac", "omac"]
 [dependencies]
 crypto-mac = "0.5"
 block-cipher-trait = "0.5"
+dbl = "0.1"
 
 [dev-dependencies]
 crypto-mac = { version = "0.5.1", features = ["dev"] }

@@ -49,16 +49,14 @@
 #![no_std]
 extern crate block_cipher_trait;
 pub extern crate crypto_mac;
+extern crate dbl;
 
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
 use block_cipher_trait::{BlockCipher, NewVarKey};
 use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
 use block_cipher_trait::generic_array::typenum::Unsigned;
-
-mod double;
-
-pub use double::Doublable;
+use dbl::Dbl;
 
 type Block<N> = GenericArray<u8, N>;
 
@@ -80,7 +78,7 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 }
 
 impl <C> Mac for Cmac<C>
-    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Doublable
+    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Dbl
 {
     type OutputSize = C::BlockSize;
 
@@ -91,8 +89,8 @@ impl <C> Mac for Cmac<C>
         let mut subkey = GenericArray::default();
         cipher.encrypt_block(&mut subkey);
 
-        let key1 = subkey.double();
-        let key2 = key1.clone().double();
+        let key1 = subkey.dbl();
+        let key2 = key1.clone().dbl();
 
         Ok(Cmac { cipher, key1, key2, buffer: Default::default(), pos: 0 })
     }
