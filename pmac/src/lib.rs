@@ -94,22 +94,18 @@ impl<C> Pmac<C>
     /// Process full buffer and update tag
     #[inline(always)]
     fn process_buffer(&mut self) {
-        // generate values for xoring with buffer
-        let t = {
-            let mut buf = ParBlocks::<C::BlockSize, C::ParBlocks>::default();
-            for val in buf.iter_mut() {
-                let l = self.get_l(self.counter);
-                xor(&mut self.offset, &l);
-                *val = self.offset.clone();
-                self.counter += 1;
-            }
-            buf
-        };
-        // Create local buffer copy and xor Ls into it
+        let mut offset = self.offset.clone();
+        let mut counter = self.counter;
         let mut buf = self.buffer.clone();
-        for (a, b) in buf.iter_mut().zip(t.iter()) {
-            xor(a, b);
+        for val in buf.iter_mut() {
+            let l = self.get_l(counter);
+            xor(&mut offset, &l);
+            counter += 1;
+            xor(val, &offset);
         }
+        self.counter = counter;
+        self.offset = offset;
+
         // encrypt blocks in the buffer
         self.cipher.encrypt_blocks(&mut buf);
         // and xor them into tag
@@ -208,7 +204,7 @@ impl <C> Mac for Pmac<C>
         }
     }
 
-    fn result(mut self) -> MacResult<Self::OutputSize> {
+    fn result(self) -> MacResult<Self::OutputSize> {
         let mut tag = self.tag.clone();
         // Special case for empty input
         if self.pos == 0 {
@@ -224,16 +220,18 @@ impl <C> Mac for Pmac<C>
         let n = if is_full { (self.pos/bs) - 1 } else { self.pos/bs };
         assert!(n < C::ParBlocks::to_usize(), "invalid buffer positions");
 
+        let mut offset = self.offset.clone();
+        let mut counter = self.counter;
         for i in 0..n {
             let mut buf = self.buffer[i].clone();
 
-            let l = self.get_l(self.counter);
-            xor(&mut self.offset, &l);
-            xor(&mut buf, &self.offset);
+            let l = self.get_l(counter);
+            xor(&mut offset, &l);
+            xor(&mut buf, &offset);
             self.cipher.encrypt_block(&mut buf);
 
             xor(&mut tag, &buf);
-            self.counter += 1;
+            counter += 1;
         }
 
         if is_full {

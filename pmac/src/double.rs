@@ -28,7 +28,6 @@ pub trait Doublable {
 }
 
 impl Doublable for Block<U8> {
-    #[inline(always)]
     fn double(self) -> Self {
         let mut val: u64 = unsafe { mem::transmute(self) };
         val = val.to_be();
@@ -38,7 +37,6 @@ impl Doublable for Block<U8> {
         unsafe { mem::transmute(val.to_be()) }
     }
 
-    #[inline(always)]
     fn inv_double(self) -> Self {
         let mut val: u64 = unsafe { mem::transmute(self) };
         val = val.to_be();
