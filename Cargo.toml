@@ -6,5 +6,6 @@ members = [
 ]
 
 [patch.crates-io]
-block-cipher-trait = { git = "https://github.com/RustCrypto/traits" }
+block-cipher-trait = { git = "https://github.com/RustCrypto/traits", branch="new_versiion" }
+crypto-mac = { git = "https://github.com/RustCrypto/traits", branch="new_versiion" }
 aesni = { git = "https://github.com/RustCrypto/block-ciphers" }

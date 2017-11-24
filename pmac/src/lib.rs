@@ -15,7 +15,7 @@
 //!
 //! # fn main() {
 //! // Create `Mac` trait implementation, namely PMAC-AES128
-//! let mut mac = Pmac::<Aes128>::new(b"very secret key.").unwrap();
+//! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
 //! mac.input(b"input message");
 //!
 //! // `result` has type `MacResult` which is a thin wrapper around array of
@@ -36,12 +36,11 @@
 //! # use aesni::Aes128;
 //! # use pmac::{Pmac, Mac};
 //! # fn main() {
-//! let mut mac = Pmac::<Aes128>::new(b"very secret key.").unwrap();
+//! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
 //!
 //! mac.input(b"input message");
 //!
-//! # let mac2 = mac.clone();
-//! # let code_bytes = mac2.result().code();
+//! # let code_bytes = mac.clone().result().code();
 //! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
 //! mac.verify(&code_bytes).unwrap();
 //! # }
@@ -53,7 +52,7 @@ pub extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
-use block_cipher_trait::{BlockCipher, NewVarKey};
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use dbl::Dbl;
@@ -70,7 +69,7 @@ const LC_SIZE: usize = 20;
 
 /// Generic PMAC instance
 #[derive(Clone)]
-pub struct Pmac<C: BlockCipher + NewVarKey> {
+pub struct Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
     cipher: C,
     l_inv: Block<C::BlockSize>,
     l_cache: [Block<C::BlockSize>; LC_SIZE],
@@ -81,6 +80,10 @@ pub struct Pmac<C: BlockCipher + NewVarKey> {
     counter: usize,
 }
 
+impl<C> Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+
+}
+
 #[inline(always)]
 fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
     for i in 0..L::to_usize() {
@@ -88,9 +91,27 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
     }
 }
 
-impl<C> Pmac<C>
-    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Dbl
-{
+impl<C> Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+    fn from_cipher(cipher: C) -> Self {
+        let mut l0 = Default::default();
+        cipher.encrypt_block(&mut l0);
+
+        let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
+        l_cache[0] = l0.clone();
+        for i in 1..LC_SIZE {
+            l_cache[i] = l_cache[i-1].clone().dbl();
+        }
+
+        let l_inv = l0.clone().inv_dbl();
+
+        Self {
+            cipher, l_inv, l_cache,
+            buffer: Default::default(), tag: Default::default(),
+            offset: Default::default(),
+            pos: 0, counter: 1,
+        }
+    }
+
     /// Process full buffer and update tag
     #[inline(always)]
     fn process_buffer(&mut self) {
@@ -141,33 +162,27 @@ impl<C> Pmac<C>
             block
         }
     }
+
+    fn reset(&mut self) {
+        self.buffer = Default::default();
+        self.tag = Default::default();
+        self.offset = Default::default();
+        self.pos = 0;
+        self.counter = 1;
+    }
 }
 
-impl <C> Mac for Pmac<C>
-    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Dbl
-{
+impl <C> Mac for Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
     type OutputSize = C::BlockSize;
+    type KeySize = C::KeySize;
 
-    fn new(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        let cipher = C::new(key).map_err(|_| InvalidKeyLength)?;
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self{
+        Self::from_cipher(C::new(key))
+    }
 
-        let mut l0 = Default::default();
-        cipher.encrypt_block(&mut l0);
-
-        let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
-        l_cache[0] = l0.clone();
-        for i in 1..LC_SIZE {
-            l_cache[i] = l_cache[i-1].clone().dbl();
-        }
-
-        let l_inv = l0.clone().inv_dbl();
-
-        Ok(Self {
-            cipher, l_inv, l_cache,
-            buffer: Default::default(), tag: Default::default(),
-            offset: Default::default(),
-            pos: 0, counter: 1,
-        })
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
+        Ok(Self::from_cipher(cipher))
     }
 
     #[inline]
@@ -204,7 +219,7 @@ impl <C> Mac for Pmac<C>
         }
     }
 
-    fn result(self) -> MacResult<Self::OutputSize> {
+    fn result(&mut self) -> MacResult<Self::OutputSize> {
         let mut tag = self.tag.clone();
         // Special case for empty input
         if self.pos == 0 {
@@ -218,7 +233,7 @@ impl <C> Mac for Pmac<C>
         let is_full = k == 0;
         // number of full blocks excluding last
         let n = if is_full { (self.pos/bs) - 1 } else { self.pos/bs };
-        assert!(n < C::ParBlocks::to_usize(), "invalid buffer positions");
+        assert!(n < C::ParBlocks::to_usize(), "invalid buffer position");
 
         let mut offset = self.offset.clone();
         let mut counter = self.counter;
@@ -245,6 +260,8 @@ impl <C> Mac for Pmac<C>
         }
 
         self.cipher.encrypt_block(&mut tag);
+
+        self.reset();
 
         MacResult::new(tag)
     }

@@ -15,7 +15,7 @@
 //!
 //! # fn main() {
 //! // Create `Mac` trait implementation, namely CMAC-AES128
-//! let mut mac = Cmac::<Aes128>::new(b"very secret key.").unwrap();
+//! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
 //! mac.input(b"input message");
 //!
 //! // `result` has type `MacResult` which is a thin wrapper around array of
@@ -36,12 +36,11 @@
 //! # use aesni::Aes128;
 //! # use cmac::{Cmac, Mac};
 //! # fn main() {
-//! let mut mac = Cmac::<Aes128>::new(b"very secret key.").unwrap();
+//! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
 //!
 //! mac.input(b"input message");
 //!
-//! # let mac2 = mac.clone();
-//! # let code_bytes = mac2.result().code();
+//! # let code_bytes = mac.clone().result().code();
 //! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
 //! mac.verify(&code_bytes).unwrap();
 //! # }
@@ -53,7 +52,7 @@ extern crate dbl;
 
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
-use block_cipher_trait::{BlockCipher, NewVarKey};
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use dbl::Dbl;
@@ -62,12 +61,29 @@ type Block<N> = GenericArray<u8, N>;
 
 /// Generic CMAC instance
 #[derive(Clone)]
-pub struct Cmac<C: BlockCipher + NewVarKey> {
+pub struct Cmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
     cipher: C,
     key1: Block<C::BlockSize>,
     key2: Block<C::BlockSize>,
     buffer: Block<C::BlockSize>,
     pos: usize,
+}
+
+impl<C> Cmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+    fn from_cipher(cipher: C) -> Self {
+        let mut subkey = GenericArray::default();
+        cipher.encrypt_block(&mut subkey);
+
+        let key1 = subkey.dbl();
+        let key2 = key1.clone().dbl();
+
+        Cmac { cipher, key1, key2, buffer: Default::default(), pos: 0 }
+    }
+
+    fn reset(&mut self) {
+        self.buffer = Default::default();
+        self.pos = 0;
+    }
 }
 
 #[inline(always)]
@@ -78,21 +94,18 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 }
 
 impl <C> Mac for Cmac<C>
-    where C: BlockCipher + NewVarKey, Block<C::BlockSize>: Dbl
+    where C: BlockCipher, Block<C::BlockSize>: Dbl
 {
     type OutputSize = C::BlockSize;
+    type KeySize = C::KeySize;
 
-    #[inline]
-    fn new(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        let cipher = C::new(key).map_err(|_| InvalidKeyLength)?;
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+        Self::from_cipher(C::new(key))
+    }
 
-        let mut subkey = GenericArray::default();
-        cipher.encrypt_block(&mut subkey);
-
-        let key1 = subkey.dbl();
-        let key2 = key1.clone().dbl();
-
-        Ok(Cmac { cipher, key1, key2, buffer: Default::default(), pos: 0 })
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
+        Ok(Self::from_cipher(cipher))
     }
 
     #[inline]
@@ -137,16 +150,19 @@ impl <C> Mac for Cmac<C>
     }
 
     #[inline]
-    fn result(mut self) -> MacResult<Self::OutputSize> {
+    fn result(&mut self) -> MacResult<Self::OutputSize> {
         let n = C::BlockSize::to_usize();
+        let mut buf = self.buffer.clone();
         if self.pos == n {
-            xor(&mut self.buffer, &self.key1);
+            xor(&mut buf, &self.key1);
         } else {
-            xor(&mut self.buffer, &self.key2);
-            self.buffer[self.pos] ^= 0x80;
+            xor(&mut buf, &self.key2);
+            buf[self.pos] ^= 0x80;
         }
+        self.cipher.encrypt_block(&mut buf);
 
-        self.cipher.encrypt_block(&mut self.buffer);
-        MacResult::new(self.buffer)
+        self.reset();
+
+        MacResult::new(buf)
     }
 }

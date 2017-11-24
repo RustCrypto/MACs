@@ -4,4 +4,4 @@ extern crate crypto_mac;
 extern crate cmac;
 extern crate aesni;
 
-bench!(cmac::Cmac::<aesni::Aes128>, 16);
+bench!(cmac::Cmac::<aesni::Aes128>);
