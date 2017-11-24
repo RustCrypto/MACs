@@ -120,10 +120,14 @@ impl <D> Mac for Hmac<D>
           D::OutputSize: ArrayLength<u8>
 {
     type OutputSize = D::OutputSize;
+    type KeySize = D::BlockSize;
 
-    #[inline]
-    fn new(key: &[u8]) -> Result<Hmac<D>, InvalidKeyLength> {
-        let mut hmac = Hmac {
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+        Self::new_varkey(key.as_slice()).unwrap()
+    }
+
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        let mut hmac = Self {
             digest: D::default(),
             opad_digest: D::default(),
             key: expand_key::<D>(key),
@@ -141,7 +145,7 @@ impl <D> Mac for Hmac<D>
     }
 
     #[inline]
-    fn result(mut self) -> MacResult<D::OutputSize> {
+    fn result(&mut self) -> MacResult<D::OutputSize> {
         let output = self.digest.fixed_result();
         self.opad_digest.process(&output);
         MacResult::new(self.opad_digest.fixed_result())
