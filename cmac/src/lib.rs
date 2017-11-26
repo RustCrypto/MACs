@@ -47,8 +47,8 @@
 //! ```
 #![no_std]
 extern crate block_cipher_trait;
-pub extern crate crypto_mac;
 extern crate dbl;
+pub extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
@@ -56,6 +56,8 @@ use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use dbl::Dbl;
+
+use core::fmt;
 
 type Block<N> = GenericArray<u8, N>;
 
@@ -164,5 +166,13 @@ impl <C> Mac for Cmac<C>
         self.reset();
 
         MacResult::new(buf)
+    }
+}
+
+impl<C> fmt::Debug for Cmac<C>
+    where C: BlockCipher + fmt::Debug, Block<C::BlockSize>: Dbl
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(f, "Cmac-{:?}", self.cipher)
     }
 }

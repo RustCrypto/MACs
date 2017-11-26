@@ -57,7 +57,7 @@ use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use dbl::Dbl;
 
-use core::slice;
+use core::{fmt, slice};
 
 type Block<N> = GenericArray<u8, N>;
 type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
@@ -264,5 +264,13 @@ impl <C> Mac for Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
         self.reset();
 
         MacResult::new(tag)
+    }
+}
+
+impl<C> fmt::Debug for Pmac<C>
+    where C: BlockCipher + fmt::Debug, Block<C::BlockSize>: Dbl
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(f, "Pmac-{:?}", self.cipher)
     }
 }
