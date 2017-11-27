@@ -14,5 +14,5 @@ digest = "0.8"
 
 [dev-dependencies]
 crypto-mac = { version = "0.6", features = ["dev"] }
-md-5 = "0.7"
-sha2 = "0.7"
+md-5 = "0.8"
+sha2 = "0.8"

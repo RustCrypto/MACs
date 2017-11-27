@@ -18,7 +18,8 @@
 //!
 //! # fn main() {
 //! // Create `Mac` trait implementation, namely HMAC-SHA256
-//! let mut mac = Hmac::<Sha256>::new(b"my secret and secure key").unwrap();
+//! # type HmacSha256 = Hmac<Sha256>;
+//! let mut mac = HmacSha256::new_varkey(b"my secret and secure key").unwrap();
 //! mac.input(b"input message");
 //!
 //! // `result` has type `MacResult` which is a thin wrapper around array of
@@ -39,12 +40,12 @@
 //! # use sha2::Sha256;
 //! # use hmac::{Hmac, Mac};
 //! # fn main() {
-//! let mut mac = Hmac::<Sha256>::new(b"my secret and secure key").unwrap();
+//! # type HmacSha256 = Hmac<Sha256>;
+//! let mut mac = HmacSha256::new_varkey(b"my secret and secure key").unwrap();
 //!
 //! mac.input(b"input message");
 //!
-//! # let mac2 = mac.clone();
-//! # let code_bytes = mac2.result().code();
+//! # let code_bytes = mac.clone().result().code();
 //! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
 //! mac.verify(&code_bytes).unwrap();
 //! # }
@@ -72,10 +73,11 @@ const OPAD: u8 = 0x5c;
 /// The `Hmac` struct represents an HMAC using a given hash function `D`.
 #[derive(Clone, Debug)]
 pub struct Hmac<D>
-    where D: Input + BlockInput + FixedOutput + Default,
+    where D: Input + BlockInput + FixedOutput + Default + Clone,
           D::BlockSize: ArrayLength<u8>
 {
     digest: D,
+    i_key_pad: GenericArray<u8, D::BlockSize>,
     opad_digest: D,
     key: GenericArray<u8, D::BlockSize>,
 }
@@ -84,7 +86,7 @@ pub struct Hmac<D>
 /// underlying Digest. If the provided key is smaller than that, we just pad it
 /// with zeros. If its larger, we hash it and then pad it with zeros.
 fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
-    where D: Input + BlockInput + FixedOutput + Default,
+    where D: Input + BlockInput + FixedOutput + Default + Clone,
           D::BlockSize: ArrayLength<u8>
 {
     let mut exp_key = GenericArray::default();
@@ -102,7 +104,7 @@ fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
 }
 
 impl <D> Hmac<D>
-    where D: Input + BlockInput + FixedOutput + Default,
+    where D: Input + BlockInput + FixedOutput + Default + Clone,
           D::BlockSize: ArrayLength<u8>
 {
     fn derive_key(&self, mask: u8) -> GenericArray<u8, D::BlockSize> {
@@ -115,7 +117,7 @@ impl <D> Hmac<D>
 }
 
 impl <D> Mac for Hmac<D>
-    where D: Input + BlockInput + FixedOutput + Default,
+    where D: Input + BlockInput + FixedOutput + Default + Clone,
           D::BlockSize: ArrayLength<u8>,
           D::OutputSize: ArrayLength<u8>
 {
@@ -128,12 +130,13 @@ impl <D> Mac for Hmac<D>
 
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         let mut hmac = Self {
-            digest: D::default(),
-            opad_digest: D::default(),
+            digest: Default::default(),
+            i_key_pad: Default::default(),
+            opad_digest: Default::default(),
             key: expand_key::<D>(key),
         };
-        let i_key_pad = hmac.derive_key(IPAD);
-        hmac.digest.process(&i_key_pad);
+        hmac.i_key_pad = hmac.derive_key(IPAD);
+        hmac.digest.process(&hmac.i_key_pad);
         let o_key_pad = hmac.derive_key(OPAD);
         hmac.opad_digest.process(&o_key_pad);
         Ok(hmac)
@@ -147,7 +150,10 @@ impl <D> Mac for Hmac<D>
     #[inline]
     fn result(&mut self) -> MacResult<D::OutputSize> {
         let output = self.digest.fixed_result();
-        self.opad_digest.process(&output);
-        MacResult::new(self.opad_digest.fixed_result())
+        // After reset process `i_key_pad` again
+        self.digest.process(&self.i_key_pad);
+        let mut opad_digest = self.opad_digest.clone();
+        opad_digest.process(&output);
+        MacResult::new(opad_digest.fixed_result())
     }
 }
