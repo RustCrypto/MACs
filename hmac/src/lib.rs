@@ -58,7 +58,7 @@
 //! to the hash block size if needed.
 
 #![no_std]
-extern crate digest;
+pub extern crate digest;
 pub extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
@@ -149,7 +149,11 @@ impl <D> Mac for Hmac<D>
 
     #[inline]
     fn result(&mut self) -> MacResult<D::OutputSize> {
-        let output = self.digest.fixed_result();
+        // TODO: remove after migration on digest v0.8
+        let mut digest = D::default();
+        core::mem::swap(&mut self.digest, &mut digest);
+
+        let output = digest.fixed_result();
         // After reset process `i_key_pad` again
         self.digest.process(&self.i_key_pad);
         let mut opad_digest = self.opad_digest.clone();
