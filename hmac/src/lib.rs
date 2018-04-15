@@ -16,9 +16,10 @@
 //! use sha2::Sha256;
 //! use hmac::{Hmac, Mac};
 //!
+//! type HmacSha256 = Hmac<Sha256>;
+//!
 //! # fn main() {
 //! // Create `Mac` trait implementation, namely HMAC-SHA256
-//! # type HmacSha256 = Hmac<Sha256>;
 //! let mut mac = HmacSha256::new_varkey(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
 //! mac.input(b"input message");
