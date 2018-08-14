@@ -69,10 +69,9 @@ pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
 use digest::{Input, BlockInput, FixedOutput};
 use digest::generic_array::{ArrayLength, GenericArray};
-use core::cmp::min;
 
 const IPAD: u8 = 0x36;
-const OPAD: u8 = 0x5c;
+const IOPAD: u8 = 0x6A; // Result of IPAD ^ 0x5C
 
 /// The `Hmac` struct represents an HMAC using a given hash function `D`.
 #[derive(Clone, Debug)]
@@ -84,40 +83,6 @@ pub struct Hmac<D>
     i_key_pad: GenericArray<u8, D::BlockSize>,
     opad_digest: D,
     key: GenericArray<u8, D::BlockSize>,
-}
-
-/// The key that Hmac processes must be the same as the block size of the
-/// underlying Digest. If the provided key is smaller than that, we just pad it
-/// with zeros. If its larger, we hash it and then pad it with zeros.
-fn expand_key<D>(key: &[u8]) -> GenericArray<u8, D::BlockSize>
-    where D: Input + BlockInput + FixedOutput + Default + Clone,
-          D::BlockSize: ArrayLength<u8>
-{
-    let mut exp_key = GenericArray::default();
-
-    if key.len() <= exp_key.len() {
-        exp_key[..key.len()].copy_from_slice(key);
-    } else {
-        let mut digest = D::default();
-        digest.process(key);
-        let output = digest.fixed_result();
-        let n = min(output.len(), exp_key.len());
-        exp_key[..n].copy_from_slice(&output[..n]);
-    }
-    exp_key
-}
-
-impl <D> Hmac<D>
-    where D: Input + BlockInput + FixedOutput + Default + Clone,
-          D::BlockSize: ArrayLength<u8>
-{
-    fn derive_key(&self, mask: u8) -> GenericArray<u8, D::BlockSize> {
-        let mut key = self.key.clone();
-        for elem in key.iter_mut() {
-            *elem ^= mask;
-        }
-        key
-    }
 }
 
 impl <D> Mac for Hmac<D>
@@ -132,17 +97,35 @@ impl <D> Mac for Hmac<D>
         Self::new_varkey(key.as_slice()).unwrap()
     }
 
+    #[inline]
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+
         let mut hmac = Self {
             digest: Default::default(),
             i_key_pad: Default::default(),
             opad_digest: Default::default(),
-            key: expand_key::<D>(key),
+            key: Default::default(),
         };
-        hmac.i_key_pad = hmac.derive_key(IPAD);
+
+        if key.len() <= hmac.i_key_pad.len() {
+            hmac.i_key_pad[..key.len()].copy_from_slice(key);
+        } else {
+            let mut digest = D::default();
+            digest.process(key);
+            let output = digest.fixed_result();
+            hmac.i_key_pad[..output.len()].copy_from_slice(&output[..output.len()]);
+        }
+
+        let mut opad: GenericArray<u8, D::BlockSize> = GenericArray::default();
+
+        for (idx, elem) in hmac.i_key_pad.iter_mut().enumerate() {
+            *elem ^= IPAD;
+            opad[idx] = *elem ^ IOPAD;
+        }
+
         hmac.digest.process(&hmac.i_key_pad);
-        let o_key_pad = hmac.derive_key(OPAD);
-        hmac.opad_digest.process(&o_key_pad);
+        hmac.opad_digest.process(&opad);
+
         Ok(hmac)
     }
 
@@ -157,11 +140,10 @@ impl <D> Mac for Hmac<D>
         let mut digest = D::default();
         core::mem::swap(&mut self.digest, &mut digest);
 
-        let output = digest.fixed_result();
         // After reset process `i_key_pad` again
         self.digest.process(&self.i_key_pad);
         let mut opad_digest = self.opad_digest.clone();
-        opad_digest.process(&output);
+        opad_digest.process(&digest.fixed_result());
         MacResult::new(opad_digest.fixed_result())
     }
 }
