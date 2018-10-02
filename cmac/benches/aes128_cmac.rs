@@ -2,6 +2,6 @@
 #[macro_use]
 extern crate crypto_mac;
 extern crate cmac;
-extern crate aesni;
+extern crate aes;
 
-bench!(cmac::Cmac::<aesni::Aes128>);
+bench!(cmac::Cmac::<aes::Aes128>);

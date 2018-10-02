@@ -8,9 +8,9 @@
 //!
 //! ```rust
 //! extern crate cmac;
-//! extern crate aesni;
+//! extern crate aes;
 //!
-//! use aesni::Aes128;
+//! use aes::Aes128;
 //! use cmac::{Cmac, Mac};
 //!
 //! # fn main() {
@@ -32,8 +32,8 @@
 //!
 //! ```rust
 //! # extern crate cmac;
-//! # extern crate aesni;
-//! # use aesni::Aes128;
+//! # extern crate aes;
+//! # use aes::Aes128;
 //! # use cmac::{Cmac, Mac};
 //! # fn main() {
 //! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
