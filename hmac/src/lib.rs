@@ -100,19 +100,19 @@ impl <D> Mac for Hmac<D>
 
     #[inline]
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-
         let mut hmac = Self {
             digest: Default::default(),
             i_key_pad: GenericArray::generate(|_| IPAD),
             opad_digest: Default::default(),
         };
 
-        let mut opad: GenericArray<u8, D::BlockSize> = GenericArray::generate(|_| OPAD);
+        let mut opad = GenericArray::<u8, D::BlockSize>::generate(|_| OPAD);
         debug_assert!(hmac.i_key_pad.len() == opad.len());
 
         // The key that Hmac processes must be the same as the block size of the
-        // underlying Digest. If the provided key is smaller than that, we just pad it
-        // with zeros. If its larger, we hash it and then pad it with zeros.
+        // underlying Digest. If the provided key is smaller than that, we just
+        // pad it with zeros. If its larger, we hash it and then pad it with
+        // zeros.
         if key.len() <= hmac.i_key_pad.len() {
             for (k_idx, k_itm) in key.iter().enumerate() {
                 hmac.i_key_pad[k_idx] ^= *k_itm;
