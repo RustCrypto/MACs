@@ -2,7 +2,7 @@
 //! otherwise known as OMAC1.
 //!
 //! # Usage
-//! We will use AES-128 block cipher from [aesni](https://docs.rs/aesni) crate.
+//! We will use AES-128 block cipher from [aes](https://docs.rs/aes) crate.
 //!
 //! To get the authentication code:
 //!
@@ -63,7 +63,7 @@ type Block<N> = GenericArray<u8, N>;
 
 /// Generic CMAC instance
 #[derive(Clone)]
-pub struct Cmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+pub struct Cmac<C> where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl {
     cipher: C,
     key1: Block<C::BlockSize>,
     key2: Block<C::BlockSize>,
@@ -71,7 +71,7 @@ pub struct Cmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
     pos: usize,
 }
 
-impl<C> Cmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+impl<C> Cmac<C> where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl {
     fn from_cipher(cipher: C) -> Self {
         let mut subkey = GenericArray::default();
         cipher.encrypt_block(&mut subkey);
@@ -80,11 +80,6 @@ impl<C> Cmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
         let key2 = key1.clone().dbl();
 
         Cmac { cipher, key1, key2, buffer: Default::default(), pos: 0 }
-    }
-
-    fn reset(&mut self) {
-        self.buffer = Default::default();
-        self.pos = 0;
     }
 }
 
@@ -96,7 +91,7 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 }
 
 impl <C> Mac for Cmac<C>
-    where C: BlockCipher, Block<C::BlockSize>: Dbl
+    where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl, C::BlockSize: Clone
 {
     type OutputSize = C::BlockSize;
     type KeySize = C::KeySize;
@@ -152,7 +147,7 @@ impl <C> Mac for Cmac<C>
     }
 
     #[inline]
-    fn result(&mut self) -> MacResult<Self::OutputSize> {
+    fn result(mut self) -> MacResult<Self::OutputSize> {
         let n = C::BlockSize::to_usize();
         let mut buf = self.buffer.clone();
         if self.pos == n {
@@ -167,10 +162,15 @@ impl <C> Mac for Cmac<C>
 
         MacResult::new(buf)
     }
+
+    fn reset(&mut self) {
+        self.buffer = Default::default();
+        self.pos = 0;
+    }
 }
 
 impl<C> fmt::Debug for Cmac<C>
-    where C: BlockCipher + fmt::Debug, Block<C::BlockSize>: Dbl
+    where C: BlockCipher + fmt::Debug + Clone, Block<C::BlockSize>: Dbl
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "Cmac-{:?}", self.cipher)

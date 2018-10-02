@@ -3,11 +3,11 @@
 #![no_std]
 #[macro_use]
 extern crate crypto_mac;
-extern crate aesni;
+extern crate aes;
 extern crate cmac;
 
 use cmac::Cmac;
-use aesni::{Aes128, Aes192, Aes256};
+use aes::{Aes128, Aes192, Aes256};
 
 new_test!(cmac_aes128, "aes128", Cmac<Aes128>);
 new_test!(cmac_aes192, "aes192", Cmac<Aes192>);
