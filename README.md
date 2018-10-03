@@ -1,5 +1,5 @@
-# RustCrypto: Message Authentication Codes
-Collection of Message Authentication Code (MAC) algorithms written in pure Rust.
+# RustCrypto: Message Authentication Codes [![Build Status](https://travis-ci.org/RustCrypto/MACs.svg?branch=master)](https://travis-ci.org/RustCrypto/MACs)
+Collection of [Message Authentication Code][1] (MAC) algorithms written in pure Rust.
 
 ## Algorithms
 
@@ -22,3 +22,5 @@ at your option.
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license
+
+[1]: https://en.wikipedia.org/wiki/Message_authentication_code

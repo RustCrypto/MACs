@@ -67,8 +67,9 @@ pub extern crate crypto_mac;
 
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
-use digest::{Input, BlockInput, FixedOutput};
+use digest::{Input, BlockInput, FixedOutput, Reset};
 use digest::generic_array::{ArrayLength, GenericArray};
+use digest::generic_array::sequence::GenericSequence;
 use core::cmp::min;
 
 const IPAD: u8 = 0x36;
@@ -77,7 +78,7 @@ const OPAD: u8 = 0x5C;
 /// The `Hmac` struct represents an HMAC using a given hash function `D`.
 #[derive(Clone, Debug)]
 pub struct Hmac<D>
-    where D: Input + BlockInput + FixedOutput + Default + Clone,
+    where D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
           D::BlockSize: ArrayLength<u8>
 {
     digest: D,
@@ -86,8 +87,8 @@ pub struct Hmac<D>
 }
 
 impl <D> Mac for Hmac<D>
-    where D: Input + BlockInput + FixedOutput + Default + Clone,
-          D::BlockSize: ArrayLength<u8>,
+    where D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+          D::BlockSize: ArrayLength<u8> + Clone,
           D::OutputSize: ArrayLength<u8>
 {
     type OutputSize = D::OutputSize;
@@ -99,19 +100,19 @@ impl <D> Mac for Hmac<D>
 
     #[inline]
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-
         let mut hmac = Self {
             digest: Default::default(),
             i_key_pad: GenericArray::generate(|_| IPAD),
             opad_digest: Default::default(),
         };
 
-        let mut opad: GenericArray<u8, D::BlockSize> = GenericArray::generate(|_| OPAD);
+        let mut opad = GenericArray::<u8, D::BlockSize>::generate(|_| OPAD);
         debug_assert!(hmac.i_key_pad.len() == opad.len());
 
         // The key that Hmac processes must be the same as the block size of the
-        // underlying Digest. If the provided key is smaller than that, we just pad it
-        // with zeros. If its larger, we hash it and then pad it with zeros.
+        // underlying Digest. If the provided key is smaller than that, we just
+        // pad it with zeros. If its larger, we hash it and then pad it with
+        // zeros.
         if key.len() <= hmac.i_key_pad.len() {
             for (k_idx, k_itm) in key.iter().enumerate() {
                 hmac.i_key_pad[k_idx] ^= *k_itm;
@@ -119,7 +120,7 @@ impl <D> Mac for Hmac<D>
             }
         } else {
             let mut digest = D::default();
-            digest.process(key);
+            digest.input(key);
             let output = digest.fixed_result();
             // `n` is calculated at compile time and will equal
             // D::OutputSize. This is used to ensure panic-free code
@@ -130,27 +131,28 @@ impl <D> Mac for Hmac<D>
             }
         }
 
-        hmac.digest.process(&hmac.i_key_pad);
-        hmac.opad_digest.process(&opad);
+        hmac.digest.input(&hmac.i_key_pad);
+        hmac.opad_digest.input(&opad);
 
         Ok(hmac)
     }
 
     #[inline]
     fn input(&mut self, data: &[u8]) {
-        self.digest.process(data);
+        self.digest.input(data);
     }
 
     #[inline]
-    fn result(&mut self) -> MacResult<D::OutputSize> {
-        // TODO: remove after migration on digest v0.8
-        let mut digest = D::default();
-        core::mem::swap(&mut self.digest, &mut digest);
-
-        // After reset process `i_key_pad` again
-        self.digest.process(&self.i_key_pad);
+    fn result(self) -> MacResult<D::OutputSize> {
         let mut opad_digest = self.opad_digest.clone();
-        opad_digest.process(&digest.fixed_result());
+        let hash = self.digest.fixed_result();
+        opad_digest.input(&hash);
         MacResult::new(opad_digest.fixed_result())
+    }
+
+    #[inline]
+    fn reset(&mut self) {
+        self.digest.reset();
+        self.digest.input(&self.i_key_pad);
     }
 }

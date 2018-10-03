@@ -2,15 +2,15 @@
 //! otherwise known as OMAC1.
 //!
 //! # Usage
-//! We will use AES-128 block cipher from [aesni](https://docs.rs/aesni) crate.
+//! We will use AES-128 block cipher from [aes](https://docs.rs/aes) crate.
 //!
 //! To get the authentication code:
 //!
 //! ```rust
 //! extern crate pmac;
-//! extern crate aesni;
+//! extern crate aes;
 //!
-//! use aesni::Aes128;
+//! use aes::Aes128;
 //! use pmac::{Pmac, Mac};
 //!
 //! # fn main() {
@@ -32,8 +32,8 @@
 //!
 //! ```rust
 //! # extern crate pmac;
-//! # extern crate aesni;
-//! # use aesni::Aes128;
+//! # extern crate aes;
+//! # use aes::Aes128;
 //! # use pmac::{Pmac, Mac};
 //! # fn main() {
 //! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
@@ -69,7 +69,10 @@ const LC_SIZE: usize = 20;
 
 /// Generic PMAC instance
 #[derive(Clone)]
-pub struct Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+pub struct Pmac<C>
+    where C: BlockCipher + Clone, C::BlockSize: Clone, C::ParBlocks: Clone,
+          Block<C::BlockSize>: Dbl
+{
     cipher: C,
     l_inv: Block<C::BlockSize>,
     l_cache: [Block<C::BlockSize>; LC_SIZE],
@@ -80,10 +83,6 @@ pub struct Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
     counter: usize,
 }
 
-impl<C> Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
-
-}
-
 #[inline(always)]
 fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
     for i in 0..L::to_usize() {
@@ -91,7 +90,10 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
     }
 }
 
-impl<C> Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+impl<C> Pmac<C>
+    where C: BlockCipher + Clone, C::BlockSize: Clone, C::ParBlocks: Clone,
+          Block<C::BlockSize>: Dbl
+{
     fn from_cipher(cipher: C) -> Self {
         let mut l0 = Default::default();
         cipher.encrypt_block(&mut l0);
@@ -162,17 +164,12 @@ impl<C> Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
             block
         }
     }
-
-    fn reset(&mut self) {
-        self.buffer = Default::default();
-        self.tag = Default::default();
-        self.offset = Default::default();
-        self.pos = 0;
-        self.counter = 1;
-    }
 }
 
-impl <C> Mac for Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
+impl <C> Mac for Pmac<C>
+    where C: BlockCipher + Clone, C::BlockSize: Clone, C::ParBlocks: Clone,
+          Block<C::BlockSize>: Dbl
+{
     type OutputSize = C::BlockSize;
     type KeySize = C::KeySize;
 
@@ -219,7 +216,7 @@ impl <C> Mac for Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
         }
     }
 
-    fn result(&mut self) -> MacResult<Self::OutputSize> {
+    fn result(self) -> MacResult<Self::OutputSize> {
         let mut tag = self.tag.clone();
         // Special case for empty input
         if self.pos == 0 {
@@ -260,15 +257,22 @@ impl <C> Mac for Pmac<C> where C: BlockCipher, Block<C::BlockSize>: Dbl {
         }
 
         self.cipher.encrypt_block(&mut tag);
-
-        self.reset();
-
         MacResult::new(tag)
+    }
+
+    fn reset(&mut self) {
+        self.buffer = Default::default();
+        self.tag = Default::default();
+        self.offset = Default::default();
+        self.pos = 0;
+        self.counter = 1;
     }
 }
 
 impl<C> fmt::Debug for Pmac<C>
-    where C: BlockCipher + fmt::Debug, Block<C::BlockSize>: Dbl
+    where C: BlockCipher + Clone + fmt::Debug,
+          C::BlockSize: Clone, C::ParBlocks: Clone,
+          Block<C::BlockSize>: Dbl
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "Pmac-{:?}", self.cipher)
