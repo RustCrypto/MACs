@@ -20,3 +20,6 @@ sha2 = { version = "0.8", default-features = false }
 
 [badges]
 travis-ci = { repository = "RustCrypto/hashes" }
+
+[badges]
+travis-ci = { repository = "RustCrypto/block-ciphers" }

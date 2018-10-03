@@ -7,6 +7,7 @@ description = "Generic implementation of Parallelizable Message Authentication C
 documentation = "https://docs.rs/cmac"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "pmac"]
+categories = ["cryptography", "no-std"]
 
 [dependencies]
 crypto-mac = "0.7"
@@ -16,3 +17,6 @@ dbl = "0.2"
 [dev-dependencies]
 crypto-mac = { version = "0.7", features = ["dev"] }
 aes = "0.3"
+
+[badges]
+travis-ci = { repository = "RustCrypto/block-ciphers" }
