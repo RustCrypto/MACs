@@ -19,4 +19,4 @@ crypto-mac = { version = "0.7", features = ["dev"] }
 aes = "0.3"
 
 [badges]
-travis-ci = { repository = "RustCrypto/block-ciphers" }
+travis-ci = { repository = "RustCrypto/hashes" }
