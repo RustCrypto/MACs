@@ -159,9 +159,6 @@ impl <C> Mac for Cmac<C>
             buf[self.pos] ^= 0x80;
         }
         self.cipher.encrypt_block(&mut buf);
-
-        self.reset();
-
         MacResult::new(buf)
     }
 
