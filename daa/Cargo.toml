@@ -9,8 +9,8 @@ repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "daa", "fips"]
 
 [dependencies]
-crypto-mac = "0.6"
+crypto-mac = "0.7"
 des = "0.1"
 
 [dev-dependencies]
-crypto-mac = { version = "0.6", features = ["dev"] }
+crypto-mac = { version = "0.7", features = ["dev"] }

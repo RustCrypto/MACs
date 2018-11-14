@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "cmac",
+    "daa",
     "hmac",
     "pmac",
 ]
