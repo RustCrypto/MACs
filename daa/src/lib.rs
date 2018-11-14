@@ -90,14 +90,19 @@ impl Mac for Daa {
     }
 
     #[inline]
-    fn result(&mut self) -> MacResult<Self::OutputSize> {
-        let mut buf = self.buffer.clone();
+    fn result(mut self) -> MacResult<Self::OutputSize> {
         if self.pos != 0 {
-            self.cipher.encrypt_block(&mut buf);
-            self.pos = 0;
+            self.cipher.encrypt_block(&mut self.buffer);
         }
-        self.buffer = Default::default();
-        MacResult::new(buf)
+        MacResult::new(self.buffer)
+    }
+
+    #[inline]
+    fn reset(&mut self) {
+        if self.pos != 0 {
+            self.pos = 0;
+            self.buffer = Default::default();
+        }
     }
 }
 

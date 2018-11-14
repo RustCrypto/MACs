@@ -10,7 +10,7 @@ keywords = ["crypto", "mac", "daa", "fips"]
 
 [dependencies]
 crypto-mac = "0.7"
-des = "0.1"
+des = "0.2"
 
 [dev-dependencies]
 crypto-mac = { version = "0.7", features = ["dev"] }
