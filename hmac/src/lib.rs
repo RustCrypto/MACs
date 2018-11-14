@@ -60,8 +60,9 @@
 //! generic nature of the implementation this edge case must be handled as well
 //! to remove potential panic scenario. This is done by truncating hash output
 //! to the hash block size if needed.
-
 #![no_std]
+#![doc(html_logo_url =
+    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate digest;
 pub extern crate crypto_mac;
 

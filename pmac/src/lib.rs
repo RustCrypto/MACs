@@ -46,6 +46,8 @@
 //! # }
 //! ```
 #![no_std]
+#![doc(html_logo_url =
+    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 extern crate block_cipher_trait;
 extern crate dbl;
 pub extern crate crypto_mac;
