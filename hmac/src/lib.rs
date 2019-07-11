@@ -72,12 +72,12 @@ use digest::{Input, BlockInput, FixedOutput, Reset};
 use digest::generic_array::{ArrayLength, GenericArray};
 use digest::generic_array::sequence::GenericSequence;
 use core::cmp::min;
+use core::fmt;
 
 const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5C;
 
 /// The `Hmac` struct represents an HMAC using a given hash function `D`.
-#[derive(Clone, Debug)]
 pub struct Hmac<D>
     where D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
           D::BlockSize: ArrayLength<u8>
@@ -87,9 +87,35 @@ pub struct Hmac<D>
     opad_digest: D,
 }
 
+impl<D> Clone for Hmac<D>
+    where D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+          D::BlockSize: ArrayLength<u8>
+{
+    fn clone(&self) -> Hmac<D> {
+        Hmac {
+            digest: self.digest.clone(),
+            i_key_pad: self.i_key_pad.clone(),
+            opad_digest: self.opad_digest.clone(),
+        }
+    }
+}
+
+impl<D> fmt::Debug for Hmac<D>
+    where D: Input + BlockInput + FixedOutput + Reset + Default + Clone + fmt::Debug,
+          D::BlockSize: ArrayLength<u8>
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Hmac")
+         .field("digest", &self.digest)
+         .field("i_key_pad", &self.i_key_pad)
+         .field("opad_digest", &self.opad_digest)
+         .finish()
+    }
+}
+
 impl <D> Mac for Hmac<D>
     where D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
-          D::BlockSize: ArrayLength<u8> + Clone,
+          D::BlockSize: ArrayLength<u8>,
           D::OutputSize: ArrayLength<u8>
 {
     type OutputSize = D::OutputSize;
