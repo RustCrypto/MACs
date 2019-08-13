@@ -4,4 +4,5 @@ members = [
     "daa",
     "hmac",
     "pmac",
+    "poly1305"
 ]

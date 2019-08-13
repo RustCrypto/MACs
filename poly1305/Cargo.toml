@@ -1,0 +1,20 @@
+[package]
+name = "poly1305"
+version = "0.0.0"
+authors = ["RustCrypto Developers"]
+license = "MIT/Apache-2.0"
+description = "The Poly1305 universal hash function and message authentication code"
+documentation = "https://docs.rs/poly1305"
+repository = "https://github.com/RustCrypto/MACs"
+keywords = ["crypto", "mac", "umac", "universal-hashing"]
+categories = ["cryptography", "no-std"]
+
+[dependencies]
+byte-tools = "0.2"
+crypto-mac = "0.7"
+
+[dev-dependencies]
+crypto-mac = { version = "0.7", features = ["dev"] }
+
+[badges]
+travis-ci = { repository = "RustCrypto/hashes" }
