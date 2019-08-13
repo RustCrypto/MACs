@@ -8,11 +8,11 @@ matrix:
       rust: 1.21.0
       script: cd hmac && cargo test --verbose
     - rust: 1.27.0
-      script: cargo test --verbose --all
+      script: cargo test --verbose --all --exclude=polyval
     - rust: stable
-      script: cargo test --verbose --all
+      script: cargo test --verbose --all --exclude=polyval
     - rust: nightly
-      script: cargo test --verbose --all
+      script: cargo test --verbose --all --exclude=polyval
 
     - env: TARGET=i686-unknown-linux-gnu
       rust: stable
@@ -20,19 +20,26 @@ matrix:
       rust: stable
     - env: TARGET=powerpc64-unknown-linux-gnu
       rust: stable
+
     # tests if crates truly can be built without std
     - env: TARGET=thumbv7em-none-eabi
-      rust: nightly
-      script: xargo build --verbose --target $TARGET
-      install:
-        - cargo install xargo || true
-        - rustup target install armv7-unknown-linux-gnueabihf
-        - rustup component add rust-src
+      rust: stable
+      install: rustup target install $TARGET
+      script:
+        - cargo build --verbose --all --exclude=polyval --tests
+
+    # polyval presently needs either RUSTFLAGS or non-default features
+    - name: "Rust: 1.27.0 (polyval)"
+      rust: 1.27.0
+      script: ./test_polyval.sh
+    - name: "Rust: stable (polyval)"
+      rust: stable
+      script: ./test_polyval.sh
 
 install:
   - cargo install cross || true
 
 script:
-  - cross test --verbose --all --target $TARGET
+  - cross test --verbose --all --exclude=polyval --target $TARGET
 
 cache: cargo

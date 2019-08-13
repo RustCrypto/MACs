@@ -5,5 +5,5 @@ members = [
     "hmac",
     "pmac",
     "poly1305",
-    "polyval"
+    "polyval",
 ]
