@@ -3,8 +3,8 @@ extern crate poly1305;
 
 use std::iter::repeat;
 
+use crypto_mac::{generic_array::GenericArray, Mac};
 use poly1305::Poly1305;
-use crypto_mac::{Mac, generic_array::GenericArray};
 
 fn poly1305(key: &[u8], msg: &[u8], mac: &mut [u8]) {
     let mut poly = Poly1305::new(GenericArray::from_slice(key));

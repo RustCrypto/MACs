@@ -55,11 +55,11 @@ impl Mac for Poly1305 {
         let key = key.as_slice();
 
         // r &= 0xffffffc0ffffffc0ffffffc0fffffff
-        poly.r[0] = (read_u32_le(&key[0..4])) & 0x3ffffff;
-        poly.r[1] = (read_u32_le(&key[3..7]) >> 2) & 0x3ffff03;
-        poly.r[2] = (read_u32_le(&key[6..10]) >> 4) & 0x3ffc0ff;
-        poly.r[3] = (read_u32_le(&key[9..13]) >> 6) & 0x3f03fff;
-        poly.r[4] = (read_u32_le(&key[12..16]) >> 8) & 0x00fffff;
+        poly.r[0] = (read_u32_le(&key[0..4])) & 0x3ff_ffff;
+        poly.r[1] = (read_u32_le(&key[3..7]) >> 2) & 0x3ff_ff03;
+        poly.r[2] = (read_u32_le(&key[6..10]) >> 4) & 0x3ff_c0ff;
+        poly.r[3] = (read_u32_le(&key[9..13]) >> 6) & 0x3f0_3fff;
+        poly.r[4] = (read_u32_le(&key[12..16]) >> 8) & 0x00f_ffff;
 
         poly.pad[0] = read_u32_le(&key[16..20]);
         poly.pad[1] = read_u32_le(&key[20..24]);
@@ -76,9 +76,11 @@ impl Mac for Poly1305 {
 
         if self.leftover > 0 {
             let want = min(16 - self.leftover, m.len());
-            for i in 0..want {
-                self.buffer[self.leftover + i] = m[i];
+
+            for (i, byte) in m.iter().cloned().enumerate().take(want) {
+                self.buffer[self.leftover + i] = byte;
             }
+
             m = &m[want..];
             self.leftover += want;
 
@@ -98,9 +100,7 @@ impl Mac for Poly1305 {
             m = &m[16..];
         }
 
-        for i in 0..m.len() {
-            self.buffer[i] = m[i];
-        }
+        self.buffer[..m.len()].copy_from_slice(m);
         self.leftover = m.len();
     }
 
@@ -139,67 +139,67 @@ impl Poly1305 {
         let mut h4 = self.h[4];
 
         // h += m
-        h0 += (read_u32_le(&m[0..4])) & 0x3ffffff;
-        h1 += (read_u32_le(&m[3..7]) >> 2) & 0x3ffffff;
-        h2 += (read_u32_le(&m[6..10]) >> 4) & 0x3ffffff;
-        h3 += (read_u32_le(&m[9..13]) >> 6) & 0x3ffffff;
+        h0 += (read_u32_le(&m[0..4])) & 0x3ff_ffff;
+        h1 += (read_u32_le(&m[3..7]) >> 2) & 0x3ff_ffff;
+        h2 += (read_u32_le(&m[6..10]) >> 4) & 0x3ff_ffff;
+        h3 += (read_u32_le(&m[9..13]) >> 6) & 0x3ff_ffff;
         h4 += (read_u32_le(&m[12..16]) >> 8) | hibit;
 
         // h *= r
-        let d0 = (h0 as u64 * r0 as u64)
-            + (h1 as u64 * s4 as u64)
-            + (h2 as u64 * s3 as u64)
-            + (h3 as u64 * s2 as u64)
-            + (h4 as u64 * s1 as u64);
+        let d0 = (u64::from(h0) * u64::from(r0))
+            + (u64::from(h1) * u64::from(s4))
+            + (u64::from(h2) * u64::from(s3))
+            + (u64::from(h3) * u64::from(s2))
+            + (u64::from(h4) * u64::from(s1));
 
-        let mut d1 = (h0 as u64 * r1 as u64)
-            + (h1 as u64 * r0 as u64)
-            + (h2 as u64 * s4 as u64)
-            + (h3 as u64 * s3 as u64)
-            + (h4 as u64 * s2 as u64);
+        let mut d1 = (u64::from(h0) * u64::from(r1))
+            + (u64::from(h1) * u64::from(r0))
+            + (u64::from(h2) * u64::from(s4))
+            + (u64::from(h3) * u64::from(s3))
+            + (u64::from(h4) * u64::from(s2));
 
-        let mut d2 = (h0 as u64 * r2 as u64)
-            + (h1 as u64 * r1 as u64)
-            + (h2 as u64 * r0 as u64)
-            + (h3 as u64 * s4 as u64)
-            + (h4 as u64 * s3 as u64);
+        let mut d2 = (u64::from(h0) * u64::from(r2))
+            + (u64::from(h1) * u64::from(r1))
+            + (u64::from(h2) * u64::from(r0))
+            + (u64::from(h3) * u64::from(s4))
+            + (u64::from(h4) * u64::from(s3));
 
-        let mut d3 = (h0 as u64 * r3 as u64)
-            + (h1 as u64 * r2 as u64)
-            + (h2 as u64 * r1 as u64)
-            + (h3 as u64 * r0 as u64)
-            + (h4 as u64 * s4 as u64);
+        let mut d3 = (u64::from(h0) * u64::from(r3))
+            + (u64::from(h1) * u64::from(r2))
+            + (u64::from(h2) * u64::from(r1))
+            + (u64::from(h3) * u64::from(r0))
+            + (u64::from(h4) * u64::from(s4));
 
-        let mut d4 = (h0 as u64 * r4 as u64)
-            + (h1 as u64 * r3 as u64)
-            + (h2 as u64 * r2 as u64)
-            + (h3 as u64 * r1 as u64)
-            + (h4 as u64 * r0 as u64);
+        let mut d4 = (u64::from(h0) * u64::from(r4))
+            + (u64::from(h1) * u64::from(r3))
+            + (u64::from(h2) * u64::from(r2))
+            + (u64::from(h3) * u64::from(r1))
+            + (u64::from(h4) * u64::from(r0));
 
         // (partial) h %= p
         let mut c: u32;
         c = (d0 >> 26) as u32;
-        h0 = d0 as u32 & 0x3ffffff;
-        d1 += c as u64;
+        h0 = d0 as u32 & 0x3ff_ffff;
+        d1 += u64::from(c);
 
         c = (d1 >> 26) as u32;
-        h1 = d1 as u32 & 0x3ffffff;
-        d2 += c as u64;
+        h1 = d1 as u32 & 0x3ff_ffff;
+        d2 += u64::from(c);
 
         c = (d2 >> 26) as u32;
-        h2 = d2 as u32 & 0x3ffffff;
-        d3 += c as u64;
+        h2 = d2 as u32 & 0x3ff_ffff;
+        d3 += u64::from(c);
 
         c = (d3 >> 26) as u32;
-        h3 = d3 as u32 & 0x3ffffff;
-        d4 += c as u64;
+        h3 = d3 as u32 & 0x3ff_ffff;
+        d4 += u64::from(c);
 
         c = (d4 >> 26) as u32;
-        h4 = d4 as u32 & 0x3ffffff;
+        h4 = d4 as u32 & 0x3ff_ffff;
         h0 += c * 5;
 
         c = h0 >> 26;
-        h0 = h0 & 0x3ffffff;
+        h0 &= 0x3ff_ffff;
         h1 += c;
 
         self.h[0] = h0;
@@ -229,41 +229,41 @@ impl Poly1305 {
 
         let mut c: u32;
         c = h1 >> 26;
-        h1 = h1 & 0x3ffffff;
+        h1 &= 0x3ff_ffff;
         h2 += c;
 
         c = h2 >> 26;
-        h2 = h2 & 0x3ffffff;
+        h2 &= 0x3ff_ffff;
         h3 += c;
 
         c = h3 >> 26;
-        h3 = h3 & 0x3ffffff;
+        h3 &= 0x3ff_ffff;
         h4 += c;
 
         c = h4 >> 26;
-        h4 = h4 & 0x3ffffff;
+        h4 &= 0x3ff_ffff;
         h0 += c * 5;
 
         c = h0 >> 26;
-        h0 = h0 & 0x3ffffff;
+        h0 &= 0x3ff_ffff;
         h1 += c;
 
         // compute h + -p
         let mut g0 = h0.wrapping_add(5);
         c = g0 >> 26;
-        g0 &= 0x3ffffff;
+        g0 &= 0x3ff_ffff;
 
         let mut g1 = h1.wrapping_add(c);
         c = g1 >> 26;
-        g1 &= 0x3ffffff;
+        g1 &= 0x3ff_ffff;
 
         let mut g2 = h2.wrapping_add(c);
         c = g2 >> 26;
-        g2 &= 0x3ffffff;
+        g2 &= 0x3ff_ffff;
 
         let mut g3 = h3.wrapping_add(c);
         c = g3 >> 26;
-        g3 &= 0x3ffffff;
+        g3 &= 0x3ff_ffff;
 
         let mut g4 = h4.wrapping_add(c).wrapping_sub(1 << 26);
 
@@ -282,23 +282,23 @@ impl Poly1305 {
         h4 = (h4 & mask) | g4;
 
         // h = h % (2^128)
-        h0 = ((h0) | (h1 << 26)) & 0xffffffff;
-        h1 = ((h1 >> 6) | (h2 << 20)) & 0xffffffff;
-        h2 = ((h2 >> 12) | (h3 << 14)) & 0xffffffff;
-        h3 = ((h3 >> 18) | (h4 << 8)) & 0xffffffff;
+        h0 |= h1 << 26;
+        h1 = (h1 >> 6) | (h2 << 20);
+        h2 = (h2 >> 12) | (h3 << 14);
+        h3 = (h3 >> 18) | (h4 << 8);
 
         // h = mac = (h + pad) % (2^128)
         let mut f: u64;
-        f = h0 as u64 + self.pad[0] as u64;
+        f = u64::from(h0) + u64::from(self.pad[0]);
         h0 = f as u32;
 
-        f = h1 as u64 + self.pad[1] as u64 + (f >> 32);
+        f = u64::from(h1) + u64::from(self.pad[1]) + (f >> 32);
         h1 = f as u32;
 
-        f = h2 as u64 + self.pad[2] as u64 + (f >> 32);
+        f = u64::from(h2) + u64::from(self.pad[2]) + (f >> 32);
         h2 = f as u32;
 
-        f = h3 as u64 + self.pad[3] as u64 + (f >> 32);
+        f = u64::from(h3) + u64::from(self.pad[3]) + (f >> 32);
         h3 = f as u32;
 
         self.h[0] = h0;
