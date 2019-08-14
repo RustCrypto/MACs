@@ -14,45 +14,50 @@
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-
-pub extern crate crypto_mac;
+#![deny(missing_docs)]
 
 // TODO: replace with `u32::{from_le_bytes, to_le_bytes}` in libcore (1.32+)
 extern crate byte_tools;
 
+#[cfg(feature = "zeroize")]
+extern crate zeroize;
+
 use byte_tools::{read_u32_le, write_u32_le};
 use core::cmp::min;
-use crypto_mac::generic_array::{
-    typenum::{U16, U32},
-    GenericArray,
-};
-pub use crypto_mac::{Mac, MacResult};
+#[cfg(feature = "zeroize")]
+use zeroize::Zeroize;
 
-#[derive(Clone, Copy)]
+/// Size of a Poly1305 key
+pub const KEY_SIZE: usize = 32;
+
+/// Size of the blocks Poly1305 acts upon
+pub const BLOCK_SIZE: usize = 16;
+
+/// The Poly1305 universal hash function.
+///
+/// Note that Poly1305 is not a traditional MAC and is single-use only
+/// (a.k.a. "one-time authenticator").
+///
+/// For this reason it doesn't impl the `crypto_mac::Mac` trait.
+#[derive(Clone)]
 pub struct Poly1305 {
     r: [u32; 5],
     h: [u32; 5],
     pad: [u32; 4],
     leftover: usize,
-    buffer: [u8; 16],
-    finalized: bool,
+    buffer: [u8; BLOCK_SIZE],
 }
 
-impl Mac for Poly1305 {
-    type OutputSize = U16;
-    type KeySize = U32;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Poly1305 {
+impl Poly1305 {
+    /// Initialize Poly1305 with the given key
+    pub fn new(key: &[u8; KEY_SIZE]) -> Poly1305 {
         let mut poly = Poly1305 {
             r: [0u32; 5],
             h: [0u32; 5],
             pad: [0u32; 4],
             leftover: 0,
-            buffer: [0u8; 16],
-            finalized: false,
+            buffer: [0u8; BLOCK_SIZE],
         };
-
-        let key = key.as_slice();
 
         // r &= 0xffffffc0ffffffc0ffffffc0fffffff
         poly.r[0] = (read_u32_le(&key[0..4])) & 0x3ff_ffff;
@@ -69,9 +74,8 @@ impl Mac for Poly1305 {
         poly
     }
 
-    #[inline]
-    fn input(&mut self, data: &[u8]) {
-        assert!(!self.finalized);
+    /// Input data into the Poly1305 universal hash function
+    pub fn input(&mut self, data: &[u8]) {
         let mut m = data;
 
         if self.leftover > 0 {
@@ -84,140 +88,43 @@ impl Mac for Poly1305 {
             m = &m[want..];
             self.leftover += want;
 
-            if self.leftover < 16 {
+            if self.leftover < BLOCK_SIZE {
                 return;
             }
 
-            // self.block(self.buffer[..]);
-            let tmp = self.buffer;
-            self.block(&tmp);
-
+            self.block(false);
             self.leftover = 0;
         }
 
-        while m.len() >= 16 {
-            self.block(&m[0..16]);
-            m = &m[16..];
+        while m.len() >= BLOCK_SIZE {
+            // TODO(tarcieri): avoid a copy here when `TryInto` is available (1.34+)
+            // We can avoid copying this data into the buffer, but do for now
+            // because it simplifies constant-time assessment.
+            self.buffer.copy_from_slice(&m[..BLOCK_SIZE]);
+            self.block(false);
+            m = &m[BLOCK_SIZE..];
         }
 
         self.buffer[..m.len()].copy_from_slice(m);
         self.leftover = m.len();
     }
 
-    fn result(mut self) -> MacResult<Self::OutputSize> {
-        let mut mac = GenericArray::default();
-        self.raw_result(mac.as_mut());
-        MacResult::new(mac)
+    /// Process input messages in a chained manner
+    pub fn chain(mut self, data: &[u8]) -> Self {
+        self.input(data);
+        self
     }
 
-    fn reset(&mut self) {
-        self.h = [0u32; 5];
-        self.leftover = 0;
-        self.finalized = false;
-    }
-}
-
-impl Poly1305 {
-    fn block(&mut self, m: &[u8]) {
-        let hibit: u32 = if self.finalized { 0 } else { 1 << 24 };
-
-        let r0 = self.r[0];
-        let r1 = self.r[1];
-        let r2 = self.r[2];
-        let r3 = self.r[3];
-        let r4 = self.r[4];
-
-        let s1 = r1 * 5;
-        let s2 = r2 * 5;
-        let s3 = r3 * 5;
-        let s4 = r4 * 5;
-
-        let mut h0 = self.h[0];
-        let mut h1 = self.h[1];
-        let mut h2 = self.h[2];
-        let mut h3 = self.h[3];
-        let mut h4 = self.h[4];
-
-        // h += m
-        h0 += (read_u32_le(&m[0..4])) & 0x3ff_ffff;
-        h1 += (read_u32_le(&m[3..7]) >> 2) & 0x3ff_ffff;
-        h2 += (read_u32_le(&m[6..10]) >> 4) & 0x3ff_ffff;
-        h3 += (read_u32_le(&m[9..13]) >> 6) & 0x3ff_ffff;
-        h4 += (read_u32_le(&m[12..16]) >> 8) | hibit;
-
-        // h *= r
-        let d0 = (u64::from(h0) * u64::from(r0))
-            + (u64::from(h1) * u64::from(s4))
-            + (u64::from(h2) * u64::from(s3))
-            + (u64::from(h3) * u64::from(s2))
-            + (u64::from(h4) * u64::from(s1));
-
-        let mut d1 = (u64::from(h0) * u64::from(r1))
-            + (u64::from(h1) * u64::from(r0))
-            + (u64::from(h2) * u64::from(s4))
-            + (u64::from(h3) * u64::from(s3))
-            + (u64::from(h4) * u64::from(s2));
-
-        let mut d2 = (u64::from(h0) * u64::from(r2))
-            + (u64::from(h1) * u64::from(r1))
-            + (u64::from(h2) * u64::from(r0))
-            + (u64::from(h3) * u64::from(s4))
-            + (u64::from(h4) * u64::from(s3));
-
-        let mut d3 = (u64::from(h0) * u64::from(r3))
-            + (u64::from(h1) * u64::from(r2))
-            + (u64::from(h2) * u64::from(r1))
-            + (u64::from(h3) * u64::from(r0))
-            + (u64::from(h4) * u64::from(s4));
-
-        let mut d4 = (u64::from(h0) * u64::from(r4))
-            + (u64::from(h1) * u64::from(r3))
-            + (u64::from(h2) * u64::from(r2))
-            + (u64::from(h3) * u64::from(r1))
-            + (u64::from(h4) * u64::from(r0));
-
-        // (partial) h %= p
-        let mut c: u32;
-        c = (d0 >> 26) as u32;
-        h0 = d0 as u32 & 0x3ff_ffff;
-        d1 += u64::from(c);
-
-        c = (d1 >> 26) as u32;
-        h1 = d1 as u32 & 0x3ff_ffff;
-        d2 += u64::from(c);
-
-        c = (d2 >> 26) as u32;
-        h2 = d2 as u32 & 0x3ff_ffff;
-        d3 += u64::from(c);
-
-        c = (d3 >> 26) as u32;
-        h3 = d3 as u32 & 0x3ff_ffff;
-        d4 += u64::from(c);
-
-        c = (d4 >> 26) as u32;
-        h4 = d4 as u32 & 0x3ff_ffff;
-        h0 += c * 5;
-
-        c = h0 >> 26;
-        h0 &= 0x3ff_ffff;
-        h1 += c;
-
-        self.h[0] = h0;
-        self.h[1] = h1;
-        self.h[2] = h2;
-        self.h[3] = h3;
-        self.h[4] = h4;
-    }
-
-    fn finish(&mut self) {
+    /// Get the hashed output
+    pub fn result(mut self) -> [u8; BLOCK_SIZE] {
         if self.leftover > 0 {
             self.buffer[self.leftover] = 1;
-            for i in self.leftover + 1..16 {
+
+            for i in (self.leftover + 1)..BLOCK_SIZE {
                 self.buffer[i] = 0;
             }
-            self.finalized = true;
-            let tmp = self.buffer;
-            self.block(&tmp);
+
+            self.block(true);
         }
 
         // fully carry h
@@ -301,20 +208,114 @@ impl Poly1305 {
         f = u64::from(h3) + u64::from(self.pad[3]) + (f >> 32);
         h3 = f as u32;
 
+        let mut output = [0u8; BLOCK_SIZE];
+        write_u32_le(&mut output[0..4], h0);
+        write_u32_le(&mut output[4..8], h1);
+        write_u32_le(&mut output[8..12], h2);
+        write_u32_le(&mut output[12..16], h3);
+
+        output
+    }
+
+    /// Compute a single block of Poly1305 using the internal buffer
+    fn block(&mut self, finished: bool) {
+        let hibit = if finished { 0 } else { 1 << 24 };
+
+        let r0 = self.r[0];
+        let r1 = self.r[1];
+        let r2 = self.r[2];
+        let r3 = self.r[3];
+        let r4 = self.r[4];
+
+        let s1 = r1 * 5;
+        let s2 = r2 * 5;
+        let s3 = r3 * 5;
+        let s4 = r4 * 5;
+
+        let mut h0 = self.h[0];
+        let mut h1 = self.h[1];
+        let mut h2 = self.h[2];
+        let mut h3 = self.h[3];
+        let mut h4 = self.h[4];
+
+        // h += m
+        h0 += (read_u32_le(&self.buffer[0..4])) & 0x3ff_ffff;
+        h1 += (read_u32_le(&self.buffer[3..7]) >> 2) & 0x3ff_ffff;
+        h2 += (read_u32_le(&self.buffer[6..10]) >> 4) & 0x3ff_ffff;
+        h3 += (read_u32_le(&self.buffer[9..13]) >> 6) & 0x3ff_ffff;
+        h4 += (read_u32_le(&self.buffer[12..16]) >> 8) | hibit;
+
+        // h *= r
+        let d0 = (u64::from(h0) * u64::from(r0))
+            + (u64::from(h1) * u64::from(s4))
+            + (u64::from(h2) * u64::from(s3))
+            + (u64::from(h3) * u64::from(s2))
+            + (u64::from(h4) * u64::from(s1));
+
+        let mut d1 = (u64::from(h0) * u64::from(r1))
+            + (u64::from(h1) * u64::from(r0))
+            + (u64::from(h2) * u64::from(s4))
+            + (u64::from(h3) * u64::from(s3))
+            + (u64::from(h4) * u64::from(s2));
+
+        let mut d2 = (u64::from(h0) * u64::from(r2))
+            + (u64::from(h1) * u64::from(r1))
+            + (u64::from(h2) * u64::from(r0))
+            + (u64::from(h3) * u64::from(s4))
+            + (u64::from(h4) * u64::from(s3));
+
+        let mut d3 = (u64::from(h0) * u64::from(r3))
+            + (u64::from(h1) * u64::from(r2))
+            + (u64::from(h2) * u64::from(r1))
+            + (u64::from(h3) * u64::from(r0))
+            + (u64::from(h4) * u64::from(s4));
+
+        let mut d4 = (u64::from(h0) * u64::from(r4))
+            + (u64::from(h1) * u64::from(r3))
+            + (u64::from(h2) * u64::from(r2))
+            + (u64::from(h3) * u64::from(r1))
+            + (u64::from(h4) * u64::from(r0));
+
+        // (partial) h %= p
+        let mut c: u32;
+        c = (d0 >> 26) as u32;
+        h0 = d0 as u32 & 0x3ff_ffff;
+        d1 += u64::from(c);
+
+        c = (d1 >> 26) as u32;
+        h1 = d1 as u32 & 0x3ff_ffff;
+        d2 += u64::from(c);
+
+        c = (d2 >> 26) as u32;
+        h2 = d2 as u32 & 0x3ff_ffff;
+        d3 += u64::from(c);
+
+        c = (d3 >> 26) as u32;
+        h3 = d3 as u32 & 0x3ff_ffff;
+        d4 += u64::from(c);
+
+        c = (d4 >> 26) as u32;
+        h4 = d4 as u32 & 0x3ff_ffff;
+        h0 += c * 5;
+
+        c = h0 >> 26;
+        h0 &= 0x3ff_ffff;
+        h1 += c;
+
         self.h[0] = h0;
         self.h[1] = h1;
         self.h[2] = h2;
         self.h[3] = h3;
+        self.h[4] = h4;
     }
+}
 
-    fn raw_result(&mut self, output: &mut [u8]) {
-        assert!(output.len() >= 16);
-        if !self.finalized {
-            self.finish();
-        }
-        write_u32_le(&mut output[0..4], self.h[0]);
-        write_u32_le(&mut output[4..8], self.h[1]);
-        write_u32_le(&mut output[8..12], self.h[2]);
-        write_u32_le(&mut output[12..16], self.h[3]);
+#[cfg(feature = "zeroize")]
+impl Drop for Poly1305 {
+    fn drop(&mut self) {
+        self.r.zeroize();
+        self.h.zeroize();
+        self.pad.zeroize();
+        self.buffer.zeroize();
     }
 }

@@ -11,7 +11,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byte-tools = "0.2"
-crypto-mac = "0.7"
+zeroize = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
 crypto-mac = { version = "0.7", features = ["dev"] }

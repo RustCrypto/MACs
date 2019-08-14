@@ -1,16 +1,7 @@
-extern crate crypto_mac;
 extern crate poly1305;
 
+use poly1305::{Poly1305, KEY_SIZE};
 use std::iter::repeat;
-
-use crypto_mac::{generic_array::GenericArray, Mac};
-use poly1305::Poly1305;
-
-fn poly1305(key: &[u8], msg: &[u8], mac: &mut [u8]) {
-    let mut poly = Poly1305::new(GenericArray::from_slice(key));
-    poly.input(msg);
-    mac.copy_from_slice(poly.result().code().as_slice());
-}
 
 #[test]
 fn test_nacl_vector() {
@@ -37,24 +28,23 @@ fn test_nacl_vector() {
         0xd9,
     ];
 
-    let mut mac = [0u8; 16];
-    poly1305(&key, &msg, &mut mac);
-    assert_eq!(&mac[..], &expected[..]);
+    assert_eq!(&Poly1305::new(&key).chain(&msg).result(), &expected[..]);
 
-    let mut poly = Poly1305::new(GenericArray::from_slice(&key));
-    poly.input(&msg[0..32]);
-    poly.input(&msg[32..96]);
-    poly.input(&msg[96..112]);
-    poly.input(&msg[112..120]);
-    poly.input(&msg[120..124]);
-    poly.input(&msg[124..126]);
-    poly.input(&msg[126..127]);
-    poly.input(&msg[127..128]);
-    poly.input(&msg[128..129]);
-    poly.input(&msg[129..130]);
-    poly.input(&msg[130..131]);
-    mac.copy_from_slice(poly.result().code().as_slice());
-    assert_eq!(&mac[..], &expected[..]);
+    let result = Poly1305::new(&key)
+        .chain(&msg[0..32])
+        .chain(&msg[32..96])
+        .chain(&msg[96..112])
+        .chain(&msg[112..120])
+        .chain(&msg[120..124])
+        .chain(&msg[124..126])
+        .chain(&msg[126..127])
+        .chain(&msg[127..128])
+        .chain(&msg[128..129])
+        .chain(&msg[129..130])
+        .chain(&msg[130..131])
+        .result();
+
+    assert_eq!(&result, &expected[..]);
 }
 
 #[test]
@@ -75,9 +65,10 @@ fn donna_self_test() {
         0x00,
     ];
 
-    let mut mac = [0u8; 16];
-    poly1305(&wrap_key, &wrap_msg, &mut mac);
-    assert_eq!(&mac[..], &wrap_mac[..]);
+    assert_eq!(
+        &Poly1305::new(&wrap_key).chain(&wrap_msg).result(),
+        &wrap_mac[..]
+    );
 
     let total_key = [
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xff, 0xfe, 0xfd, 0xfc, 0xfb, 0xfa, 0xf9, 0xff,
@@ -90,16 +81,17 @@ fn donna_self_test() {
         0x39,
     ];
 
-    let mut tpoly = Poly1305::new(GenericArray::from_slice(&total_key));
+    let mut tpoly = Poly1305::new(&total_key);
+
     for i in 0..256 {
-        let key: Vec<u8> = repeat(i as u8).take(32).collect();
+        let mut key = [0u8; KEY_SIZE];
+        key.copy_from_slice(&repeat(i as u8).take(KEY_SIZE).collect::<Vec<_>>());
+
         let msg: Vec<u8> = repeat(i as u8).take(256).collect();
-        let mut mac = [0u8; 16];
-        poly1305(&key[..], &msg[0..i], &mut mac);
-        tpoly.input(&mac);
+        tpoly.input(&Poly1305::new(&key).chain(&msg[..i]).result());
     }
-    mac.copy_from_slice(tpoly.result().code().as_slice());
-    assert_eq!(&mac[..], &total_mac[..]);
+
+    assert_eq!(&tpoly.result(), &total_mac[..]);
 }
 
 #[test]
@@ -111,15 +103,14 @@ fn test_tls_vectors() {
         0x49, 0xec, 0x78, 0x09, 0x0e, 0x48, 0x1e, 0xc6, 0xc2, 0x6b, 0x33, 0xb9, 0x1c, 0xcc, 0x03,
         0x07,
     ];
-    let mut mac = [0u8; 16];
-    poly1305(key, &msg, &mut mac);
-    assert_eq!(&mac[..], &expected[..]);
+
+    assert_eq!(&Poly1305::new(&key).chain(&msg).result(), &expected[..]);
 
     let msg = b"Hello world!";
     let expected = [
         0xa6, 0xf7, 0x45, 0x00, 0x8f, 0x81, 0xc9, 0x16, 0xa2, 0x0d, 0xcc, 0x74, 0xee, 0xf2, 0xb2,
         0xf0,
     ];
-    poly1305(key, msg, &mut mac);
-    assert_eq!(&mac[..], &expected[..]);
+
+    assert_eq!(&Poly1305::new(&key).chain(&msg[..]).result(), &expected[..]);
 }
