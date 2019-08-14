@@ -10,7 +10,7 @@ keywords = ["crypto", "mac", "umac", "universal-hashing"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-byte-tools = "0.2"
+byteorder = { version = "1", default-features = false }
 zeroize = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]

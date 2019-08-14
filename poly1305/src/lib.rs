@@ -17,12 +17,12 @@
 #![deny(missing_docs)]
 
 // TODO: replace with `u32::{from_le_bytes, to_le_bytes}` in libcore (1.32+)
-extern crate byte_tools;
+extern crate byteorder;
 
 #[cfg(feature = "zeroize")]
 extern crate zeroize;
 
-use byte_tools::{read_u32_le, write_u32_le};
+use byteorder::{ByteOrder, LE};
 use core::cmp::min;
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -60,16 +60,16 @@ impl Poly1305 {
         };
 
         // r &= 0xffffffc0ffffffc0ffffffc0fffffff
-        poly.r[0] = (read_u32_le(&key[0..4])) & 0x3ff_ffff;
-        poly.r[1] = (read_u32_le(&key[3..7]) >> 2) & 0x3ff_ff03;
-        poly.r[2] = (read_u32_le(&key[6..10]) >> 4) & 0x3ff_c0ff;
-        poly.r[3] = (read_u32_le(&key[9..13]) >> 6) & 0x3f0_3fff;
-        poly.r[4] = (read_u32_le(&key[12..16]) >> 8) & 0x00f_ffff;
+        poly.r[0] = (LE::read_u32(&key[0..4])) & 0x3ff_ffff;
+        poly.r[1] = (LE::read_u32(&key[3..7]) >> 2) & 0x3ff_ff03;
+        poly.r[2] = (LE::read_u32(&key[6..10]) >> 4) & 0x3ff_c0ff;
+        poly.r[3] = (LE::read_u32(&key[9..13]) >> 6) & 0x3f0_3fff;
+        poly.r[4] = (LE::read_u32(&key[12..16]) >> 8) & 0x00f_ffff;
 
-        poly.pad[0] = read_u32_le(&key[16..20]);
-        poly.pad[1] = read_u32_le(&key[20..24]);
-        poly.pad[2] = read_u32_le(&key[24..28]);
-        poly.pad[3] = read_u32_le(&key[28..32]);
+        poly.pad[0] = LE::read_u32(&key[16..20]);
+        poly.pad[1] = LE::read_u32(&key[20..24]);
+        poly.pad[2] = LE::read_u32(&key[24..28]);
+        poly.pad[3] = LE::read_u32(&key[28..32]);
 
         poly
     }
@@ -209,10 +209,10 @@ impl Poly1305 {
         h3 = f as u32;
 
         let mut output = [0u8; BLOCK_SIZE];
-        write_u32_le(&mut output[0..4], h0);
-        write_u32_le(&mut output[4..8], h1);
-        write_u32_le(&mut output[8..12], h2);
-        write_u32_le(&mut output[12..16], h3);
+        LE::write_u32(&mut output[0..4], h0);
+        LE::write_u32(&mut output[4..8], h1);
+        LE::write_u32(&mut output[8..12], h2);
+        LE::write_u32(&mut output[12..16], h3);
 
         output
     }
@@ -239,11 +239,11 @@ impl Poly1305 {
         let mut h4 = self.h[4];
 
         // h += m
-        h0 += (read_u32_le(&self.buffer[0..4])) & 0x3ff_ffff;
-        h1 += (read_u32_le(&self.buffer[3..7]) >> 2) & 0x3ff_ffff;
-        h2 += (read_u32_le(&self.buffer[6..10]) >> 4) & 0x3ff_ffff;
-        h3 += (read_u32_le(&self.buffer[9..13]) >> 6) & 0x3ff_ffff;
-        h4 += (read_u32_le(&self.buffer[12..16]) >> 8) | hibit;
+        h0 += (LE::read_u32(&self.buffer[0..4])) & 0x3ff_ffff;
+        h1 += (LE::read_u32(&self.buffer[3..7]) >> 2) & 0x3ff_ffff;
+        h2 += (LE::read_u32(&self.buffer[6..10]) >> 4) & 0x3ff_ffff;
+        h3 += (LE::read_u32(&self.buffer[9..13]) >> 6) & 0x3ff_ffff;
+        h4 += (LE::read_u32(&self.buffer[12..16]) >> 8) | hibit;
 
         // h *= r
         let d0 = (u64::from(h0) * u64::from(r0))
