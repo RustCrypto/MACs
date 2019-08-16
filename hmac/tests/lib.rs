@@ -4,9 +4,9 @@
 #![no_std]
 #[macro_use]
 extern crate crypto_mac;
+extern crate hmac;
 extern crate md5;
 extern crate sha2;
-extern crate hmac;
 
 use hmac::Hmac;
 

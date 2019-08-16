@@ -16,17 +16,16 @@
 //! mac.verify(&correct).unwrap();
 //! ```
 #![no_std]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-extern crate des;
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate crypto_mac;
+extern crate des;
 
+use crypto_mac::generic_array::typenum::Unsigned;
+use crypto_mac::generic_array::GenericArray;
 pub use crypto_mac::Mac;
 use crypto_mac::MacResult;
-use crypto_mac::generic_array::GenericArray;
-use crypto_mac::generic_array::typenum::Unsigned;
-use des::Des;
 use des::block_cipher_trait::BlockCipher;
+use des::Des;
 
 use core::fmt;
 
@@ -46,7 +45,11 @@ impl Mac for Daa {
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
         let cipher = Des::new(key);
-        Self { cipher, buffer: Default::default(), pos: 0 }
+        Self {
+            cipher,
+            buffer: Default::default(),
+            pos: 0,
+        }
     }
 
     #[inline]

@@ -46,17 +46,16 @@
 //! # }
 //! ```
 #![no_std]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 extern crate block_cipher_trait;
-extern crate dbl;
 pub extern crate crypto_mac;
+extern crate dbl;
 
+use block_cipher_trait::generic_array::typenum::Unsigned;
+use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
+use block_cipher_trait::BlockCipher;
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
-use block_cipher_trait::generic_array::typenum::Unsigned;
 use dbl::Dbl;
 
 use core::fmt;
@@ -65,7 +64,11 @@ type Block<N> = GenericArray<u8, N>;
 
 /// Generic CMAC instance
 #[derive(Clone)]
-pub struct Cmac<C> where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl {
+pub struct Cmac<C>
+where
+    C: BlockCipher + Clone,
+    Block<C::BlockSize>: Dbl,
+{
     cipher: C,
     key1: Block<C::BlockSize>,
     key2: Block<C::BlockSize>,
@@ -73,7 +76,11 @@ pub struct Cmac<C> where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl {
     pos: usize,
 }
 
-impl<C> Cmac<C> where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl {
+impl<C> Cmac<C>
+where
+    C: BlockCipher + Clone,
+    Block<C::BlockSize>: Dbl,
+{
     fn from_cipher(cipher: C) -> Self {
         let mut subkey = GenericArray::default();
         cipher.encrypt_block(&mut subkey);
@@ -81,7 +88,13 @@ impl<C> Cmac<C> where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl {
         let key1 = subkey.dbl();
         let key2 = key1.clone().dbl();
 
-        Cmac { cipher, key1, key2, buffer: Default::default(), pos: 0 }
+        Cmac {
+            cipher,
+            key1,
+            key2,
+            buffer: Default::default(),
+            pos: 0,
+        }
     }
 }
 
@@ -92,8 +105,11 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
     }
 }
 
-impl <C> Mac for Cmac<C>
-    where C: BlockCipher + Clone, Block<C::BlockSize>: Dbl, C::BlockSize: Clone
+impl<C> Mac for Cmac<C>
+where
+    C: BlockCipher + Clone,
+    Block<C::BlockSize>: Dbl,
+    C::BlockSize: Clone,
 {
     type OutputSize = C::BlockSize;
     type KeySize = C::KeySize;
@@ -131,9 +147,7 @@ impl <C> Mac for Cmac<C>
             self.cipher.encrypt_block(&mut self.buffer);
 
             let (l, r) = data.split_at(n);
-            let block = unsafe {
-                & *(l.as_ptr() as *const Block<C::BlockSize>)
-            };
+            let block = unsafe { &*(l.as_ptr() as *const Block<C::BlockSize>) };
             data = r;
 
             xor(&mut self.buffer, block);
@@ -169,7 +183,9 @@ impl <C> Mac for Cmac<C>
 }
 
 impl<C> fmt::Debug for Cmac<C>
-    where C: BlockCipher + fmt::Debug + Clone, Block<C::BlockSize>: Dbl
+where
+    C: BlockCipher + fmt::Debug + Clone,
+    Block<C::BlockSize>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "Cmac-{:?}", self.cipher)
