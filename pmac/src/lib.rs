@@ -46,17 +46,16 @@
 //! # }
 //! ```
 #![no_std]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 extern crate block_cipher_trait;
-extern crate dbl;
 pub extern crate crypto_mac;
+extern crate dbl;
 
+use block_cipher_trait::generic_array::typenum::Unsigned;
+use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
+use block_cipher_trait::BlockCipher;
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
-use block_cipher_trait::generic_array::typenum::Unsigned;
 use dbl::Dbl;
 
 use core::{fmt, slice};
@@ -72,8 +71,11 @@ const LC_SIZE: usize = 20;
 /// Generic PMAC instance
 #[derive(Clone)]
 pub struct Pmac<C>
-    where C: BlockCipher + Clone, C::BlockSize: Clone, C::ParBlocks: Clone,
-          Block<C::BlockSize>: Dbl
+where
+    C: BlockCipher + Clone,
+    C::BlockSize: Clone,
+    C::ParBlocks: Clone,
+    Block<C::BlockSize>: Dbl,
 {
     cipher: C,
     l_inv: Block<C::BlockSize>,
@@ -93,8 +95,11 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 }
 
 impl<C> Pmac<C>
-    where C: BlockCipher + Clone, C::BlockSize: Clone, C::ParBlocks: Clone,
-          Block<C::BlockSize>: Dbl
+where
+    C: BlockCipher + Clone,
+    C::BlockSize: Clone,
+    C::ParBlocks: Clone,
+    Block<C::BlockSize>: Dbl,
 {
     fn from_cipher(cipher: C) -> Self {
         let mut l0 = Default::default();
@@ -103,16 +108,20 @@ impl<C> Pmac<C>
         let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
         l_cache[0] = l0.clone();
         for i in 1..LC_SIZE {
-            l_cache[i] = l_cache[i-1].clone().dbl();
+            l_cache[i] = l_cache[i - 1].clone().dbl();
         }
 
         let l_inv = l0.clone().inv_dbl();
 
         Self {
-            cipher, l_inv, l_cache,
-            buffer: Default::default(), tag: Default::default(),
+            cipher,
+            l_inv,
+            l_cache,
+            buffer: Default::default(),
+            tag: Default::default(),
             offset: Default::default(),
-            pos: 0, counter: 1,
+            pos: 0,
+            counter: 1,
         }
     }
 
@@ -145,10 +154,8 @@ impl<C> Pmac<C>
     fn as_mut_bytes(&mut self) -> &mut [u8] {
         unsafe {
             slice::from_raw_parts_mut(
-                &mut self.buffer
-                    as *mut ParBlocks<C::BlockSize, C::ParBlocks>
-                    as *mut u8,
-                C::BlockSize::to_usize()*C::ParBlocks::to_usize(),
+                &mut self.buffer as *mut ParBlocks<C::BlockSize, C::ParBlocks> as *mut u8,
+                C::BlockSize::to_usize() * C::ParBlocks::to_usize(),
             )
         }
     }
@@ -159,8 +166,8 @@ impl<C> Pmac<C>
         if ntz < LC_SIZE {
             self.l_cache[ntz].clone()
         } else {
-            let mut block = self.l_cache[LC_SIZE-1].clone();
-            for _ in LC_SIZE-1..ntz {
+            let mut block = self.l_cache[LC_SIZE - 1].clone();
+            for _ in LC_SIZE - 1..ntz {
                 block = block.dbl();
             }
             block
@@ -168,14 +175,17 @@ impl<C> Pmac<C>
     }
 }
 
-impl <C> Mac for Pmac<C>
-    where C: BlockCipher + Clone, C::BlockSize: Clone, C::ParBlocks: Clone,
-          Block<C::BlockSize>: Dbl
+impl<C> Mac for Pmac<C>
+where
+    C: BlockCipher + Clone,
+    C::BlockSize: Clone,
+    C::ParBlocks: Clone,
+    Block<C::BlockSize>: Dbl,
 {
     type OutputSize = C::BlockSize;
     type KeySize = C::KeySize;
 
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self{
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
         Self::from_cipher(C::new(key))
     }
 
@@ -186,7 +196,7 @@ impl <C> Mac for Pmac<C>
 
     #[inline]
     fn input(&mut self, mut data: &[u8]) {
-        let n = C::BlockSize::to_usize()*C::ParBlocks::to_usize();
+        let n = C::BlockSize::to_usize() * C::ParBlocks::to_usize();
 
         let p = self.pos;
         let rem = n - p;
@@ -195,8 +205,7 @@ impl <C> Mac for Pmac<C>
             data = r;
             self.as_mut_bytes()[p..].clone_from_slice(l);
         } else {
-            self.as_mut_bytes()[p..p+data.len()]
-                .clone_from_slice(data);
+            self.as_mut_bytes()[p..p + data.len()].clone_from_slice(data);
             self.pos += data.len();
             return;
         }
@@ -231,7 +240,11 @@ impl <C> Mac for Pmac<C>
         let k = self.pos % bs;
         let is_full = k == 0;
         // number of full blocks excluding last
-        let n = if is_full { (self.pos/bs) - 1 } else { self.pos/bs };
+        let n = if is_full {
+            (self.pos / bs) - 1
+        } else {
+            self.pos / bs
+        };
         assert!(n < C::ParBlocks::to_usize(), "invalid buffer position");
 
         let mut offset = self.offset.clone();
@@ -254,7 +267,9 @@ impl <C> Mac for Pmac<C>
         } else {
             let mut block = self.buffer[n].clone();
             block[k] = 0x80;
-            for v in block[k+1..].iter_mut() { *v = 0; }
+            for v in block[k + 1..].iter_mut() {
+                *v = 0;
+            }
             xor(&mut tag, &block);
         }
 
@@ -272,9 +287,11 @@ impl <C> Mac for Pmac<C>
 }
 
 impl<C> fmt::Debug for Pmac<C>
-    where C: BlockCipher + Clone + fmt::Debug,
-          C::BlockSize: Clone, C::ParBlocks: Clone,
-          Block<C::BlockSize>: Dbl
+where
+    C: BlockCipher + Clone + fmt::Debug,
+    C::BlockSize: Clone,
+    C::ParBlocks: Clone,
+    Block<C::BlockSize>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "Pmac-{:?}", self.cipher)
