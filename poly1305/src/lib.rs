@@ -109,6 +109,25 @@ impl Poly1305 {
         self.leftover = m.len();
     }
 
+    /// Input data into Poly1305, first padding it to Poly1305's block size
+    /// ala the `pad16()` function described in RFC 8439 section 2.8.1:
+    /// <https://tools.ietf.org/html/rfc8439#section-2.8.1>
+    ///
+    /// This is primarily useful for implementing Salsa20 family authenticated
+    /// encryption constructions.
+    pub fn input_padded(&mut self, data: &[u8]) {
+        self.input(data);
+
+        // Pad associated data with `\0` if it's unaligned with the block size
+        let unaligned_len = data.len() % BLOCK_SIZE;
+
+        if unaligned_len != 0 {
+            let pad = [0u8; BLOCK_SIZE];
+            let pad_len = BLOCK_SIZE - unaligned_len;
+            self.input(&pad[..pad_len]);
+        }
+    }
+
     /// Process input messages in a chained manner
     pub fn chain(mut self, data: &[u8]) -> Self {
         self.input(data);
