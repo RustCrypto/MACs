@@ -28,9 +28,10 @@ fn test_nacl_vector() {
         0xd9,
     ];
 
-    assert_eq!(&Poly1305::new(&key).chain(&msg).result(), &expected[..]);
+    let result1 = Poly1305::new(&key).chain(&msg).result();
+    assert_eq!(&expected[..], result1.code().as_slice());
 
-    let result = Poly1305::new(&key)
+    let result2 = Poly1305::new(&key)
         .chain(&msg[0..32])
         .chain(&msg[32..96])
         .chain(&msg[96..112])
@@ -44,7 +45,7 @@ fn test_nacl_vector() {
         .chain(&msg[130..131])
         .result();
 
-    assert_eq!(&result, &expected[..]);
+    assert_eq!(&expected[..], result2.code().as_slice());
 }
 
 #[test]
@@ -65,10 +66,9 @@ fn donna_self_test() {
         0x00,
     ];
 
-    assert_eq!(
-        &Poly1305::new(&wrap_key).chain(&wrap_msg).result(),
-        &wrap_mac[..]
-    );
+    let result = Poly1305::new(&wrap_key).chain(&wrap_msg).result();
+
+    assert_eq!(&wrap_mac[..], result.code().as_slice());
 
     let total_key = [
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xff, 0xfe, 0xfd, 0xfc, 0xfb, 0xfa, 0xf9, 0xff,
@@ -88,29 +88,56 @@ fn donna_self_test() {
         key.copy_from_slice(&repeat(i as u8).take(KEY_SIZE).collect::<Vec<_>>());
 
         let msg: Vec<u8> = repeat(i as u8).take(256).collect();
-        tpoly.input(&Poly1305::new(&key).chain(&msg[..i]).result());
+        let tag = Poly1305::new(&key).chain(&msg[..i]).result();
+        tpoly.input(tag.code().as_slice());
     }
 
-    assert_eq!(&tpoly.result(), &total_mac[..]);
+    assert_eq!(&total_mac[..], tpoly.result().code().as_slice());
 }
 
 #[test]
 fn test_tls_vectors() {
     // from http://tools.ietf.org/html/draft-agl-tls-chacha20poly1305-04
     let key = b"this is 32-byte key for Poly1305";
-    let msg = [0u8; 32];
-    let expected = [
+
+    let msg1 = [0u8; 32];
+    let expected1 = [
         0x49, 0xec, 0x78, 0x09, 0x0e, 0x48, 0x1e, 0xc6, 0xc2, 0x6b, 0x33, 0xb9, 0x1c, 0xcc, 0x03,
         0x07,
     ];
 
-    assert_eq!(&Poly1305::new(&key).chain(&msg).result(), &expected[..]);
+    let result1 = Poly1305::new(&key).chain(&msg1).result();
+    assert_eq!(&expected1[..], result1.code().as_slice());
 
-    let msg = b"Hello world!";
-    let expected = [
+    let msg2 = b"Hello world!";
+    let expected2 = [
         0xa6, 0xf7, 0x45, 0x00, 0x8f, 0x81, 0xc9, 0x16, 0xa2, 0x0d, 0xcc, 0x74, 0xee, 0xf2, 0xb2,
         0xf0,
     ];
 
-    assert_eq!(&Poly1305::new(&key).chain(&msg[..]).result(), &expected[..]);
+    let result2 = Poly1305::new(&key).chain(&msg2[..]).result();
+    assert_eq!(&expected2[..], result2.code().as_slice());
+}
+
+#[test]
+fn padded_input() {
+    // poly1305 key and AAD from <https://tools.ietf.org/html/rfc8439#section-2.8.2>
+    let key = [
+        0x7b, 0xac, 0x2b, 0x25, 0x2d, 0xb4, 0x47, 0xaf, 0x09, 0xb6, 0x7a, 0x55, 0xa4, 0xe9, 0x55,
+        0x84, 0x0a, 0xe1, 0xd6, 0x73, 0x10, 0x75, 0xd9, 0xeb, 0x2a, 0x93, 0x75, 0x78, 0x3e, 0xd5,
+        0x53, 0xff,
+    ];
+
+    let msg = [
+        0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7,
+    ];
+
+    let expected = [
+        0xad, 0xa5, 0x6c, 0xaa, 0x48, 0xf, 0xe6, 0xf5, 0x6, 0x70, 0x39, 0x24, 0x4a, 0x3d, 0x76,
+        0xba,
+    ];
+
+    let mut poly = Poly1305::new(&key);
+    poly.input_padded(&msg);
+    assert_eq!(&expected[..], poly.result().code().as_slice());
 }
