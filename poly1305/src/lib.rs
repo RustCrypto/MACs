@@ -18,12 +18,15 @@
 
 // TODO: replace with `u32::{from_le_bytes, to_le_bytes}` in libcore (1.32+)
 extern crate byteorder;
+extern crate crypto_mac;
 
 #[cfg(feature = "zeroize")]
 extern crate zeroize;
 
 use byteorder::{ByteOrder, LE};
 use core::cmp::min;
+use crypto_mac::generic_array::{typenum::U16, GenericArray};
+use crypto_mac::MacResult;
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
@@ -32,6 +35,9 @@ pub const KEY_SIZE: usize = 32;
 
 /// Size of the blocks Poly1305 acts upon
 pub const BLOCK_SIZE: usize = 16;
+
+/// Poly1305 authentication tags
+pub type Tag = MacResult<U16>;
 
 /// The Poly1305 universal hash function.
 ///
@@ -135,7 +141,7 @@ impl Poly1305 {
     }
 
     /// Get the hashed output
-    pub fn result(mut self) -> [u8; BLOCK_SIZE] {
+    pub fn result(mut self) -> Tag {
         if self.leftover > 0 {
             self.buffer[self.leftover] = 1;
 
@@ -227,13 +233,13 @@ impl Poly1305 {
         f = u64::from(h3) + u64::from(self.pad[3]) + (f >> 32);
         h3 = f as u32;
 
-        let mut output = [0u8; BLOCK_SIZE];
-        LE::write_u32(&mut output[0..4], h0);
-        LE::write_u32(&mut output[4..8], h1);
-        LE::write_u32(&mut output[8..12], h2);
-        LE::write_u32(&mut output[12..16], h3);
+        let mut tag = GenericArray::default();
+        LE::write_u32(&mut tag[0..4], h0);
+        LE::write_u32(&mut tag[4..8], h1);
+        LE::write_u32(&mut tag[8..12], h2);
+        LE::write_u32(&mut tag[12..16], h3);
 
-        output
+        MacResult::new(tag)
     }
 
     /// Compute a single block of Poly1305 using the internal buffer

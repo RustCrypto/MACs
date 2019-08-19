@@ -12,6 +12,7 @@ readme = "README.md"
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
+crypto-mac = "0.7"
 zeroize = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
