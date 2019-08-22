@@ -70,7 +70,7 @@ use core::fmt;
 pub use crypto_mac::Mac;
 use crypto_mac::{InvalidKeyLength, MacResult};
 use digest::generic_array::sequence::GenericSequence;
-use digest::generic_array::{ArrayLength, GenericArray};
+pub use digest::generic_array::{ArrayLength, GenericArray};
 use digest::{BlockInput, FixedOutput, Input, Reset};
 
 const IPAD: u8 = 0x36;
