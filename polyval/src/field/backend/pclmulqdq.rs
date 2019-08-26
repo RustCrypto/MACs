@@ -9,7 +9,7 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-use super::Xmm;
+use super::Backend;
 use core::ops::BitXor;
 use field::clmul::{self, Clmul};
 use Block;
@@ -60,7 +60,7 @@ impl Clmul for M128i {
     }
 }
 
-impl Xmm for M128i {
+impl Backend for M128i {
     fn shuffle(self) -> Self {
         M128i(unsafe { shufpd1(self.0) })
     }

@@ -8,7 +8,7 @@ use crypto_mac::generic_array::{
     GenericArray,
 };
 use crypto_mac::MacResult;
-use poly1305::Poly1305;
+use poly1305::{Poly1305, Block};
 use std::convert::TryInto;
 
 bench!(Poly1305Mac);
@@ -42,8 +42,7 @@ impl Mac for Poly1305Mac {
     }
 
     fn result(self) -> MacResult<Self::OutputSize> {
-        let mut mac = GenericArray::default();
-        mac.copy_from_slice(&self.0.result());
-        MacResult::new(mac)
+        let tag: Block = self.0.result().into();
+        MacResult::new(tag.into())
     }
 }

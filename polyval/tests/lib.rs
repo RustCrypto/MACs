@@ -18,6 +18,6 @@ const POLYVAL_RESULT: Block = hex!("f7a3b47b846119fae5b7866cf5e5b77e");
 
 #[test]
 fn rfc_8452_test_vector() {
-    let result = Polyval::new(H).chain(X_1).chain(X_2).result();
-    assert_eq!(result.code().as_slice(), &POLYVAL_RESULT);
+    let result = Polyval::new(H).chain_block(X_1).chain_block(X_2).result();
+    assert_eq!(result.as_ref(), &POLYVAL_RESULT);
 }

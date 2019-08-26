@@ -4,6 +4,7 @@
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
+![Maintenance Status: Experimental][maintenance-image]
 [![Build Status][build-image]][build-link]
 
 [POLYVAL][1] ([RFC 8452][2]) is a [universal hash function][3] which operates
@@ -15,6 +16,14 @@ closely related to [GHASH][6] and therefore can also be used to implement
 [AES-GCM][7] at no cost to performance on little endian architectures.
 
 [Documentation][docs-link]
+
+## Security Warning
+
+No security audits of this crate have ever been performed, and it has not been
+thoroughly assessed to ensure its operation is constant-time on common CPU
+architectures.
+
+USE AT YOUR OWN RISK!
 
 ## License
 
@@ -39,6 +48,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-link]: https://docs.rs/polyval/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.32+-blue.svg
+[maintenance-image]: https://img.shields.io/badge/maintenance-experimental-blue.svg
 [build-image]: https://travis-ci.org/RustCrypto/MACs.svg?branch=master
 [build-link]: https://travis-ci.org/RustCrypto/MACs
 

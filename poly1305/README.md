@@ -3,7 +3,8 @@
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
-![Rust Version][rustc-image]
+![MSRV][rustc-image]
+![Maintenance Status: Experimental][maintenance-image]
 [![Build Status][build-image]][build-link]
 
 [Poly1305][1] is a [universal hash function][2] which, when combined with a cipher,
@@ -13,6 +14,14 @@ In practice, Poly1305 is primarily combined with ciphers from the
 [Salsa20 Family][4] such as [ChaCha20][5].
 
 [Documentation][docs-link]
+
+## Security Warning
+
+No security audits of this crate have ever been performed, and it has not been
+thoroughly assessed to ensure its operation is constant-time on common CPU
+architectures.
+
+USE AT YOUR OWN RISK!
 
 ## License
 
@@ -37,6 +46,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-link]: https://docs.rs/poly1305/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.27+-blue.svg
+[maintenance-image]: https://img.shields.io/badge/maintenance-experimental-blue.svg
 [build-image]: https://travis-ci.org/RustCrypto/MACs.svg?branch=master
 [build-link]: https://travis-ci.org/RustCrypto/MACs
 

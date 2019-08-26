@@ -50,7 +50,7 @@ pub(crate) use self::pclmulqdq::M128i;
 pub(crate) use self::soft::U64x2 as M128i;
 
 /// Trait representing the arithmetic operations we expect on the XMM registers
-pub trait Xmm:
+pub trait Backend:
     BitXor<Output = Self> + Clmul + Copy + From<Block> + Into<Block> + From<u128>
 {
     /// Swap the hi and low 64-bit halves of the register

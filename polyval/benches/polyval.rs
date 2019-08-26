@@ -74,7 +74,8 @@ impl Mac for PolyvalMac {
     }
 
     fn result(self) -> MacResult<Self::OutputSize> {
-        self.poly.result()
+        let tag: Block = self.poly.result().into();
+        MacResult::new(tag.into())
     }
 }
 
@@ -82,6 +83,6 @@ impl PolyvalMac {
     /// Input the current internal buffer into POLYVAL
     fn block(&mut self) {
         let elem = self.buffer;
-        self.poly.input(elem)
+        self.poly.input_block(elem)
     }
 }

@@ -2,7 +2,7 @@
 name = "poly1305"
 version = "0.2.0"
 authors = ["RustCrypto Developers"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "The Poly1305 universal hash function and message authentication code"
 documentation = "https://docs.rs/poly1305"
 repository = "https://github.com/RustCrypto/MACs"
@@ -12,11 +12,12 @@ readme = "README.md"
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
-crypto-mac = "0.7"
+subtle = { version = "2", default-features = false }
 zeroize = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
 crypto-mac = { version = "0.7", features = ["dev"] }
 
 [badges]
+maintenance = { status = "experimental" }
 travis-ci = { repository = "RustCrypto/hashes" }

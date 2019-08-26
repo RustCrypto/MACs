@@ -5,7 +5,7 @@
 // TODO(tarcieri): performance-oriented constant-time implementation
 // See: <https://bearssl.org/gitweb/?p=BearSSL;a=blob;f=src/hash/ghash_ctmul64.c>
 
-use super::Xmm;
+use super::Backend;
 use byteorder::{ByteOrder, LE};
 use core::ops::BitXor;
 use field::clmul::{self, Clmul};
@@ -86,7 +86,7 @@ impl Clmul for U64x2 {
     }
 }
 
-impl Xmm for U64x2 {
+impl Backend for U64x2 {
     fn shuffle(self) -> Self {
         U64x2([self.0[1], self.0[0]])
     }

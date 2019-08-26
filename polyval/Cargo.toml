@@ -15,7 +15,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byteorder = { version = "1", optional = true, default-features = false }
-crypto-mac = "0.7"
+subtle = { version = "2", default-features = false }
 
 [dev-dependencies]
 crypto-mac = { version = "0.7", features = ["dev"] }
@@ -25,6 +25,7 @@ hex-literal = "0.1"
 insecure-soft = ["byteorder"]
 
 [badges]
+maintenance = { status = "experimental" }
 travis-ci = { repository = "RustCrypto/hashes" }
 
 [package.metadata.docs.rs]
