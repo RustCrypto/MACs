@@ -4,6 +4,9 @@ sudo: required
 
 matrix:
   include:
+    - env: NAME="hmac MSRV"
+      rust: 1.21.0
+      script: cd hmac && cargo test --verbose
     - rust: 1.27.0
       script: cargo test --verbose --all
     - rust: stable
