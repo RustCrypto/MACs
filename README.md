@@ -11,7 +11,8 @@ Collection of [Message Authentication Code][1] (MAC) algorithms written in pure 
 | [DAA](https://en.wikipedia.org/wiki/Data_Authentication_Algorithm) | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) |
 | [HMAC](https://en.wikipedia.org/wiki/HMAC) | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) |
 | [PMAC](https://en.wikipedia.org/wiki/PMAC_(cryptography)) | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) |
-| [Poly1305](https://en.wikipedia.org/wiki/Poly1305) | [![crates.io](https://img.shields.io/crates/v/poly1305.svg)](https://crates.io/crates/poly1305) | [![Documentation](https://docs.rs/poly1305/badge.svg)](https://docs.rs/poly1305/) | 
+| [Poly1305](https://en.wikipedia.org/wiki/Poly1305) | [![crates.io](https://img.shields.io/crates/v/poly1305.svg)](https://crates.io/crates/poly1305) | [![Documentation](https://docs.rs/poly1305/badge.svg)](https://docs.rs/poly1305/) |
+| [POLYVAL](https://tools.ietf.org/html/rfc8452#section-3) | [![crates.io](https://img.shields.io/crates/v/polyval.svg)](https://crates.io/crates/polyval) | [![Documentation](https://docs.rs/polyval/badge.svg)](https://docs.rs/polyval/) |
 
 ## License
 
