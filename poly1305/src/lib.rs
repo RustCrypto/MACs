@@ -18,26 +18,28 @@
 
 // TODO: replace with `u32::{from_le_bytes, to_le_bytes}` in libcore (1.32+)
 extern crate byteorder;
-extern crate crypto_mac;
+pub extern crate subtle;
 
 #[cfg(feature = "zeroize")]
 extern crate zeroize;
 
 use byteorder::{ByteOrder, LE};
 use core::cmp::min;
-use crypto_mac::generic_array::{typenum::U16, GenericArray};
-use crypto_mac::MacResult;
+use subtle::{Choice, ConstantTimeEq};
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
 /// Size of a Poly1305 key
 pub const KEY_SIZE: usize = 32;
 
+/// Poly1305 keys (32-bytes)
+pub type Key = [u8; KEY_SIZE];
+
 /// Size of the blocks Poly1305 acts upon
 pub const BLOCK_SIZE: usize = 16;
 
-/// Poly1305 authentication tags
-pub type Tag = MacResult<U16>;
+/// Poly1305 blocks (16-bytes)
+pub type Block = [u8; BLOCK_SIZE];
 
 /// The Poly1305 universal hash function.
 ///
@@ -51,18 +53,18 @@ pub struct Poly1305 {
     h: [u32; 5],
     pad: [u32; 4],
     leftover: usize,
-    buffer: [u8; BLOCK_SIZE],
+    buffer: Block,
 }
 
 impl Poly1305 {
     /// Initialize Poly1305 with the given key
-    pub fn new(key: &[u8; KEY_SIZE]) -> Poly1305 {
+    pub fn new(key: &Key) -> Poly1305 {
         let mut poly = Poly1305 {
             r: [0u32; 5],
             h: [0u32; 5],
             pad: [0u32; 4],
             leftover: 0,
-            buffer: [0u8; BLOCK_SIZE],
+            buffer: Block::default(),
         };
 
         // r &= 0xffffffc0ffffffc0ffffffc0fffffff
@@ -128,7 +130,7 @@ impl Poly1305 {
         let unaligned_len = data.len() % BLOCK_SIZE;
 
         if unaligned_len != 0 {
-            let pad = [0u8; BLOCK_SIZE];
+            let pad = Block::default();
             let pad_len = BLOCK_SIZE - unaligned_len;
             self.input(&pad[..pad_len]);
         }
@@ -233,13 +235,13 @@ impl Poly1305 {
         f = u64::from(h3) + u64::from(self.pad[3]) + (f >> 32);
         h3 = f as u32;
 
-        let mut tag = GenericArray::default();
+        let mut tag = Block::default();
         LE::write_u32(&mut tag[0..4], h0);
         LE::write_u32(&mut tag[4..8], h1);
         LE::write_u32(&mut tag[8..12], h2);
         LE::write_u32(&mut tag[12..16], h3);
 
-        MacResult::new(tag)
+        Tag::new(tag)
     }
 
     /// Compute a single block of Poly1305 using the internal buffer
@@ -342,5 +344,33 @@ impl Drop for Poly1305 {
         self.h.zeroize();
         self.pad.zeroize();
         self.buffer.zeroize();
+    }
+}
+
+/// Poly1305 authentication tags
+pub struct Tag(Block);
+
+impl Tag {
+    /// Create a new Poly1305 authentication tag
+    fn new(tag: Block) -> Self {
+        Tag(tag)
+    }
+}
+
+impl AsRef<Block> for Tag {
+    fn as_ref(&self) -> &Block {
+        &self.0
+    }
+}
+
+impl ConstantTimeEq for Tag {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.0.ct_eq(other.0.as_ref())
+    }
+}
+
+impl From<Tag> for Block {
+    fn from(tag: Tag) -> Block {
+        tag.0
     }
 }
