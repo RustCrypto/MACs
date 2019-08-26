@@ -2,7 +2,7 @@
 name = "polyval"
 version = "0.0.0"
 authors = ["RustCrypto Developers"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = """
 POLYVAL is a GHASH-like universal hash over GF(2^128) useful for constructing
 a Message Authentication Code (MAC)

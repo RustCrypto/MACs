@@ -38,7 +38,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/polyval/badge.svg
 [docs-link]: https://docs.rs/polyval/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.27+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.32+-blue.svg
 [build-image]: https://travis-ci.org/RustCrypto/MACs.svg?branch=master
 [build-link]: https://travis-ci.org/RustCrypto/MACs
 

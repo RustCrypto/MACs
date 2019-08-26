@@ -29,8 +29,8 @@ matrix:
         - cargo build --verbose --all --exclude=polyval --tests
 
     # polyval presently needs either RUSTFLAGS or non-default features
-    - name: "Rust: 1.27.0 (polyval)"
-      rust: 1.27.0
+    - name: "Rust: 1.32.0 (polyval)"
+      rust: 1.32.0
       script: ./test_polyval.sh
     - name: "Rust: stable (polyval)"
       rust: stable
