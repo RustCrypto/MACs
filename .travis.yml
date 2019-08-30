@@ -8,11 +8,11 @@ matrix:
       rust: 1.21.0
       script: cd hmac && cargo test --verbose
     - rust: 1.27.0
-      script: cargo test --verbose --all --exclude=polyval
+      script: cargo test --verbose --all
     - rust: stable
-      script: cargo test --verbose --all --exclude=polyval
+      script: cargo test --verbose --all
     - rust: nightly
-      script: cargo test --verbose --all --exclude=polyval
+      script: cargo test --verbose --all
 
     - env: TARGET=i686-unknown-linux-gnu
       rust: stable
@@ -26,20 +26,12 @@ matrix:
       rust: stable
       install: rustup target install $TARGET
       script:
-        - cargo build --verbose --all --exclude=polyval --tests
-
-    # polyval presently needs either RUSTFLAGS or non-default features
-    - name: "Rust: 1.32.0 (polyval)"
-      rust: 1.32.0
-      script: ./test_polyval.sh
-    - name: "Rust: stable (polyval)"
-      rust: stable
-      script: ./test_polyval.sh
+        - cargo build --verbose --all --tests
 
 install:
   - cargo install cross || true
 
 script:
-  - cross test --verbose --all --exclude=polyval --target $TARGET
+  - cross test --verbose --all --target $TARGET
 
 cache: cargo
