@@ -21,7 +21,7 @@
 //! // `result` has type `MacResult` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.result();
-//! // To get underlying array use `code` method, but be carefull, since
+//! // To get underlying array use `code` method, but be careful, since
 //! // incorrect use of the code value may permit timing attacks which defeat
 //! // the security provided by the `MacResult`
 //! let code_bytes = result.code();
