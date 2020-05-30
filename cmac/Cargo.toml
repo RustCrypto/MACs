@@ -1,13 +1,14 @@
 [package]
 name = "cmac"
 version = "0.2.0"
+description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
-description = "Generic implementation of Cipher-based Message Authentication Code"
 documentation = "https://docs.rs/cmac"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "cmac", "omac"]
 categories = ["cryptography", "no-std"]
+readme = "README.md"
 
 [dependencies]
 crypto-mac = "0.7"

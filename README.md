@@ -1,16 +1,15 @@
 # RustCrypto: Message Authentication Codes
-[![Build Status](https://travis-ci.org/RustCrypto/MACs.svg?branch=master)](https://travis-ci.org/RustCrypto/MACs) [![dependency status](https://deps.rs/repo/github/RustCrypto/MACs/status.svg)](https://deps.rs/repo/github/RustCrypto/MACs)
 
 Collection of [Message Authentication Code][1] (MAC) algorithms written in pure Rust.
 
-## Algorithms
+## Crates
 
-| Name | Crates.io | Documentation |
-| ---- |:---------:| :------------:|
-| [CMAC](https://en.wikipedia.org/wiki/One-key_MAC) | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) |
-| [DAA](https://en.wikipedia.org/wiki/Data_Authentication_Algorithm) | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) |
-| [HMAC](https://en.wikipedia.org/wiki/HMAC) | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) |
-| [PMAC](https://en.wikipedia.org/wiki/PMAC_(cryptography)) | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) |
+| Name   | Algorithm | Crates.io     | Documentation | Build Status |
+|--------|-----------|---------------|---------------|--------------|
+| `cmac` | [CMAC]    | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | ![Build](https://github.com/RustCrypto/MACs/workflows/cmac/badge.svg?branch=master&event=push)
+| `daa`  | [DAA]     | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) | ![Build](https://github.com/RustCrypto/MACs/workflows/daa/badge.svg?branch=master&event=push)
+| `hmac` | [HMAC]    | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) | ![Build](https://github.com/RustCrypto/MACs/workflows/hmac/badge.svg?branch=master&event=push)
+| `pmac` | [PMAC]    | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | ![Build](https://github.com/RustCrypto/MACs/workflows/pmac/badge.svg?branch=master&event=push)
 
 ## License
 
@@ -26,4 +25,14 @@ at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license
 
+[//]: # (footnotes)
+
 [1]: https://en.wikipedia.org/wiki/Message_authentication_code
+
+[//]: # (algorithms)
+
+[CMAC]: https://en.wikipedia.org/wiki/One-key_MAC
+[DAA]: https://en.wikipedia.org/wiki/Data_Authentication_Algorithm
+[HMAC]: https://en.wikipedia.org/wiki/HMAC
+[PMAC]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
+
