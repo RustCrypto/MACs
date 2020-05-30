@@ -7,9 +7,11 @@ on:
       - "Cargo.*"
   push:
     branches: master
-    paths:
-      - "hmac/**"
-      - "Cargo.*"
+
+
+defaults:
+  run:
+    working-directory: hmac
 
 env:
   CARGO_INCREMENTAL: 0
@@ -35,7 +37,7 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
-        working-directory: hmac
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -51,4 +53,3 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
       - run: cargo test --release
-        working-directory: hmac
