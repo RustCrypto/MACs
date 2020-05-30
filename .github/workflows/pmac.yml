@@ -7,9 +7,10 @@ on:
       - "Cargo.*"
   push:
     branches: master
-    paths:
-      - "pmac/**"
-      - "Cargo.*"
+
+defaults:
+  run:
+    working-directory: pmac
 
 env:
   CARGO_INCREMENTAL: 0
@@ -35,7 +36,7 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
-        working-directory: pmac
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -51,4 +52,3 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
       - run: cargo test --release
-        working-directory: pmac

@@ -5,11 +5,10 @@ on:
     paths:
       - "cmac/**"
       - "Cargo.*"
-  push:
-    branches: master
-    paths:
-      - "cmac/**"
-      - "Cargo.*"
+
+defaults:
+  run:
+    working-directory: cmac
 
 env:
   CARGO_INCREMENTAL: 0
@@ -35,7 +34,7 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
-        working-directory: cmac
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -51,4 +50,3 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
       - run: cargo test --release
-        working-directory: cmac
