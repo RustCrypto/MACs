@@ -1,12 +1,13 @@
 [package]
 name = "daa"
 version = "0.1.0"
+description = "Implementation of Data Authentication Algorithm (DAA)"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
-description = "Implementation of Data Authentication Algorithm (DAA)"
 documentation = "https://docs.rs/daa"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "daa", "fips"]
+readme = "README.md"
 
 [dependencies]
 crypto-mac = "0.7"
