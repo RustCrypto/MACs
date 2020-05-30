@@ -163,7 +163,7 @@ where
     }
 
     #[inline]
-    fn result(mut self) -> MacResult<Self::OutputSize> {
+    fn result(self) -> MacResult<Self::OutputSize> {
         let n = C::BlockSize::to_usize();
         let mut buf = self.buffer.clone();
         if self.pos == n {

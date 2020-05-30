@@ -17,6 +17,3 @@ dbl = "0.2"
 [dev-dependencies]
 crypto-mac = { version = "0.7", features = ["dev"] }
 aes = "0.3"
-
-[badges]
-travis-ci = { repository = "RustCrypto/hashes" }
