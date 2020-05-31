@@ -20,6 +20,7 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
+#![allow(clippy::needless_range_loop)]
 
 pub use crypto_mac::{self, Mac, NewMac};
 
@@ -88,7 +89,7 @@ impl Mac for Daa {
             }
         }
 
-        if data.len() != 0 {
+        if !data.is_empty() {
             self.cipher.encrypt_block(&mut self.buffer);
             for (a, b) in self.buffer.iter_mut().zip(data) {
                 *a ^= *b;

@@ -103,7 +103,7 @@ where
             l_cache[i] = l_cache[i - 1].clone().dbl();
         }
 
-        let l_inv = l0.clone().inv_dbl();
+        let l_inv = l0.inv_dbl();
 
         Self {
             cipher,
@@ -222,7 +222,7 @@ where
 
         self.pos = n;
 
-        if data.len() != 0 {
+        if !data.is_empty() {
             self.process_buffer();
             self.as_mut_bytes()[..data.len()].clone_from_slice(data);
             self.pos = data.len();
