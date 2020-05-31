@@ -1,13 +1,10 @@
 //! Test vectors from:
 //! - md5: RFC 2104, plus wiki test
 //! - sha2: RFC 4231
-#![no_std]
-#[macro_use]
-extern crate crypto_mac;
-extern crate hmac;
-extern crate md5;
-extern crate sha2;
 
+#![no_std]
+
+use crypto_mac::new_test;
 use hmac::Hmac;
 
 new_test!(hmac_md5, "md5", Hmac<md5::Md5>);
