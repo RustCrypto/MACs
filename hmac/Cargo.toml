@@ -9,12 +9,13 @@ repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "hmac", "digest"]
 categories = ["cryptography", "no-std"]
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
-crypto-mac = "0.7"
-digest = "0.8"
+crypto-mac = "= 0.8.0-pre"
+digest = "= 0.9.0-pre"
 
 [dev-dependencies]
-crypto-mac = { version = "0.7", features = ["dev"] }
-md-5 = { version = "0.8", default-features = false }
-sha2 = { version = "0.8", default-features = false }
+crypto-mac = { version = "0.8.0-pre", features = ["dev"] }
+md-5 = { version = "0.9.0-pre", default-features = false }
+sha2 = { version = "0.9.0-pre", default-features = false }

@@ -40,14 +40,13 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0940dc441f31689269e10ac70eb1002a3a1d3ad1390e030043662eb7fe4688b"
+version = "0.8.0-pre"
+source = "git+https://github.com/RustCrypto/utils#a0e48018d38545935152cd1715382bc1984b5699"
 dependencies = [
  "block-padding",
  "byte-tools",
  "byteorder",
- "generic-array 0.12.3",
+ "generic-array",
 ]
 
 [[package]]
@@ -55,7 +54,7 @@ name = "block-cipher"
 version = "0.7.0-pre"
 source = "git+https://github.com/RustCrypto/traits#f1ae0b0bf1187f0c0a90bd07caa66710240daca5"
 dependencies = [
- "generic-array 0.14.1",
+ "generic-array",
 ]
 
 [[package]]
@@ -85,19 +84,8 @@ version = "0.2.0"
 dependencies = [
  "aes",
  "block-cipher",
- "crypto-mac 0.8.0-pre",
+ "crypto-mac",
  "dbl",
-]
-
-[[package]]
-name = "crypto-mac"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4434400df11d95d556bac068ddfedd482915eb18fe8bea89bc80b6e4b1c179e5"
-dependencies = [
- "blobby",
- "generic-array 0.12.3",
- "subtle 1.0.0",
 ]
 
 [[package]]
@@ -106,15 +94,15 @@ version = "0.8.0-pre"
 source = "git+https://github.com/RustCrypto/traits#f1ae0b0bf1187f0c0a90bd07caa66710240daca5"
 dependencies = [
  "blobby",
- "generic-array 0.14.1",
- "subtle 2.2.3",
+ "generic-array",
+ "subtle",
 ]
 
 [[package]]
 name = "daa"
 version = "0.1.0"
 dependencies = [
- "crypto-mac 0.8.0-pre",
+ "crypto-mac",
  "des",
 ]
 
@@ -123,7 +111,7 @@ name = "dbl"
 version = "0.3.0-pre"
 source = "git+https://github.com/RustCrypto/utils#a0e48018d38545935152cd1715382bc1984b5699"
 dependencies = [
- "generic-array 0.14.1",
+ "generic-array",
 ]
 
 [[package]]
@@ -138,11 +126,10 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3d0c8c8752312f9713efd397ff63acb9f85585afbf179282e720e7704954dd5"
+version = "0.9.0-pre"
+source = "git+https://github.com/RustCrypto/traits#f1ae0b0bf1187f0c0a90bd07caa66710240daca5"
 dependencies = [
- "generic-array 0.12.3",
+ "generic-array",
 ]
 
 [[package]]
@@ -150,15 +137,6 @@ name = "fake-simd"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
-
-[[package]]
-name = "generic-array"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c68f0274ae0e023facc3c97b2e00f076be70e254bc851d972503b328db79b2ec"
-dependencies = [
- "typenum",
-]
 
 [[package]]
 name = "generic-array"
@@ -173,7 +151,7 @@ dependencies = [
 name = "hmac"
 version = "0.7.1"
 dependencies = [
- "crypto-mac 0.7.0",
+ "crypto-mac",
  "digest",
  "md-5",
  "sha2",
@@ -181,9 +159,8 @@ dependencies = [
 
 [[package]]
 name = "md-5"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a18af3dcaf2b0219366cdb4e2af65a6101457b415c3d1a5c71dd9c2b7c77b9c8"
+version = "0.9.0-pre"
+source = "git+https://github.com/RustCrypto/hashes#347f13f9538ddbb10455be90ee8e7773fe605649"
 dependencies = [
  "block-buffer",
  "digest",
@@ -202,27 +179,20 @@ version = "0.2.0"
 dependencies = [
  "aes",
  "block-cipher",
- "crypto-mac 0.8.0-pre",
+ "crypto-mac",
  "dbl",
 ]
 
 [[package]]
 name = "sha2"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a256f46ea78a0c0d9ff00077504903ac881a1dafdc20da66545699e7776b3e69"
+version = "0.9.0-pre"
+source = "git+https://github.com/RustCrypto/hashes#347f13f9538ddbb10455be90ee8e7773fe605649"
 dependencies = [
  "block-buffer",
  "digest",
  "fake-simd",
  "opaque-debug",
 ]
-
-[[package]]
-name = "subtle"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d67a5a62ba6e01cb2192ff309324cb4875d0c451d55fe2319433abe7a05a8ee"
 
 [[package]]
 name = "subtle"
