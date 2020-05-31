@@ -36,8 +36,11 @@
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
+
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
 
 pub use crypto_mac::{self, Mac, NewMac};
 
@@ -137,10 +140,11 @@ where
         }
     }
 
-    /// Represent internall buffer as bytes slice (hopefully in future we will
+    /// Represent internal buffer as bytes slice (hopefully in future we will
     /// be able to switch `&mut [u8]` to `&mut [u8; BlockSize*ParBlocks]`)
     #[inline(always)]
     fn as_mut_bytes(&mut self) -> &mut [u8] {
+        #[allow(unsafe_code)]
         unsafe {
             slice::from_raw_parts_mut(
                 &mut self.buffer as *mut ParBlocks<C::BlockSize, C::ParBlocks> as *mut u8,

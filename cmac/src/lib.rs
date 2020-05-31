@@ -36,8 +36,11 @@
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
+
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
 
 pub use crypto_mac::{self, Mac, NewMac};
 
@@ -137,7 +140,7 @@ where
             self.cipher.encrypt_block(&mut self.buffer);
 
             let (l, r) = data.split_at(n);
-            let block = unsafe { &*(l.as_ptr() as *const Block<C::BlockSize>) };
+            let block = GenericArray::from_slice(l);
             data = r;
 
             xor(&mut self.buffer, block);
