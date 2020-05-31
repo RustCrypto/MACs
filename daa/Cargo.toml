@@ -8,10 +8,11 @@ documentation = "https://docs.rs/daa"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "daa", "fips"]
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
-crypto-mac = "0.7"
-des = "0.2"
+crypto-mac = "= 0.8.0-pre"
+des = "= 0.4.0-pre"
 
 [dev-dependencies]
-crypto-mac = { version = "0.7", features = ["dev"] }
+crypto-mac = { version = "= 0.8.0-pre", features = ["dev"] }
