@@ -7,55 +7,44 @@
 //! To get the authentication code:
 //!
 //! ```rust
-//! extern crate cmac;
-//! extern crate aes;
-//!
 //! use aes::Aes128;
-//! use cmac::{Cmac, Mac};
+//! use cmac::{Cmac, Mac, NewMac};
 //!
-//! # fn main() {
 //! // Create `Mac` trait implementation, namely CMAC-AES128
 //! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
-//! mac.input(b"input message");
+//! mac.update(b"input message");
 //!
-//! // `result` has type `MacResult` which is a thin wrapper around array of
+//! // `result` has type `Output` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.result();
-//! // To get underlying array use `code` method, but be careful, since
-//! // incorrect use of the code value may permit timing attacks which defeat
-//! // the security provided by the `MacResult`
-//! let code_bytes = result.code();
-//! # }
+//! // To get underlying array use the `into_bytes` method, but be careful,
+//! // since incorrect use of the code value may permit timing attacks which
+//! // defeat the security provided by the `Output`
+//! let code_bytes = result.into_bytes();
 //! ```
 //!
 //! To verify the message:
 //!
 //! ```rust
-//! # extern crate cmac;
-//! # extern crate aes;
 //! # use aes::Aes128;
-//! # use cmac::{Cmac, Mac};
-//! # fn main() {
+//! # use cmac::{Cmac, Mac, NewMac};
 //! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
 //!
-//! mac.input(b"input message");
+//! mac.update(b"input message");
 //!
-//! # let code_bytes = mac.clone().result().code();
+//! # let tag_bytes = mac.clone().result().into_bytes();
 //! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
-//! mac.verify(&code_bytes).unwrap();
-//! # }
+//! mac.verify(&tag_bytes).unwrap();
 //! ```
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-extern crate block_cipher_trait;
-pub extern crate crypto_mac;
-extern crate dbl;
 
-use block_cipher_trait::generic_array::typenum::Unsigned;
-use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
-use block_cipher_trait::BlockCipher;
-pub use crypto_mac::Mac;
-use crypto_mac::{InvalidKeyLength, MacResult};
+pub use crypto_mac::{self, Mac, NewMac};
+
+use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::generic_array::{ArrayLength, GenericArray};
+use block_cipher::{BlockCipher, NewBlockCipher};
+use crypto_mac::{InvalidKeyLength, Output};
 use dbl::Dbl;
 
 use core::fmt;
@@ -98,20 +87,12 @@ where
     }
 }
 
-#[inline(always)]
-fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
-    for i in 0..L::to_usize() {
-        buf[i] ^= data[i];
-    }
-}
-
-impl<C> Mac for Cmac<C>
+impl<C> NewMac for Cmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + NewBlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
     C::BlockSize: Clone,
 {
-    type OutputSize = C::BlockSize;
     type KeySize = C::KeySize;
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
@@ -122,9 +103,18 @@ where
         let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
         Ok(Self::from_cipher(cipher))
     }
+}
+
+impl<C> Mac for Cmac<C>
+where
+    C: BlockCipher + Clone,
+    Block<C::BlockSize>: Dbl,
+    C::BlockSize: Clone,
+{
+    type OutputSize = C::BlockSize;
 
     #[inline]
-    fn input(&mut self, mut data: &[u8]) {
+    fn update(&mut self, mut data: &[u8]) {
         let n = C::BlockSize::to_usize();
 
         let rem = n - self.pos;
@@ -153,7 +143,7 @@ where
             xor(&mut self.buffer, block);
         }
 
-        if data.len() != 0 {
+        if !data.is_empty() {
             self.cipher.encrypt_block(&mut self.buffer);
             for (a, b) in self.buffer.iter_mut().zip(data) {
                 *a ^= *b;
@@ -163,7 +153,7 @@ where
     }
 
     #[inline]
-    fn result(self) -> MacResult<Self::OutputSize> {
+    fn result(self) -> Output<Self> {
         let n = C::BlockSize::to_usize();
         let mut buf = self.buffer.clone();
         if self.pos == n {
@@ -173,7 +163,7 @@ where
             buf[self.pos] ^= 0x80;
         }
         self.cipher.encrypt_block(&mut buf);
-        MacResult::new(buf)
+        Output::new(buf)
     }
 
     fn reset(&mut self) {
@@ -187,7 +177,14 @@ where
     C: BlockCipher + fmt::Debug + Clone,
     Block<C::BlockSize>: Dbl,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "Cmac-{:?}", self.cipher)
+    }
+}
+
+#[inline(always)]
+fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
+    for i in 0..L::to_usize() {
+        buf[i] ^= data[i];
     }
 }
