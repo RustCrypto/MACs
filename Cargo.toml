@@ -11,3 +11,4 @@ aes = { git = "https://github.com/RustCrypto/block-ciphers" }
 block-cipher = { git = "https://github.com/RustCrypto/traits" }
 crypto-mac = { git = "https://github.com/RustCrypto/traits" }
 dbl = { git = "https://github.com/RustCrypto/utils" }
+des = { git = "https://github.com/RustCrypto/block-ciphers" }

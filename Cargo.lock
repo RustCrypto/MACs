@@ -155,7 +155,7 @@ dependencies = [
 name = "daa"
 version = "0.1.0"
 dependencies = [
- "crypto-mac 0.7.0",
+ "crypto-mac 0.8.0-pre",
  "des",
 ]
 
@@ -178,11 +178,10 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24fca0626eef3fdddbad21650dba1dda86c244ee7d5e650aba0bd3f002a7208c"
+version = "0.4.0-pre"
+source = "git+https://github.com/RustCrypto/block-ciphers#aa14e7b919a8d4e304ace0af3a487539e1ff5ef8"
 dependencies = [
- "block-cipher-trait",
+ "block-cipher",
  "byteorder",
  "opaque-debug",
 ]
