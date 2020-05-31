@@ -18,9 +18,9 @@
 //! // bytes for providing constant time equality check
 //! let result = mac.result();
 //! // To get underlying array use the `into_bytes` method, but be careful,
-//! // since incorrect use of the code value may permit timing attacks which
-//! // defeat the security provided by the `Output`
-//! let code_bytes = result.into_bytes();
+//! // since incorrect use of the tag value may permit timing attacks which
+//! // defeat the security provided by the `Output` wrapper
+//! let tag_bytes = result.into_bytes();
 //! ```
 //!
 //! To verify the message:
@@ -33,7 +33,7 @@
 //! mac.update(b"input message");
 //!
 //! # let tag_bytes = mac.clone().result().into_bytes();
-//! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
+//! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
 #![no_std]

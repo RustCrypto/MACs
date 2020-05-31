@@ -2,8 +2,6 @@
 #![no_std]
 #[macro_use]
 extern crate crypto_mac;
-extern crate aes;
-extern crate pmac;
 
 use aes::{Aes128, Aes192, Aes256};
 use pmac::Pmac;
