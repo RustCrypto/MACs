@@ -5,6 +5,8 @@ on:
     paths:
       - "cmac/**"
       - "Cargo.*"
+  push:
+    branches: master
 
 defaults:
   run:
