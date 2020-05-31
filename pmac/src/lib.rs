@@ -7,55 +7,44 @@
 //! To get the authentication code:
 //!
 //! ```rust
-//! extern crate pmac;
-//! extern crate aes;
-//!
 //! use aes::Aes128;
-//! use pmac::{Pmac, Mac};
+//! use pmac::{Pmac, Mac, NewMac};
 //!
-//! # fn main() {
 //! // Create `Mac` trait implementation, namely PMAC-AES128
 //! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
-//! mac.input(b"input message");
+//! mac.update(b"input message");
 //!
-//! // `result` has type `MacResult` which is a thin wrapper around array of
+//! // `result` has type `Output` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.result();
-//! // To get underlying array use `code` method, but be careful, since
-//! // incorrect use of the code value may permit timing attacks which defeat
-//! // the security provided by the `MacResult`
-//! let code_bytes = result.code();
-//! # }
+//! // To get underlying array use `into_bytes` method, but be careful, since
+//! // incorrect use of the tag value may permit timing attacks which defeat
+//! // the security provided by the `Output` wrapper
+//! let tag_bytes = result.into_bytes();
 //! ```
 //!
 //! To verify the message:
 //!
 //! ```rust
-//! # extern crate pmac;
-//! # extern crate aes;
 //! # use aes::Aes128;
-//! # use pmac::{Pmac, Mac};
-//! # fn main() {
+//! # use pmac::{Pmac, Mac, NewMac};
 //! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
 //!
-//! mac.input(b"input message");
+//! mac.update(b"input message");
 //!
-//! # let code_bytes = mac.clone().result().code();
-//! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
-//! mac.verify(&code_bytes).unwrap();
-//! # }
+//! # let tag_bytes = mac.clone().result().into_bytes();
+//! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
+//! mac.verify(&tag_bytes).unwrap();
 //! ```
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-extern crate block_cipher_trait;
-pub extern crate crypto_mac;
-extern crate dbl;
 
-use block_cipher_trait::generic_array::typenum::Unsigned;
-use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
-use block_cipher_trait::BlockCipher;
-pub use crypto_mac::Mac;
-use crypto_mac::{InvalidKeyLength, MacResult};
+pub use crypto_mac::{self, Mac, NewMac};
+
+use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::generic_array::{ArrayLength, GenericArray};
+use block_cipher::{BlockCipher, NewBlockCipher};
+use crypto_mac::{InvalidKeyLength, Output};
 use dbl::Dbl;
 
 use core::{fmt, slice};
@@ -175,14 +164,13 @@ where
     }
 }
 
-impl<C> Mac for Pmac<C>
+impl<C> NewMac for Pmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + NewBlockCipher + Clone,
     C::BlockSize: Clone,
     C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
-    type OutputSize = C::BlockSize;
     type KeySize = C::KeySize;
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
@@ -193,9 +181,19 @@ where
         let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
         Ok(Self::from_cipher(cipher))
     }
+}
+
+impl<C> Mac for Pmac<C>
+where
+    C: BlockCipher + Clone,
+    C::BlockSize: Clone,
+    C::ParBlocks: Clone,
+    Block<C::BlockSize>: Dbl,
+{
+    type OutputSize = C::BlockSize;
 
     #[inline]
-    fn input(&mut self, mut data: &[u8]) {
+    fn update(&mut self, mut data: &[u8]) {
         let n = C::BlockSize::to_usize() * C::ParBlocks::to_usize();
 
         let p = self.pos;
@@ -227,13 +225,13 @@ where
         }
     }
 
-    fn result(self) -> MacResult<Self::OutputSize> {
+    fn result(self) -> Output<Self> {
         let mut tag = self.tag.clone();
         // Special case for empty input
         if self.pos == 0 {
             tag[0] = 0x80;
             self.cipher.encrypt_block(&mut tag);
-            return MacResult::new(tag);
+            return Output::new(tag);
         }
 
         let bs = C::BlockSize::to_usize();
@@ -274,7 +272,7 @@ where
         }
 
         self.cipher.encrypt_block(&mut tag);
-        MacResult::new(tag)
+        Output::new(tag)
     }
 
     fn reset(&mut self) {
@@ -293,7 +291,7 @@ where
     C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "Pmac-{:?}", self.cipher)
     }
 }
