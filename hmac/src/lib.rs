@@ -54,6 +54,8 @@
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
 
 pub use crypto_mac::{self, Mac, NewMac};
 pub use digest;
@@ -63,7 +65,7 @@ use core::fmt;
 use crypto_mac::{InvalidKeyLength, Output};
 use digest::generic_array::sequence::GenericSequence;
 use digest::generic_array::{ArrayLength, GenericArray};
-use digest::{BlockInput, FixedOutput, Update, Reset};
+use digest::{BlockInput, FixedOutput, Reset, Update};
 
 const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5C;
