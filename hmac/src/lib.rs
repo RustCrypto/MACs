@@ -23,7 +23,7 @@
 //!
 //! // `result` has type `Output` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
-//! let result = mac.result();
+//! let result = mac.finalize();
 //! // To get underlying array use `code` method, but be careful, since
 //! // incorrect use of the code value may permit timing attacks which defeat
 //! // the security provided by the `Output`
@@ -41,7 +41,7 @@
 //!
 //! mac.update(b"input message");
 //!
-//! # let code_bytes = mac.clone().result().into_bytes();
+//! # let code_bytes = mac.clone().finalize().into_bytes();
 //! // `verify` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
 //! mac.verify(&code_bytes).unwrap();
 //! ```
@@ -144,7 +144,7 @@ where
         } else {
             let mut digest = D::default();
             digest.update(key);
-            let output = digest.fixed_result();
+            let output = digest.finalize_fixed();
             // `n` is calculated at compile time and will equal
             // D::OutputSize. This is used to ensure panic-free code
             let n = min(output.len(), hmac.i_key_pad.len());
@@ -175,11 +175,11 @@ where
     }
 
     #[inline]
-    fn result(self) -> Output<Self> {
+    fn finalize(self) -> Output<Self> {
         let mut opad_digest = self.opad_digest.clone();
-        let hash = self.digest.fixed_result();
+        let hash = self.digest.finalize_fixed();
         opad_digest.update(&hash);
-        Output::new(opad_digest.fixed_result())
+        Output::new(opad_digest.finalize_fixed())
     }
 
     #[inline]
