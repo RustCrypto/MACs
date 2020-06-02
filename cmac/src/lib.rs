@@ -16,7 +16,7 @@
 //!
 //! // `result` has type `Output` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
-//! let result = mac.result();
+//! let result = mac.finalize();
 //! // To get underlying array use the `into_bytes` method, but be careful,
 //! // since incorrect use of the tag value may permit timing attacks which
 //! // defeat the security provided by the `Output` wrapper
@@ -32,7 +32,7 @@
 //!
 //! mac.update(b"input message");
 //!
-//! # let tag_bytes = mac.clone().result().into_bytes();
+//! # let tag_bytes = mac.clone().finalize().into_bytes();
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
@@ -156,7 +156,7 @@ where
     }
 
     #[inline]
-    fn result(self) -> Output<Self> {
+    fn finalize(self) -> Output<Self> {
         let n = C::BlockSize::to_usize();
         let mut buf = self.buffer.clone();
         if self.pos == n {

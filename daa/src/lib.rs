@@ -99,7 +99,7 @@ impl Mac for Daa {
     }
 
     #[inline]
-    fn result(mut self) -> Output<Self> {
+    fn finalize(mut self) -> Output<Self> {
         if self.pos != 0 {
             self.cipher.encrypt_block(&mut self.buffer);
         }

@@ -41,7 +41,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.8.0-pre"
-source = "git+https://github.com/RustCrypto/utils#a0e48018d38545935152cd1715382bc1984b5699"
+source = "git+https://github.com/RustCrypto/utils#2aae8a40556e166e9ca06aebc944091dda24b769"
 dependencies = [
  "block-padding",
  "byte-tools",
@@ -52,7 +52,7 @@ dependencies = [
 [[package]]
 name = "block-cipher"
 version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/traits#f1ae0b0bf1187f0c0a90bd07caa66710240daca5"
+source = "git+https://github.com/RustCrypto/traits#a853a6fedf7210ed0303651afa29cb56eb64852e"
 dependencies = [
  "generic-array",
 ]
@@ -91,7 +91,7 @@ dependencies = [
 [[package]]
 name = "crypto-mac"
 version = "0.8.0-pre"
-source = "git+https://github.com/RustCrypto/traits#f1ae0b0bf1187f0c0a90bd07caa66710240daca5"
+source = "git+https://github.com/RustCrypto/traits#a853a6fedf7210ed0303651afa29cb56eb64852e"
 dependencies = [
  "blobby",
  "generic-array",
@@ -109,7 +109,7 @@ dependencies = [
 [[package]]
 name = "dbl"
 version = "0.3.0-pre"
-source = "git+https://github.com/RustCrypto/utils#a0e48018d38545935152cd1715382bc1984b5699"
+source = "git+https://github.com/RustCrypto/utils#2aae8a40556e166e9ca06aebc944091dda24b769"
 dependencies = [
  "generic-array",
 ]
@@ -127,7 +127,7 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/traits#f1ae0b0bf1187f0c0a90bd07caa66710240daca5"
+source = "git+https://github.com/RustCrypto/traits#a853a6fedf7210ed0303651afa29cb56eb64852e"
 dependencies = [
  "generic-array",
 ]
@@ -160,7 +160,7 @@ dependencies = [
 [[package]]
 name = "md-5"
 version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/hashes#347f13f9538ddbb10455be90ee8e7773fe605649"
+source = "git+https://github.com/RustCrypto/hashes#55cfbba060fe822ecc51dd6fc2616d0a606d2b9d"
 dependencies = [
  "block-buffer",
  "digest",
@@ -186,7 +186,7 @@ dependencies = [
 [[package]]
 name = "sha2"
 version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/hashes#347f13f9538ddbb10455be90ee8e7773fe605649"
+source = "git+https://github.com/RustCrypto/hashes#55cfbba060fe822ecc51dd6fc2616d0a606d2b9d"
 dependencies = [
  "block-buffer",
  "digest",
