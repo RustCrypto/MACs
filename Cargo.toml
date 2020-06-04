@@ -8,11 +8,9 @@ members = [
 
 [patch.crates-io]
 aes = { git = "https://github.com/RustCrypto/block-ciphers" }
-block-buffer = { git = "https://github.com/RustCrypto/utils" }
 block-cipher = { git = "https://github.com/RustCrypto/traits" }
 crypto-mac = { git = "https://github.com/RustCrypto/traits" }
 digest = { git = "https://github.com/RustCrypto/traits" }
-dbl = { git = "https://github.com/RustCrypto/utils" }
 des = { git = "https://github.com/RustCrypto/block-ciphers" }
 md-5 = { git = "https://github.com/RustCrypto/hashes" }
 sha2 = { git = "https://github.com/RustCrypto/hashes" }
