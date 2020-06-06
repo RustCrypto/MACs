@@ -1,4 +1,4 @@
-//! Generic implementation of Cipher-based Message Authentication Code (CMAC),
+//! Generic implementation of [Cipher-based Message Authentication Code (CMAC)][1],
 //! otherwise known as OMAC1.
 //!
 //! # Usage
@@ -36,6 +36,8 @@
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
+//!
+//! [1]: https://en.wikipedia.org/wiki/One-key_MAC
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
