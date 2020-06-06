@@ -2,8 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aes"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#49f41f6c8f3a1dc711cf22fb5b0faf956a1fd587"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7001367fde4c768a19d1029f0a8be5abd9308e1119846d5bd9ad26297b8faf5"
 dependencies = [
  "aes-soft",
  "aesni",
@@ -12,8 +13,9 @@ dependencies = [
 
 [[package]]
 name = "aes-soft"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#49f41f6c8f3a1dc711cf22fb5b0faf956a1fd587"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4925647ee64e5056cf231608957ce7c81e12d6d6e316b9ce1404778cc1d35fa7"
 dependencies = [
  "block-cipher",
  "byteorder",
@@ -22,8 +24,9 @@ dependencies = [
 
 [[package]]
 name = "aesni"
-version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#49f41f6c8f3a1dc711cf22fb5b0faf956a1fd587"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d050d39b0b7688b3a3254394c3e30a9d66c41dcf9b05b0e2dbdc623f6505d264"
 dependencies = [
  "block-cipher",
  "opaque-debug",
@@ -52,8 +55,9 @@ dependencies = [
 
 [[package]]
 name = "block-cipher"
-version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/traits#7f2b98d31f704b55c502a685632bd2ea4bd5dd6c"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f837aab23b44bf3be7e24411b599fda76b1788792e765fa077af268292e156d1"
 dependencies = [
  "generic-array",
 ]
@@ -91,8 +95,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-mac"
-version = "0.8.0-pre"
-source = "git+https://github.com/RustCrypto/traits#7f2b98d31f704b55c502a685632bd2ea4bd5dd6c"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b584a330336237c1eecd3e94266efb216c56ed91225d634cb2991c5f3fd1aeab"
 dependencies = [
  "blobby",
  "generic-array",
@@ -119,7 +124,7 @@ dependencies = [
 [[package]]
 name = "des"
 version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#49f41f6c8f3a1dc711cf22fb5b0faf956a1fd587"
+source = "git+https://github.com/RustCrypto/block-ciphers#268dadc93df08928de3bc510ddf20aabfcc49435"
 dependencies = [
  "block-cipher",
  "byteorder",
@@ -129,7 +134,7 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/traits#7f2b98d31f704b55c502a685632bd2ea4bd5dd6c"
+source = "git+https://github.com/RustCrypto/traits#bf34b4ccfaf285542de0d9427d3e759c7e888559"
 dependencies = [
  "generic-array",
 ]
@@ -162,7 +167,7 @@ dependencies = [
 [[package]]
 name = "md-5"
 version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/hashes#ed36412162e6889e8ea6c4129db16b31c78b8ed1"
+source = "git+https://github.com/RustCrypto/hashes#2c14fad1784fd35569c8d9e6b3d7557e4187d488"
 dependencies = [
  "block-buffer",
  "digest",
@@ -188,7 +193,7 @@ dependencies = [
 [[package]]
 name = "sha2"
 version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/hashes#ed36412162e6889e8ea6c4129db16b31c78b8ed1"
+source = "git+https://github.com/RustCrypto/hashes#2c14fad1784fd35569c8d9e6b3d7557e4187d488"
 dependencies = [
  "block-buffer",
  "digest",
