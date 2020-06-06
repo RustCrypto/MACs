@@ -1,4 +1,4 @@
-//! Generic implementation of Parallelizable Message Authentication Code (PMAC),
+//! Generic implementation of [Parallelizable Message Authentication Code (PMAC)][1],
 //! otherwise known as OMAC1.
 //!
 //! # Usage
@@ -36,6 +36,8 @@
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
+//!
+//! [1]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
