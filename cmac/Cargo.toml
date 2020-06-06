@@ -1,6 +1,6 @@
 [package]
 name = "cmac"
-version = "0.3.0-pre"
+version = "0.3.0"
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
