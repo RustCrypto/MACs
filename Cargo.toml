@@ -8,6 +8,5 @@ members = [
 
 [patch.crates-io]
 digest = { git = "https://github.com/RustCrypto/traits" }
-des = { git = "https://github.com/RustCrypto/block-ciphers" }
 md-5 = { git = "https://github.com/RustCrypto/hashes" }
 sha2 = { git = "https://github.com/RustCrypto/hashes" }
