@@ -12,7 +12,7 @@ edition = "2018"
 
 [dependencies]
 crypto-mac = "0.8"
-des = "= 0.4.0-pre"
+des = "0.4"
 
 [dev-dependencies]
 crypto-mac = { version = "0.8", features = ["dev"] }

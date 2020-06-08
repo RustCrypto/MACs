@@ -123,8 +123,9 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#268dadc93df08928de3bc510ddf20aabfcc49435"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e6f17f2850a27f147a228d342a95bf3c613934464d77d531fe8d5151ccd9362"
 dependencies = [
  "block-cipher",
  "byteorder",
