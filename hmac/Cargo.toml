@@ -1,6 +1,6 @@
 [package]
 name = "hmac"
-version = "0.8.0-pre"
+version = "0.8.0"
 description = "Generic implementation of Hash-based Message Authentication Code (HMAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
