@@ -134,8 +134,9 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/traits#bf34b4ccfaf285542de0d9427d3e759c7e888559"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
 dependencies = [
  "generic-array",
 ]
@@ -167,8 +168,9 @@ dependencies = [
 
 [[package]]
 name = "md-5"
-version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/hashes#2c14fad1784fd35569c8d9e6b3d7557e4187d488"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32e273c0484dae98a721a3d9e8d9780e05e693912dd9fa87c7645e125df7a793"
 dependencies = [
  "block-buffer",
  "digest",
@@ -193,8 +195,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.9.0-pre"
-source = "git+https://github.com/RustCrypto/hashes#2c14fad1784fd35569c8d9e6b3d7557e4187d488"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72377440080fd008550fe9b441e854e43318db116f90181eef92e9ae9aedab48"
 dependencies = [
  "block-buffer",
  "digest",
