@@ -5,8 +5,3 @@ members = [
     "hmac",
     "pmac",
 ]
-
-[patch.crates-io]
-digest = { git = "https://github.com/RustCrypto/traits" }
-md-5 = { git = "https://github.com/RustCrypto/hashes" }
-sha2 = { git = "https://github.com/RustCrypto/hashes" }
