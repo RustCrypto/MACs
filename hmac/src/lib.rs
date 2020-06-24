@@ -24,7 +24,7 @@
 //! // `result` has type `Output` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.finalize();
-//! // To get underlying array use `code` method, but be careful, since
+//! // To get underlying array use `into_bytes` method, but be careful, since
 //! // incorrect use of the code value may permit timing attacks which defeat
 //! // the security provided by the `Output`
 //! let code_bytes = result.into_bytes();
