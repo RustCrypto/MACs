@@ -1,9 +1,9 @@
 //! Test vectors from GOST R 34.13-2015:
 //! https://tc26.ru/standard/gost/GOST_R_3413-2015.pdf
-use kuznyechik::Kuznyechik;
-use magma::Magma;
 use cmac::{Cmac, Mac, NewMac};
 use hex_literal::hex;
+use kuznyechik::Kuznyechik;
+use magma::Magma;
 
 #[test]
 #[rustfmt::skip]
