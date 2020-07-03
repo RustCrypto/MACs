@@ -17,5 +17,8 @@ block-cipher = "0.7"
 dbl = "0.3"
 
 [dev-dependencies]
+hex-literal = "0.2"
 crypto-mac = { version = "0.8", features = ["dev"] }
 aes = "0.4"
+kuznyechik = "0.4"
+magma = "0.4"
