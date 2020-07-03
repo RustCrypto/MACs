@@ -1,7 +1,6 @@
 //! Tests from NIST SP 800-38B:
 //! https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/
 #![no_std]
-
 use aes::{Aes128, Aes192, Aes256};
 use cmac::Cmac;
 use crypto_mac::new_test;
