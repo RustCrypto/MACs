@@ -6,6 +6,7 @@ use cmac::{Cmac, Mac, NewMac};
 use hex_literal::hex;
 
 #[test]
+#[rustfmt::skip]
 fn cmac_kuznyechik() {
     let key = hex!("
         8899aabbccddeeff0011223344556677
@@ -27,6 +28,7 @@ fn cmac_kuznyechik() {
 }
 
 #[test]
+#[rustfmt::skip]
 fn cmac_magma() {
     let key = hex!("
         ffeeddccbbaa99887766554433221100

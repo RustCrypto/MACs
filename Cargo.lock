@@ -190,8 +190,9 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#bc219f915e156481c738285b307b6719be3aa2c3"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e80625f53232404fb30666fae9eb11547b14abcf02ae93b835a5cbb6e987e7d"
 dependencies = [
  "block-cipher",
  "opaque-debug",
@@ -199,8 +200,9 @@ dependencies = [
 
 [[package]]
 name = "magma"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers#bc219f915e156481c738285b307b6719be3aa2c3"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2303d569abccd7fbe16cc8ee5ea8352ec5b6acc23c4175a111ce172815e0a7e"
 dependencies = [
  "block-cipher",
  "byteorder",
