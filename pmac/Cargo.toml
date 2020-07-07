@@ -21,4 +21,4 @@ crypto-mac = { version = "0.8", features = ["dev"] }
 aes = "0.4"
 
 [features]
-std = []
+std = ["crypto-mac/std"]

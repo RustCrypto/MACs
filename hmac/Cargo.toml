@@ -21,4 +21,4 @@ md-5 = { version = "0.9", default-features = false }
 sha2 = { version = "0.9", default-features = false }
 
 [features]
-std = []
+std = ["crypto-mac/std"]

@@ -18,4 +18,4 @@ des = "0.4"
 crypto-mac = { version = "0.8", features = ["dev"] }
 
 [features]
-std = []
+std = ["crypto-mac/std"]

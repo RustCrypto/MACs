@@ -24,4 +24,4 @@ kuznyechik = "0.4"
 magma = "0.4"
 
 [features]
-std = []
+std = ["crypto-mac/std"]
