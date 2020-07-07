@@ -67,8 +67,6 @@ const LC_SIZE: usize = 20;
 pub struct Pmac<C>
 where
     C: BlockCipher + Clone,
-    C::BlockSize: Clone,
-    C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
     cipher: C,
@@ -84,8 +82,6 @@ where
 impl<C> Pmac<C>
 where
     C: BlockCipher + Clone,
-    C::BlockSize: Clone,
-    C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
     /// Process full buffer and update tag
@@ -142,8 +138,6 @@ where
 impl<C> From<C> for Pmac<C>
 where
     C: BlockCipher + Clone,
-    C::BlockSize: Clone,
-    C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
     fn from(cipher: C) -> Self {
@@ -174,8 +168,6 @@ where
 impl<C> NewMac for Pmac<C>
 where
     C: BlockCipher + NewBlockCipher + Clone,
-    C::BlockSize: Clone,
-    C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
     type KeySize = C::KeySize;
@@ -193,8 +185,6 @@ where
 impl<C> Mac for Pmac<C>
 where
     C: BlockCipher + Clone,
-    C::BlockSize: Clone,
-    C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
     type OutputSize = C::BlockSize;
@@ -294,12 +284,10 @@ where
 impl<C> fmt::Debug for Pmac<C>
 where
     C: BlockCipher + Clone + fmt::Debug,
-    C::BlockSize: Clone,
-    C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        write!(f, "Pmac-{:?}", self.cipher)
+        write!(f, "Pmac{:?}", self.cipher)
     }
 }
 
