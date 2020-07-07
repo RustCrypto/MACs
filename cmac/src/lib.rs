@@ -72,9 +72,8 @@ where
 
 impl<C: BlockCipher> From<C> for Cmac<C>
 where
-    C: BlockCipher + NewBlockCipher + Clone,
+    C: BlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
-    C::BlockSize: Clone,
 {
     fn from(cipher: C) -> Self {
         let mut subkey = GenericArray::default();
@@ -97,7 +96,6 @@ impl<C> NewMac for Cmac<C>
 where
     C: BlockCipher + NewBlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
-    C::BlockSize: Clone,
 {
     type KeySize = C::KeySize;
 
@@ -115,7 +113,6 @@ impl<C> Mac for Cmac<C>
 where
     C: BlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
-    C::BlockSize: Clone,
 {
     type OutputSize = C::BlockSize;
 

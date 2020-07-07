@@ -141,7 +141,7 @@ where
 
 impl<C> From<C> for Pmac<C>
 where
-    C: BlockCipher + NewBlockCipher + Clone,
+    C: BlockCipher + Clone,
     C::BlockSize: Clone,
     C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
