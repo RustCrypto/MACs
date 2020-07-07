@@ -57,7 +57,6 @@ impl NewMac for Daa {
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
         Self::from(Des::new(key))
-        
     }
 }
 
