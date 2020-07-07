@@ -70,12 +70,13 @@ where
     pos: usize,
 }
 
-impl<C> Cmac<C>
+impl<C: BlockCipher> From<C> for Cmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + NewBlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
+    C::BlockSize: Clone,
 {
-    fn from_cipher(cipher: C) -> Self {
+    fn from(cipher: C) -> Self {
         let mut subkey = GenericArray::default();
         cipher.encrypt_block(&mut subkey);
 
@@ -101,12 +102,12 @@ where
     type KeySize = C::KeySize;
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        Self::from_cipher(C::new(key))
+        Self::from(C::new(key))
     }
 
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
-        Ok(Self::from_cipher(cipher))
+        Ok(Self::from(cipher))
     }
 }
 

@@ -81,13 +81,6 @@ where
     counter: usize,
 }
 
-#[inline(always)]
-fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
-    for i in 0..L::to_usize() {
-        buf[i] ^= data[i];
-    }
-}
-
 impl<C> Pmac<C>
 where
     C: BlockCipher + Clone,
@@ -95,30 +88,6 @@ where
     C::ParBlocks: Clone,
     Block<C::BlockSize>: Dbl,
 {
-    fn from_cipher(cipher: C) -> Self {
-        let mut l0 = Default::default();
-        cipher.encrypt_block(&mut l0);
-
-        let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
-        l_cache[0] = l0.clone();
-        for i in 1..LC_SIZE {
-            l_cache[i] = l_cache[i - 1].clone().dbl();
-        }
-
-        let l_inv = l0.inv_dbl();
-
-        Self {
-            cipher,
-            l_inv,
-            l_cache,
-            buffer: Default::default(),
-            tag: Default::default(),
-            offset: Default::default(),
-            pos: 0,
-            counter: 1,
-        }
-    }
-
     /// Process full buffer and update tag
     #[inline(always)]
     fn process_buffer(&mut self) {
@@ -170,6 +139,38 @@ where
     }
 }
 
+impl<C> From<C> for Pmac<C>
+where
+    C: BlockCipher + NewBlockCipher + Clone,
+    C::BlockSize: Clone,
+    C::ParBlocks: Clone,
+    Block<C::BlockSize>: Dbl,
+{
+    fn from(cipher: C) -> Self {
+        let mut l0 = Default::default();
+        cipher.encrypt_block(&mut l0);
+
+        let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
+        l_cache[0] = l0.clone();
+        for i in 1..LC_SIZE {
+            l_cache[i] = l_cache[i - 1].clone().dbl();
+        }
+
+        let l_inv = l0.inv_dbl();
+
+        Self {
+            cipher,
+            l_inv,
+            l_cache,
+            buffer: Default::default(),
+            tag: Default::default(),
+            offset: Default::default(),
+            pos: 0,
+            counter: 1,
+        }
+    }
+}
+
 impl<C> NewMac for Pmac<C>
 where
     C: BlockCipher + NewBlockCipher + Clone,
@@ -180,12 +181,12 @@ where
     type KeySize = C::KeySize;
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        Self::from_cipher(C::new(key))
+        Self::from(C::new(key))
     }
 
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
-        Ok(Self::from_cipher(cipher))
+        Ok(Self::from(cipher))
     }
 }
 
@@ -299,5 +300,12 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "Pmac-{:?}", self.cipher)
+    }
+}
+
+#[inline(always)]
+fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
+    for i in 0..L::to_usize() {
+        buf[i] ^= data[i];
     }
 }
