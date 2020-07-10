@@ -44,6 +44,9 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub use crypto_mac::{self, Mac, NewMac};
 
 use block_cipher::generic_array::typenum::Unsigned;
@@ -191,5 +194,21 @@ where
 fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
     for i in 0..L::to_usize() {
         buf[i] ^= data[i];
+    }
+}
+
+#[cfg(feature = "std")]
+impl<C> std::io::Write for Cmac<C>
+where
+    C: BlockCipher + Clone,
+    Block<C::BlockSize>: Dbl,
+{
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        Mac::update(self, buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }

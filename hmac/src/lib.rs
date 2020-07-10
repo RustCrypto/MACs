@@ -57,6 +57,9 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub use crypto_mac::{self, Mac, NewMac};
 pub use digest;
 
@@ -186,5 +189,22 @@ where
     fn reset(&mut self) {
         self.digest.reset();
         self.digest.update(&self.i_key_pad);
+    }
+}
+
+#[cfg(feature = "std")]
+impl<D> std::io::Write for Hmac<D>
+where
+    D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
+    D::BlockSize: ArrayLength<u8>,
+    D::OutputSize: ArrayLength<u8>,
+{
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        Mac::update(self, buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }

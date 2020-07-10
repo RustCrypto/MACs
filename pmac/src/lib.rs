@@ -44,6 +44,9 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub use crypto_mac::{self, Mac, NewMac};
 
 use block_cipher::generic_array::typenum::Unsigned;
@@ -299,5 +302,21 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "Pmac-{:?}", self.cipher)
+    }
+}
+
+#[cfg(feature = "std")]
+impl<C> std::io::Write for Pmac<C>
+where
+    C: BlockCipher + Clone,
+    Block<C::BlockSize>: Dbl,
+{
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        Mac::update(self, buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }

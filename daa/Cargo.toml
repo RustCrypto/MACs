@@ -16,3 +16,6 @@ des = "0.4"
 
 [dev-dependencies]
 crypto-mac = { version = "0.8", features = ["dev"] }
+
+[features]
+std = ["crypto-mac/std"]

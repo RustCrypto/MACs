@@ -22,6 +22,9 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub use crypto_mac::{self, Mac, NewMac};
 
 use crypto_mac::generic_array::typenum::Unsigned;
@@ -119,5 +122,17 @@ impl Mac for Daa {
 impl fmt::Debug for Daa {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "Daa")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::io::Write for Daa {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        Mac::update(self, buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }
