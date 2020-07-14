@@ -45,16 +45,21 @@ pub struct Daa {
     pos: usize,
 }
 
-impl NewMac for Daa {
-    type KeySize = <Des as NewBlockCipher>::KeySize;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        let cipher = Des::new(key);
+impl From<Des> for Daa {
+    fn from(cipher: Des) -> Self {
         Self {
             cipher,
             buffer: Default::default(),
             pos: 0,
         }
+    }
+}
+
+impl NewMac for Daa {
+    type KeySize = <Des as NewBlockCipher>::KeySize;
+
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+        Self::from(Des::new(key))
     }
 }
 
