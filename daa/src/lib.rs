@@ -28,12 +28,12 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use crypto_mac::{self, Mac, NewMac};
+pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
 use crypto_mac::generic_array::typenum::Unsigned;
 use crypto_mac::generic_array::GenericArray;
 use crypto_mac::Output;
-use des::block_cipher::{BlockCipher, NewBlockCipher};
+use des::block_cipher::BlockCipher;
 use des::Des;
 
 use core::fmt;
@@ -48,21 +48,15 @@ pub struct Daa {
     pos: usize,
 }
 
-impl From<Des> for Daa {
-    fn from(cipher: Des) -> Self {
+impl FromBlockCipher for Daa {
+    type Cipher = Des;
+
+    fn from_cipher(cipher: Des) -> Self {
         Self {
             cipher,
             buffer: Default::default(),
             pos: 0,
         }
-    }
-}
-
-impl NewMac for Daa {
-    type KeySize = <Des as NewBlockCipher>::KeySize;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        Self::from(Des::new(key))
     }
 }
 
