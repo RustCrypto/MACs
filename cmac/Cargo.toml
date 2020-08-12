@@ -12,13 +12,12 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = { version = "0.9", features = ["block-cipher"] }
-block-cipher = "0.8"
+crypto-mac = { version = "0.9.1", features = ["block-cipher"] }
 dbl = "0.3"
 
 [dev-dependencies]
 hex-literal = "0.2"
-crypto-mac = { version = "0.9", features = ["dev"] }
+crypto-mac = { version = "0.9.1", features = ["dev"] }
 aes = "0.5"
 kuznyechik = "0.5"
 magma = "0.5"

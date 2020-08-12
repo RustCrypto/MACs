@@ -32,8 +32,7 @@ pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
 use crypto_mac::generic_array::typenum::Unsigned;
 use crypto_mac::generic_array::GenericArray;
-use crypto_mac::Output;
-use des::block_cipher::BlockCipher;
+use crypto_mac::{block_cipher::BlockCipher, Output};
 use des::Des;
 
 use core::fmt;

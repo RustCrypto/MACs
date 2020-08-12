@@ -11,11 +11,11 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = { version = "0.9", features = ["block-cipher"] }
+crypto-mac = { version = "0.9.1", features = ["block-cipher"] }
 des = "0.5"
 
 [dev-dependencies]
-crypto-mac = { version = "0.9", features = ["dev"] }
+crypto-mac = { version = "0.9.1", features = ["dev"] }
 
 [features]
 std = ["crypto-mac/std"]
