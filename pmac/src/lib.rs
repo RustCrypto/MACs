@@ -50,15 +50,15 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use crypto_mac::{self, Mac, NewMac};
-
-use block_cipher::generic_array::typenum::Unsigned;
-use block_cipher::generic_array::{ArrayLength, GenericArray};
-use block_cipher::{BlockCipher, NewBlockCipher};
-use crypto_mac::{InvalidKeyLength, Output};
-use dbl::Dbl;
+pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
 use core::{fmt, slice};
+use crypto_mac::{
+    block_cipher::BlockCipher,
+    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
+    Output,
+};
+use dbl::Dbl;
 
 type Block<N> = GenericArray<u8, N>;
 type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
@@ -141,12 +141,14 @@ where
     }
 }
 
-impl<C> From<C> for Pmac<C>
+impl<C> FromBlockCipher for Pmac<C>
 where
     C: BlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
 {
-    fn from(cipher: C) -> Self {
+    type Cipher = C;
+
+    fn from_cipher(cipher: C) -> Self {
         let mut l0 = Default::default();
         cipher.encrypt_block(&mut l0);
 
@@ -168,23 +170,6 @@ where
             pos: 0,
             counter: 1,
         }
-    }
-}
-
-impl<C> NewMac for Pmac<C>
-where
-    C: BlockCipher + NewBlockCipher + Clone,
-    Block<C::BlockSize>: Dbl,
-{
-    type KeySize = C::KeySize;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        Self::from(C::new(key))
-    }
-
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        let cipher = C::new_varkey(key).map_err(|_| InvalidKeyLength)?;
-        Ok(Self::from(cipher))
     }
 }
 

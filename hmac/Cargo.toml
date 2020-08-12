@@ -1,6 +1,6 @@
 [package]
 name = "hmac"
-version = "0.8.1"
+version = "0.9.0"
 description = "Generic implementation of Hash-based Message Authentication Code (HMAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,11 +12,11 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = "0.8"
+crypto-mac = "0.9"
 digest = "0.9"
 
 [dev-dependencies]
-crypto-mac = { version = "0.8", features = ["dev"] }
+crypto-mac = { version = "0.9", features = ["dev"] }
 md-5 = { version = "0.9", default-features = false }
 sha2 = { version = "0.9", default-features = false }
 
