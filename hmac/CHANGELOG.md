@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `crypto-mac` dependency to v0.9 ([#57])
 
+### Added
+- Implement `io::Write` ([#55])
+
+[#55]: https://github.com/RustCrypto/MACs/pull/55
 [#57]: https://github.com/RustCrypto/MACs/pull/57
 
 ## 0.8.1 (2020-06-24)
