@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `crypto-mac` dependency to v0.9, implement the `FromBlockCipher` trait ([#57])
 
+### Added
+- `io::Write` impl ([#55])
+
+[#55]: https://github.com/RustCrypto/MACs/pull/55
 [#57]: https://github.com/RustCrypto/MACs/pull/57
 
 ## 0.3.0 (2020-06-06)

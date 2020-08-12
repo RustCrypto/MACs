@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#57]: https://github.com/RustCrypto/MACs/pull/57
 
+## 0.3.1 (2020-08-12)
+### Added
+- Implement `From<BlockCipher>` ([#54])
+- Implement `io::Write` ([#55])
+
+[#54]: https://github.com/RustCrypto/MACs/pull/54
+[#55]: https://github.com/RustCrypto/MACs/pull/55
+
 ## 0.3.0 (2020-06-06)
 ### Changed
 - Bump `aes` crate dependency to v0.4 ([#40])
