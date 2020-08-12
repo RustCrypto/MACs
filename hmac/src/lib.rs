@@ -66,11 +66,11 @@ extern crate std;
 pub use crypto_mac::{self, Mac, NewMac};
 pub use digest;
 
-use core::cmp::min;
-use core::fmt;
-use crypto_mac::{InvalidKeyLength, Output};
-use digest::generic_array::sequence::GenericSequence;
-use digest::generic_array::{ArrayLength, GenericArray};
+use core::{cmp::min, fmt};
+use crypto_mac::{
+    generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
+    InvalidKeyLength, Output,
+};
 use digest::{BlockInput, FixedOutput, Reset, Update};
 
 const IPAD: u8 = 0x36;

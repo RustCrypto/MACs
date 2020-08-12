@@ -52,13 +52,13 @@ extern crate std;
 
 pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
-use crypto_mac::generic_array::typenum::Unsigned;
-use crypto_mac::generic_array::{ArrayLength, GenericArray};
-use crypto_mac::block_cipher::{BlockCipher, NewBlockCipher};
-use crypto_mac::Output;
-use dbl::Dbl;
-
 use core::{fmt, slice};
+use crypto_mac::{
+    block_cipher::BlockCipher,
+    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
+    Output,
+};
+use dbl::Dbl;
 
 type Block<N> = GenericArray<u8, N>;
 type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
@@ -143,7 +143,7 @@ where
 
 impl<C> FromBlockCipher for Pmac<C>
 where
-    C: BlockCipher + NewBlockCipher + Clone,
+    C: BlockCipher + Clone,
     Block<C::BlockSize>: Dbl,
 {
     type Cipher = C;
