@@ -1,6 +1,6 @@
 [package]
 name = "cmac"
-version = "0.4.0"
+version = "0.5.0-pre"
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,15 +12,15 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = { version = "0.9.1", features = ["block-cipher"] }
+crypto-mac = { version = "0.10", features = ["cipher"] }
 dbl = "0.3"
 
 [dev-dependencies]
 hex-literal = "0.2"
-crypto-mac = { version = "0.9.1", features = ["dev"] }
-aes = "0.5"
-kuznyechik = "0.5"
-magma = "0.5"
+crypto-mac = { version = "0.10", features = ["dev"] }
+aes = "0.6"
+kuznyechik = "0.6"
+magma = "0.6"
 
 [features]
 std = ["crypto-mac/std"]

@@ -54,7 +54,7 @@ pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
 use core::{fmt, slice};
 use crypto_mac::{
-    block_cipher::BlockCipher,
+    cipher::BlockCipher,
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
     Output,
 };
