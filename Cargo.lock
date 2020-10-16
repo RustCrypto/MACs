@@ -70,7 +70,7 @@ dependencies = [
 
 [[package]]
 name = "cmac"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "aes",
  "crypto-mac",
@@ -100,7 +100,7 @@ dependencies = [
 
 [[package]]
 name = "daa"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "crypto-mac",
  "des",
@@ -166,7 +166,7 @@ dependencies = [
 
 [[package]]
 name = "hmac"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "crypto-mac",
  "digest",
@@ -213,7 +213,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "pmac"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "aes",
  "crypto-mac",

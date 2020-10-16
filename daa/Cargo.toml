@@ -1,6 +1,6 @@
 [package]
 name = "daa"
-version = "0.4.0"
+version = "0.4.1"
 description = "Implementation of Data Authentication Algorithm (DAA)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
