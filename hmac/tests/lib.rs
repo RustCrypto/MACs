@@ -12,3 +12,7 @@ new_test!(hmac_sha224, "sha224", Hmac<sha2::Sha224>);
 new_test!(hmac_sha256, "sha256", Hmac<sha2::Sha256>);
 new_test!(hmac_sha384, "sha384", Hmac<sha2::Sha384>);
 new_test!(hmac_sha512, "sha512", Hmac<sha2::Sha512>);
+// Test vectors from R 50.1.113-2016:
+// https://tc26.ru/standard/rs/Р 50.1.113-2016.pdf
+new_test!(hmac_streebog256, "streebog256", Hmac<streebog::Streebog256>);
+new_test!(hmac_streebog512, "streebog512", Hmac<streebog::Streebog512>);
