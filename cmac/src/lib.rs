@@ -11,7 +11,7 @@
 //! use cmac::{Cmac, Mac, NewMac};
 //!
 //! // Create `Mac` trait implementation, namely CMAC-AES128
-//! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
+//! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //! mac.update(b"input message");
 //!
 //! // `result` has type `Output` which is a thin wrapper around array of
@@ -28,7 +28,7 @@
 //! ```rust
 //! # use aes::Aes128;
 //! # use cmac::{Cmac, Mac, NewMac};
-//! let mut mac = Cmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
+//! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //!
 //! mac.update(b"input message");
 //!
@@ -54,7 +54,7 @@ pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
 use core::fmt;
 use crypto_mac::{
-    cipher::BlockCipher,
+    cipher::{BlockCipher, BlockEncrypt},
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
     Output,
 };
@@ -66,7 +66,7 @@ type Block<N> = GenericArray<u8, N>;
 #[derive(Clone)]
 pub struct Cmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     cipher: C,
@@ -78,7 +78,7 @@ where
 
 impl<C> FromBlockCipher for Cmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     type Cipher = C;
@@ -102,7 +102,7 @@ where
 
 impl<C> Mac for Cmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     type OutputSize = C::BlockSize;
@@ -168,7 +168,7 @@ where
 
 impl<C> fmt::Debug for Cmac<C>
 where
-    C: BlockCipher + fmt::Debug + Clone,
+    C: BlockCipher + BlockEncrypt + Clone + fmt::Debug,
     Block<C::BlockSize>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -186,7 +186,7 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 #[cfg(feature = "std")]
 impl<C> std::io::Write for Cmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {

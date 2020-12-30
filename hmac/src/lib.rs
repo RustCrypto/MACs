@@ -17,7 +17,7 @@
 //! type HmacSha256 = Hmac<Sha256>;
 //!
 //! // Create HMAC-SHA256 instance which implements `Mac` trait
-//! let mut mac = HmacSha256::new_varkey(b"my secret and secure key")
+//! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
 //! mac.update(b"input message");
 //!
@@ -36,7 +36,7 @@
 //! # use sha2::Sha256;
 //! # use hmac::{Hmac, Mac, NewMac};
 //! # type HmacSha256 = Hmac<Sha256>;
-//! let mut mac = HmacSha256::new_varkey(b"my secret and secure key")
+//! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
 //!
 //! mac.update(b"input message");
@@ -124,11 +124,11 @@ where
     type KeySize = D::BlockSize;
 
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        Self::new_varkey(key.as_slice()).unwrap()
+        Self::new_from_slice(key.as_slice()).unwrap()
     }
 
     #[inline]
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         let mut hmac = Self {
             digest: Default::default(),
             i_key_pad: GenericArray::generate(|_| IPAD),

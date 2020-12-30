@@ -5,3 +5,9 @@ members = [
     "hmac",
     "pmac",
 ]
+
+[patch.crates-io]
+aes = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+des = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+kuznyechik = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+magma = { git = "https://github.com/RustCrypto/block-ciphers.git" }

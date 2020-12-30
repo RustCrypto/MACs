@@ -2,33 +2,12 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aes"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "884391ef1066acaa41e766ba8f596341b96e93ce34f9a43e7d24bf0a0eaf0561"
+version = "0.7.0-pre"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
 dependencies = [
- "aes-soft",
- "aesni",
+ "cfg-if",
  "cipher",
-]
-
-[[package]]
-name = "aes-soft"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c5ab1fa47ce0ddf44cbd65b1b4e626e3c03b06fd42005603acdc6fa13526296"
-dependencies = [
- "byteorder",
- "cipher",
- "opaque-debug",
-]
-
-[[package]]
-name = "aesni"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea2e11f5e94c2f7d386164cc2aa1f97823fed6f259e486940a71c174dd01b0ce"
-dependencies = [
- "cipher",
+ "cpuid-bool 0.2.0",
  "opaque-debug",
 ]
 
@@ -68,16 +47,16 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
-version = "0.2.1"
+version = "0.3.0-pre.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1f7954ae5588102b35257639b1c36a2e7425cc6540fcdb4de19dcb91055d659"
+checksum = "e1db53c34251ece12ba40366dd5ece6dc5672296d7fb34f7b1791e8f0d449e69"
 dependencies = [
  "generic-array",
 ]
 
 [[package]]
 name = "cmac"
-version = "0.5.1"
+version = "0.6.0-pre"
 dependencies = [
  "aes",
  "crypto-mac",
@@ -94,10 +73,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8aebca1129a03dc6dc2b127edd729435bbc4a37e1d5f4d7513165089ceb02634"
 
 [[package]]
-name = "crypto-mac"
-version = "0.10.0"
+name = "cpuid-bool"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4857fd85a0c34b3c3297875b747c1e02e06b6a0ea32dd892d8192b9ce0813ea6"
+checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
+
+[[package]]
+name = "crypto-mac"
+version = "0.11.0-pre"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e84f879755fdae65b8692c89c96ed2848c762049e9daa132b145162a88a62887"
 dependencies = [
  "blobby",
  "cipher",
@@ -107,7 +92,7 @@ dependencies = [
 
 [[package]]
 name = "daa"
-version = "0.4.1"
+version = "0.5.0-pre"
 dependencies = [
  "crypto-mac",
  "des",
@@ -124,9 +109,8 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b24e7c748888aa2fa8bce21d8c64a52efc810663285315ac7476f7197a982fae"
+version = "0.7.0-pre"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
 dependencies = [
  "byteorder",
  "cipher",
@@ -173,7 +157,7 @@ dependencies = [
 
 [[package]]
 name = "hmac"
-version = "0.10.1"
+version = "0.11.0-pre"
 dependencies = [
  "crypto-mac",
  "digest",
@@ -184,9 +168,8 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "221139eedf77a90801f17be9f605bb63452436fc4bb5cac0f5b0cd358045115e"
+version = "0.7.0-pre"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
 dependencies = [
  "cipher",
  "opaque-debug",
@@ -194,9 +177,8 @@ dependencies = [
 
 [[package]]
 name = "magma"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1edfbd7414e5d653305f411bce630430e08906ea0e0e0e42326fd96f24dfe0d1"
+version = "0.7.0-pre"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
 dependencies = [
  "cipher",
  "opaque-debug",
@@ -221,7 +203,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "pmac"
-version = "0.5.1"
+version = "0.6.0-pre"
 dependencies = [
  "aes",
  "crypto-mac",
@@ -230,9 +212,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro-hack"
-version = "0.5.18"
+version = "0.5.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99c605b9a0adc77b7211c6b1f722dcb613d68d66859a44f3d485a6da332b0598"
+checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
 
 [[package]]
 name = "sha2"
@@ -242,7 +224,7 @@ checksum = "6e7aab86fe2149bad8c507606bdb3f4ef5e7b2380eb92350f56122cca72a42a8"
 dependencies = [
  "block-buffer",
  "cfg-if",
- "cpuid-bool",
+ "cpuid-bool 0.1.2",
  "digest",
  "opaque-debug",
 ]
@@ -260,9 +242,9 @@ dependencies = [
 
 [[package]]
 name = "subtle"
-version = "2.2.3"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "502d53007c02d7605a05df1c1a73ee436952781653da5d0bf57ad608f66932c1"
+checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 
 [[package]]
 name = "typenum"
