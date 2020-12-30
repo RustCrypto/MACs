@@ -1,6 +1,6 @@
 [package]
 name = "pmac"
-version = "0.5.1"
+version = "0.6.0-pre"
 description = "Generic implementation of Parallelizable Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,12 +12,12 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = { version = "0.10", features = ["cipher"] }
+crypto-mac = { version = "0.11.0-pre", features = ["cipher"] }
 dbl = "0.3"
 
 [dev-dependencies]
-crypto-mac = { version = "0.10", features = ["dev"] }
-aes = "0.6"
+crypto-mac = { version = "0.11.0-pre", features = ["dev"] }
+aes = "0.7.0-pre"
 
 [features]
 std = ["crypto-mac/std"]

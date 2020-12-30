@@ -21,7 +21,7 @@ fn cmac_kuznyechik() {
     let mac_res = hex!("
         336f4d296059fbe34ddeb35b37749c67
     ");
-    let mut mac = Cmac::<Kuznyechik>::new_varkey(&key).unwrap();
+    let mut mac = Cmac::<Kuznyechik>::new_from_slice(&key).unwrap();
     mac.update(&pt);
     let tag_bytes = mac.finalize().into_bytes();
     assert_eq!(&tag_bytes[..mac_res.len()], &mac_res);
@@ -39,7 +39,7 @@ fn cmac_magma() {
         4a98fb2e67a8024c8912409b17b57e41
     ");
     let mac_res = hex!("154e72102030c5bb");
-    let mut mac = Cmac::<Magma>::new_varkey(&key).unwrap();
+    let mut mac = Cmac::<Magma>::new_from_slice(&key).unwrap();
     mac.update(&pt);
     let tag_bytes = mac.finalize().into_bytes();
     assert_eq!(&tag_bytes[..mac_res.len()], &mac_res);

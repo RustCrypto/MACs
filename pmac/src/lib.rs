@@ -11,7 +11,7 @@
 //! use pmac::{Pmac, Mac, NewMac};
 //!
 //! // Create `Mac` trait implementation, namely PMAC-AES128
-//! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
+//! let mut mac = Pmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //! mac.update(b"input message");
 //!
 //! // `result` has type `Output` which is a thin wrapper around array of
@@ -28,7 +28,7 @@
 //! ```rust
 //! # use aes::Aes128;
 //! # use pmac::{Pmac, Mac, NewMac};
-//! let mut mac = Pmac::<Aes128>::new_varkey(b"very secret key.").unwrap();
+//! let mut mac = Pmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //!
 //! mac.update(b"input message");
 //!
@@ -54,7 +54,7 @@ pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
 
 use core::{fmt, slice};
 use crypto_mac::{
-    cipher::BlockCipher,
+    cipher::{BlockCipher, BlockEncrypt},
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
     Output,
 };
@@ -72,7 +72,7 @@ const LC_SIZE: usize = 20;
 #[derive(Clone)]
 pub struct Pmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     cipher: C,
@@ -87,7 +87,7 @@ where
 
 impl<C> Pmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     /// Process full buffer and update tag
@@ -143,7 +143,7 @@ where
 
 impl<C> FromBlockCipher for Pmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     type Cipher = C;
@@ -175,7 +175,7 @@ where
 
 impl<C> Mac for Pmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     type OutputSize = C::BlockSize;
@@ -274,7 +274,7 @@ where
 
 impl<C> fmt::Debug for Pmac<C>
 where
-    C: BlockCipher + Clone + fmt::Debug,
+    C: BlockCipher + BlockEncrypt + Clone + fmt::Debug,
     Block<C::BlockSize>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -292,7 +292,7 @@ fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
 #[cfg(feature = "std")]
 impl<C> std::io::Write for Pmac<C>
 where
-    C: BlockCipher + Clone,
+    C: BlockCipher + BlockEncrypt + Clone,
     Block<C::BlockSize>: Dbl,
 {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
