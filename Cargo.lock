@@ -3,7 +3,7 @@
 [[package]]
 name = "aes"
 version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#7236bce0b75b7bcf719add5e88890bd667ebb95f"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -110,7 +110,7 @@ dependencies = [
 [[package]]
 name = "des"
 version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#7236bce0b75b7bcf719add5e88890bd667ebb95f"
 dependencies = [
  "byteorder",
  "cipher",
@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "kuznyechik"
 version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#7236bce0b75b7bcf719add5e88890bd667ebb95f"
 dependencies = [
  "cipher",
  "opaque-debug",
@@ -178,7 +178,7 @@ dependencies = [
 [[package]]
 name = "magma"
 version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#3215a921f894f533882dc1a3cf55242237fca4ed"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#7236bce0b75b7bcf719add5e88890bd667ebb95f"
 dependencies = [
  "cipher",
  "opaque-debug",
