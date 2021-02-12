@@ -1,4 +1,4 @@
-# RustCrypto: Message Authentication Codes ![Rust Version][rustc-image] [![Project Chat][chat-image]][chat-link]
+# RustCrypto: Message Authentication Codes ![Rust Version][rustc-image] [![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link]
 
 Collection of [Message Authentication Code][1] (MAC) algorithms written in pure Rust.
 
@@ -30,6 +30,8 @@ for inclusion in the work by you, as defined in the Apache-2.0 license
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
+[deps-image]: https://deps.rs/repo/github/RustCrypto/MACs/status.svg
+[deps-link]: https://deps.rs/repo/github/RustCrypto/MACs
 
 [//]: # (footnotes)
 
