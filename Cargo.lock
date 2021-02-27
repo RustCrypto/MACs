@@ -162,6 +162,7 @@ dependencies = [
  "crypto-mac",
  "digest",
  "md-5",
+ "sha-1",
  "sha2",
  "streebog",
 ]
@@ -215,6 +216,19 @@ name = "proc-macro-hack"
 version = "0.5.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
+
+[[package]]
+name = "sha-1"
+version = "0.9.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfebf75d25bd900fd1e7d11501efab59bc846dbc76196839663e6637bba9f25f"
+dependencies = [
+ "block-buffer",
+ "cfg-if",
+ "cpuid-bool 0.1.2",
+ "digest",
+ "opaque-debug",
+]
 
 [[package]]
 name = "sha2"
