@@ -12,12 +12,12 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = { version = "0.11.0-pre", features = ["cipher"] }
+crypto-mac = { version = "0.11", features = ["cipher"] }
 dbl = "0.3"
 
 [dev-dependencies]
 aes = { version = "=0.7.0-pre", features = ["force-soft"] } # Uses `force-soft` for MSRV 1.41
-crypto-mac = { version = "0.11.0-pre", features = ["dev"] }
+crypto-mac = { version = "0.11", features = ["dev"] }
 
 [features]
 std = ["crypto-mac/std"]
