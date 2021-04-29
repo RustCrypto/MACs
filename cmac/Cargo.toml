@@ -19,8 +19,8 @@ dbl = "0.3"
 aes = { version = "0.7", features = ["force-soft"] } # Uses `force-soft` for MSRV 1.41
 crypto-mac = { version = "0.11", features = ["dev"] }
 hex-literal = "0.2"
-kuznyechik = "0.7.0-pre"
-magma = "0.7.0-pre"
+kuznyechik = "0.7"
+magma = "0.7"
 
 [features]
 std = ["crypto-mac/std"]
