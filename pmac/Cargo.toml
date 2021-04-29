@@ -16,7 +16,7 @@ crypto-mac = { version = "0.11", features = ["cipher"] }
 dbl = "0.3"
 
 [dev-dependencies]
-aes = { version = "=0.7.0-pre", features = ["force-soft"] } # Uses `force-soft` for MSRV 1.41
+aes = { version = "0.7", features = ["force-soft"] } # Uses `force-soft` for MSRV 1.41
 crypto-mac = { version = "0.11", features = ["dev"] }
 
 [features]
