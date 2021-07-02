@@ -18,7 +18,7 @@ dbl = "0.3"
 [dev-dependencies]
 aes = { version = "0.7", features = ["force-soft"] } # Uses `force-soft` for MSRV 1.41
 crypto-mac = { version = "0.11", features = ["dev"] }
-hex-literal = "0.2"
+hex-literal = "0.3"
 kuznyechik = "0.7"
 magma = "0.7"
 
