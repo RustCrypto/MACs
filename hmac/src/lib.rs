@@ -47,8 +47,8 @@
 //! ```
 //!
 //! # Block and input sizes
-//! Usually it is assumed that block size is larger than output size, due to the
-//! generic nature of the implementation this edge case must be handled as well
+//! Usually it is assumed that block size is larger than output size. Due to the
+//! generic nature of the implementation, this edge case must be handled as well
 //! to remove potential panic scenario. This is done by truncating hash output
 //! to the hash block size if needed.
 
