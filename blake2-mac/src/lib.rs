@@ -28,27 +28,25 @@
 
 pub use crypto_mac;
 
+use blake2::{
+    digest::{
+        block_buffer::{DigestBuffer, LazyBlockBuffer},
+        core_api::VariableOutputCore,
+    },
+    Blake2bVarCore, Blake2sVarCore,
+};
 use core::{fmt, marker::PhantomData};
 use crypto_mac::{
-    consts::{U64, U32},
+    consts::{U32, U64},
     crypto_common::{
-        FixedOutput, KeySizeUser, Output, OutputSizeUser, Update,
-        BlockSizeUser, UpdateCore,
+        BlockSizeUser, FixedOutput, KeySizeUser, Output, OutputSizeUser, Update, UpdateCore,
     },
-    InvalidLength, Key, KeyInit, Mac,
     generic_array::{
         typenum::{IsLessOrEqual, LeEq, NonZero, Unsigned},
         ArrayLength,
     },
+    InvalidLength, Key, KeyInit, Mac,
 };
-use blake2::{
-    Blake2bVarCore, Blake2sVarCore,
-    digest::{
-        core_api::VariableOutputCore,
-        block_buffer::{LazyBlockBuffer, DigestBuffer},
-    },
-};
-
 
 macro_rules! blake2_mac_impl {
     (
@@ -149,7 +147,6 @@ macro_rules! blake2_mac_impl {
         }
     };
 }
-
 
 blake2_mac_impl!(Blake2bMac, Blake2bVarCore, U64, "Blake2b MAC function");
 blake2_mac_impl!(Blake2sMac, Blake2sVarCore, U32, "Blake2s MAC function");
