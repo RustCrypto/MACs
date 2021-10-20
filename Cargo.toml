@@ -1,7 +1,14 @@
 [workspace]
 members = [
+    "blake2-mac",
     "cmac",
     "daa",
     "hmac",
     "pmac",
 ]
+
+[patch.crates-io]
+digest = { git = "https://github.com/RustCrypto/traits/", branch = "new_traits" }
+crypto-mac = { git = "https://github.com/RustCrypto/traits/", branch = "new_traits" }
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "pad_error" }
+blake2 = { git = "https://github.com/RustCrypto/hashes", branch = "digest/v0.10.0-pre" }
