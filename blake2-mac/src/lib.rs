@@ -152,7 +152,6 @@ macro_rules! blake2_mac_impl {
 
 
 blake2_mac_impl!(Blake2bMac, Blake2bVarCore, U64, "Blake2b MAC function");
-
 blake2_mac_impl!(Blake2sMac, Blake2sVarCore, U32, "Blake2s MAC function");
 
 /// BLAKE2b-512 MAC state.
