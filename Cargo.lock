@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#cb7aec32212e3ad41020f8234caa7438a80ad113"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#67609bfb69b7369f0f7f6c727c36d33b1a199cc0"
 dependencies = [
  "block-padding 0.3.0",
  "generic-array",
@@ -46,7 +46,7 @@ checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 [[package]]
 name = "block-padding"
 version = "0.3.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#cb7aec32212e3ad41020f8234caa7438a80ad113"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#67609bfb69b7369f0f7f6c727c36d33b1a199cc0"
 dependencies = [
  "generic-array",
 ]
@@ -60,7 +60,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.4.0"
-source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#8e443f4cae9a8d7713ed7a9d68b670e9d1c19475"
+source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#402b17441ac390801e0121c04f2c615223ed7c2d"
 dependencies = [
  "block-buffer 0.10.0",
  "crypto-common",
@@ -93,7 +93,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#8e443f4cae9a8d7713ed7a9d68b670e9d1c19475"
+source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#402b17441ac390801e0121c04f2c615223ed7c2d"
 dependencies = [
  "generic-array",
 ]
@@ -136,7 +136,7 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#8e443f4cae9a8d7713ed7a9d68b670e9d1c19475"
+source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#402b17441ac390801e0121c04f2c615223ed7c2d"
 dependencies = [
  "blobby",
  "block-buffer 0.10.0",
@@ -187,7 +187,7 @@ dependencies = [
 [[package]]
 name = "inout"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#cb7aec32212e3ad41020f8234caa7438a80ad113"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#67609bfb69b7369f0f7f6c727c36d33b1a199cc0"
 dependencies = [
  "generic-array",
 ]
