@@ -17,7 +17,7 @@ dependencies = [
 [[package]]
 name = "aes"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#d5292e4310768e989b0e3a0ccc23b8ebafeb543c"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
  "cfg-if",
  "cipher 0.4.0",
@@ -43,7 +43,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#0fa8688ca2e0c3e5e6ed5afa6c0dadb6c0464237"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#cb7aec32212e3ad41020f8234caa7438a80ad113"
 dependencies = [
  "block-padding 0.3.0",
  "generic-array",
@@ -58,16 +58,10 @@ checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 [[package]]
 name = "block-padding"
 version = "0.3.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#0fa8688ca2e0c3e5e6ed5afa6c0dadb6c0464237"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#cb7aec32212e3ad41020f8234caa7438a80ad113"
 dependencies = [
  "generic-array",
 ]
-
-[[package]]
-name = "byteorder"
-version = "1.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 
 [[package]]
 name = "cfg-if"
@@ -141,8 +135,9 @@ dependencies = [
 name = "daa"
 version = "0.5.0"
 dependencies = [
- "crypto-mac",
  "des",
+ "digest 0.10.0",
+ "hex-literal",
 ]
 
 [[package]]
@@ -156,13 +151,10 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac41dd49fb554432020d52c875fc290e110113f864c6b1b525cd62c7e7747a5d"
+version = "0.8.0"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
- "byteorder",
- "cipher 0.3.0",
- "opaque-debug",
+ "cipher 0.4.0",
 ]
 
 [[package]]
@@ -228,7 +220,7 @@ dependencies = [
 [[package]]
 name = "inout"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#0fa8688ca2e0c3e5e6ed5afa6c0dadb6c0464237"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#cb7aec32212e3ad41020f8234caa7438a80ad113"
 dependencies = [
  "generic-array",
 ]
@@ -236,7 +228,7 @@ dependencies = [
 [[package]]
 name = "kuznyechik"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#d5292e4310768e989b0e3a0ccc23b8ebafeb543c"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
  "cipher 0.4.0",
 ]
@@ -250,7 +242,7 @@ checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
 [[package]]
 name = "magma"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#d5292e4310768e989b0e3a0ccc23b8ebafeb543c"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
  "cipher 0.4.0",
 ]

@@ -14,3 +14,4 @@ inout = { git = "https://github.com/RustCrypto/utils", branch = "pad_error" }
 aes = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
 kuznyechik = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
 magma = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
+des = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }

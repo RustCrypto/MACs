@@ -6,14 +6,15 @@
 //! # Examples
 //!
 //! ```
-//! use daa::{Daa, Mac, NewMac};
+//! use daa::{Daa, Mac};
+//! use hex_literal::hex;
 //!
 //! // test from FIPS 113
-//! let key = [0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
+//! let key = hex!("0123456789ABCDEF");
 //! let mut mac = Daa::new_from_slice(&key).unwrap();
 //! mac.update(b"7654321 Now is the time for ");
-//! let correct = [0xF1, 0xD3, 0x0F, 0x68, 0x49, 0x31, 0x2C, 0xA4];
-//! mac.verify(&correct).unwrap();
+//! let correct = hex!("F1D30F6849312CA4");
+//! mac.verify(&correct.into()).unwrap();
 //! ```
 
 #![no_std]
@@ -25,116 +26,98 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop)]
 
-#[cfg(feature = "std")]
-extern crate std;
+pub use digest;
+pub use digest::Mac;
 
-pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
+use des::cipher::BlockEncryptMut;
 
-use core::fmt;
-use crypto_mac::{
-    cipher::{BlockCipher, BlockEncrypt},
-    generic_array::{typenum::Unsigned, GenericArray},
-    Output,
+use digest::{
+    generic_array::{ArrayLength, GenericArray},
+    crypto_common::{InnerInit, InnerUser, BlockSizeUser},
+    core_api::{UpdateCore, FixedOutputCore, BufferUser, CoreWrapper},
+    block_buffer::BlockBuffer,
+    Output, Reset, OutputSizeUser, MacMarker,
 };
 use des::Des;
 
-type Block = GenericArray<u8, <Des as BlockCipher>::BlockSize>;
+/// Block type over which DAA operates.
+pub type Block = des::cipher::Block<Des>;
 
-/// DAA instance
+/// DAA type which operates over slices.
+pub type Daa = CoreWrapper<DaaCore>;
+
+/// Core DAA type which operates over blocks.
 #[derive(Clone)]
-pub struct Daa {
+pub struct DaaCore {
     cipher: Des,
-    buffer: Block,
-    pos: usize,
+    state: Block,
 }
 
-impl FromBlockCipher for Daa {
-    type Cipher = Des;
+impl MacMarker for DaaCore { }
 
-    fn from_cipher(cipher: Des) -> Self {
-        Self {
-            cipher,
-            buffer: Default::default(),
-            pos: 0,
+impl InnerUser for DaaCore {
+    type Inner = Des;
+}
+
+impl BlockSizeUser for DaaCore {
+    type BlockSize = <Des as BlockSizeUser>::BlockSize;
+}
+
+impl OutputSizeUser for DaaCore {
+    type OutputSize = <Des as BlockSizeUser>::BlockSize;
+}
+
+impl InnerInit for DaaCore {
+    fn inner_init(cipher: Des) -> Self {
+        Self { cipher, state: Default::default() }
+    }
+}
+
+impl BufferUser for DaaCore {
+    type Buffer = BlockBuffer<Self::BlockSize>;
+}
+
+impl UpdateCore for DaaCore {
+    fn update_blocks(&mut self, blocks: &[Block]) {
+        for block in blocks {
+            xor(&mut self.state, block);
+            self.cipher.encrypt_block_mut(&mut self.state);
         }
     }
 }
 
-impl Mac for Daa {
-    type OutputSize = <Des as BlockCipher>::BlockSize;
-
+impl FixedOutputCore for DaaCore {
     #[inline]
-    fn update(&mut self, mut data: &[u8]) {
-        let n = <Des as BlockCipher>::BlockSize::to_usize();
-        let rem = n - self.pos;
-
-        if data.len() >= rem {
-            let (l, r) = data.split_at(rem);
-            data = r;
-            for (a, b) in self.buffer[self.pos..].iter_mut().zip(l) {
-                *a ^= *b;
-            }
-            self.pos = n;
-        } else {
-            for (a, b) in self.buffer[self.pos..].iter_mut().zip(data) {
-                *a ^= *b;
-            }
-            self.pos += data.len();
-            return;
+    fn finalize_fixed_core(
+        &mut self,
+        buffer: &mut BlockBuffer<Self::BlockSize>,
+        out: &mut Output<Self>,
+    ) {
+        let pos = buffer.get_pos();
+        let res = buffer.pad_with_zeros();
+        if pos != 0 {
+            xor(&mut self.state, &res);
+            self.cipher.encrypt_block_mut(&mut self.state);
         }
-
-        while data.len() >= n {
-            self.cipher.encrypt_block(&mut self.buffer);
-
-            let (l, r) = data.split_at(n);
-            data = r;
-
-            for i in 0..n {
-                self.buffer[i] ^= l[i];
-            }
-        }
-
-        if !data.is_empty() {
-            self.cipher.encrypt_block(&mut self.buffer);
-            for (a, b) in self.buffer.iter_mut().zip(data) {
-                *a ^= *b;
-            }
-            self.pos = data.len();
-        }
+        *out = self.state.clone();
     }
+}
 
-    #[inline]
-    fn finalize(mut self) -> Output<Self> {
-        if self.pos != 0 {
-            self.cipher.encrypt_block(&mut self.buffer);
-        }
-
-        Output::new(self.buffer)
-    }
-
+impl Reset for DaaCore {
     #[inline]
     fn reset(&mut self) {
-        if self.pos != 0 {
-            self.pos = 0;
-            self.buffer = Default::default();
-        }
+        self.state = Default::default();
     }
 }
 
-impl fmt::Debug for Daa {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        write!(f, "Daa")
-    }
-}
+// TODO: impl Debug or AlgorithmName
 
-#[cfg(feature = "std")]
-impl std::io::Write for Daa {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Mac::update(self, buf);
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
+#[inline(always)]
+fn xor<N: ArrayLength<u8>>(
+    state: &mut GenericArray<u8, N>,
+    data: &GenericArray<u8, N>,
+) {
+    for i in 0..N::USIZE {
+        state[i] ^= data[i];
     }
 }
