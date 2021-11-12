@@ -2,8 +2,8 @@
 #![no_std]
 
 use aes::{Aes128, Aes192, Aes256};
-use pmac::Pmac;
 use digest::new_mac_test;
+use pmac::Pmac;
 
 new_mac_test!(pmac_aes128, "aes128", Pmac<Aes128>);
 new_mac_test!(pmac_aes192, "aes192", Pmac<Aes192>);

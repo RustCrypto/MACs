@@ -31,14 +31,14 @@ pub use digest::Mac;
 
 use des::cipher::BlockEncryptMut;
 
-use digest::{
-    generic_array::{ArrayLength, GenericArray},
-    crypto_common::{InnerInit, InnerUser, BlockSizeUser},
-    core_api::{UpdateCore, FixedOutputCore, BufferUser, CoreWrapper},
-    block_buffer::BlockBuffer,
-    Output, Reset, OutputSizeUser, MacMarker,
-};
 use des::Des;
+use digest::{
+    block_buffer::BlockBuffer,
+    core_api::{BufferUser, CoreWrapper, FixedOutputCore, UpdateCore},
+    crypto_common::{BlockSizeUser, InnerInit, InnerUser},
+    generic_array::{ArrayLength, GenericArray},
+    MacMarker, Output, OutputSizeUser, Reset,
+};
 
 /// Block type over which DAA operates.
 pub type Block = des::cipher::Block<Des>;
@@ -53,7 +53,7 @@ pub struct DaaCore {
     state: Block,
 }
 
-impl MacMarker for DaaCore { }
+impl MacMarker for DaaCore {}
 
 impl InnerUser for DaaCore {
     type Inner = Des;
@@ -69,7 +69,10 @@ impl OutputSizeUser for DaaCore {
 
 impl InnerInit for DaaCore {
     fn inner_init(cipher: Des) -> Self {
-        Self { cipher, state: Default::default() }
+        Self {
+            cipher,
+            state: Default::default(),
+        }
     }
 }
 
@@ -96,10 +99,10 @@ impl FixedOutputCore for DaaCore {
         let pos = buffer.get_pos();
         let res = buffer.pad_with_zeros();
         if pos != 0 {
-            xor(&mut self.state, &res);
+            xor(&mut self.state, res);
             self.cipher.encrypt_block_mut(&mut self.state);
         }
-        *out = self.state.clone();
+        *out = self.state;
     }
 }
 
@@ -113,10 +116,7 @@ impl Reset for DaaCore {
 // TODO: impl Debug or AlgorithmName
 
 #[inline(always)]
-fn xor<N: ArrayLength<u8>>(
-    state: &mut GenericArray<u8, N>,
-    data: &GenericArray<u8, N>,
-) {
+fn xor<N: ArrayLength<u8>>(state: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
     for i in 0..N::USIZE {
         state[i] ^= data[i];
     }

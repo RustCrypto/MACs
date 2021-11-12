@@ -53,16 +53,16 @@
 pub use digest;
 pub use digest::Mac;
 
-use cipher::{BlockEncryptMut, BlockCipher, Block};
+use cipher::{Block, BlockCipher, BlockEncryptMut};
 
-use digest::{
-    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
-    crypto_common::{InnerInit, InnerUser, BlockSizeUser},
-    core_api::{UpdateCore, FixedOutputCore, BufferUser, CoreWrapper},
-    block_buffer::LazyBlockBuffer,
-    Output, Reset, OutputSizeUser, MacMarker,
-};
 use dbl::Dbl;
+use digest::{
+    block_buffer::LazyBlockBuffer,
+    core_api::{BufferUser, CoreWrapper, FixedOutputCore, UpdateCore},
+    crypto_common::{BlockSizeUser, InnerInit, InnerUser},
+    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
+    MacMarker, Output, OutputSizeUser, Reset,
+};
 
 /// Will use only precomputed table up to 16*2^20 = 16 MB of input data
 /// (for 128 bit cipher), after that will dynamically calculate L value if
@@ -90,7 +90,8 @@ impl<C> MacMarker for PmacCore<C>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
-{}
+{
+}
 
 impl<C> InnerUser for PmacCore<C>
 where

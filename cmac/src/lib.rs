@@ -53,16 +53,16 @@
 pub use digest;
 pub use digest::Mac;
 
-use cipher::{BlockEncryptMut, BlockCipher, Block};
+use cipher::{Block, BlockCipher, BlockEncryptMut};
 
-use digest::{
-    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
-    crypto_common::{InnerInit, InnerUser, BlockSizeUser},
-    core_api::{UpdateCore, FixedOutputCore, BufferUser, CoreWrapper},
-    block_buffer::LazyBlockBuffer,
-    Output, Reset, OutputSizeUser, MacMarker,
-};
 use dbl::Dbl;
+use digest::{
+    block_buffer::LazyBlockBuffer,
+    core_api::{BufferUser, CoreWrapper, FixedOutputCore, UpdateCore},
+    crypto_common::{BlockSizeUser, InnerInit, InnerUser},
+    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
+    MacMarker, Output, OutputSizeUser, Reset,
+};
 
 /// CMAC type which operates over slices.
 pub type Cmac<C> = CoreWrapper<CmacCore<C>>;
@@ -84,7 +84,8 @@ impl<C> MacMarker for CmacCore<C>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
-{ }
+{
+}
 
 impl<C> InnerUser for CmacCore<C>
 where
@@ -123,7 +124,12 @@ where
         let key2 = key1.clone().dbl();
         let state = GenericArray::default();
 
-        Self { cipher, key1, key2, state }
+        Self {
+            cipher,
+            key1,
+            key2,
+            state,
+        }
     }
 }
 
@@ -186,10 +192,7 @@ where
 // TODO: impl Debug or AlgorithmName
 
 #[inline(always)]
-fn xor<N: ArrayLength<u8>>(
-    state: &mut GenericArray<u8, N>,
-    data: &GenericArray<u8, N>,
-) {
+fn xor<N: ArrayLength<u8>>(state: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
     for i in 0..N::USIZE {
         state[i] ^= data[i];
     }
