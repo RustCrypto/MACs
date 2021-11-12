@@ -8,31 +8,34 @@
 //!
 //! ```rust
 //! use aes::Aes128;
-//! use cmac::{Cmac, Mac, NewMac};
+//! use cmac::{Cmac, Mac};
+//! use hex_literal::hex;
 //!
 //! // Create `Mac` trait implementation, namely CMAC-AES128
 //! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //! mac.update(b"input message");
 //!
-//! // `result` has type `Output` which is a thin wrapper around array of
+//! // `result` has type `CtOutput` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.finalize();
 //! // To get underlying array use the `into_bytes` method, but be careful,
 //! // since incorrect use of the tag value may permit timing attacks which
-//! // defeat the security provided by the `Output` wrapper
+//! // defeat the security provided by the `CtOutput` wrapper
 //! let tag_bytes = result.into_bytes();
+//! assert_eq!(tag_bytes[..], hex!("4508cc6ab5e8aea8eb80f135d717d544")[..]);
 //! ```
 //!
 //! To verify the message:
 //!
 //! ```rust
 //! # use aes::Aes128;
-//! # use cmac::{Cmac, Mac, NewMac};
+//! # use cmac::{Cmac, Mac};
+//! # use hex_literal::hex;
 //! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //!
 //! mac.update(b"input message");
 //!
-//! # let tag_bytes = mac.clone().finalize().into_bytes();
+//! let tag_bytes = hex!("4508cc6ab5e8aea8eb80f135d717d544").into();
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
 //! mac.verify(&tag_bytes).unwrap();
 //! ```
@@ -50,151 +53,147 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
+pub use digest;
+pub use digest::Mac;
 
-use core::fmt;
-use crypto_mac::{
-    cipher::{BlockCipher, BlockEncrypt},
+use cipher::{BlockEncryptMut, BlockCipher, Block};
+
+use digest::{
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
-    Output,
+    crypto_common::{InnerInit, InnerUser, BlockSizeUser},
+    core_api::{UpdateCore, FixedOutputCore, BufferUser, CoreWrapper},
+    block_buffer::LazyBlockBuffer,
+    Output, Reset, OutputSizeUser, MacMarker,
 };
 use dbl::Dbl;
 
-type Block<N> = GenericArray<u8, N>;
+/// CMAC type which operates over slices.
+pub type Cmac<C> = CoreWrapper<CmacCore<C>>;
 
-/// Generic CMAC instance
+/// Core CMAC type which operates over blocks.
 #[derive(Clone)]
-pub struct Cmac<C>
+pub struct CmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
 {
     cipher: C,
-    key1: Block<C::BlockSize>,
-    key2: Block<C::BlockSize>,
-    buffer: Block<C::BlockSize>,
-    pos: usize,
+    key1: Block<C>,
+    key2: Block<C>,
+    state: Block<C>,
 }
 
-impl<C> FromBlockCipher for Cmac<C>
+impl<C> MacMarker for CmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
-{
-    type Cipher = C;
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{ }
 
-    fn from_cipher(cipher: C) -> Self {
+impl<C> InnerUser for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    type Inner = C;
+}
+
+impl<C> BlockSizeUser for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    type BlockSize = C::BlockSize;
+}
+
+impl<C> OutputSizeUser for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    type OutputSize = C::BlockSize;
+}
+
+impl<C> InnerInit for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    fn inner_init(mut cipher: C) -> Self {
         let mut subkey = GenericArray::default();
-        cipher.encrypt_block(&mut subkey);
+        cipher.encrypt_block_mut(&mut subkey);
 
         let key1 = subkey.dbl();
         let key2 = key1.clone().dbl();
+        let state = GenericArray::default();
 
-        Cmac {
-            cipher,
-            key1,
-            key2,
-            buffer: Default::default(),
-            pos: 0,
+        Self { cipher, key1, key2, state }
+    }
+}
+
+impl<C> UpdateCore for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    fn update_blocks(&mut self, blocks: &[Block<Self>]) {
+        for block in blocks {
+            xor(&mut self.state, block);
+            self.cipher.encrypt_block_mut(&mut self.state);
         }
     }
 }
 
-impl<C> Mac for Cmac<C>
+impl<C> BufferUser for CmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
 {
-    type OutputSize = C::BlockSize;
+    type Buffer = LazyBlockBuffer<C::BlockSize>;
+}
 
+impl<C> FixedOutputCore for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
     #[inline]
-    fn update(&mut self, mut data: &[u8]) {
-        let n = C::BlockSize::to_usize();
-
-        let rem = n - self.pos;
-        if data.len() >= rem {
-            let (l, r) = data.split_at(rem);
-            data = r;
-            for (a, b) in self.buffer[self.pos..].iter_mut().zip(l) {
-                *a ^= *b;
-            }
-            self.pos = n;
+    fn finalize_fixed_core(
+        &mut self,
+        buffer: &mut LazyBlockBuffer<Self::BlockSize>,
+        out: &mut Output<Self>,
+    ) {
+        let pos = buffer.get_pos();
+        let mut res = buffer.pad_zeros();
+        if pos == C::BlockSize::USIZE {
+            xor(&mut res, &self.key1);
         } else {
-            for (a, b) in self.buffer[self.pos..].iter_mut().zip(data) {
-                *a ^= *b;
-            }
-            self.pos += data.len();
-            return;
+            res[pos] ^= 0x80;
+            xor(&mut res, &self.key2);
         }
-
-        while data.len() >= n {
-            self.cipher.encrypt_block(&mut self.buffer);
-
-            let (l, r) = data.split_at(n);
-            let block = GenericArray::from_slice(l);
-            data = r;
-
-            xor(&mut self.buffer, block);
-        }
-
-        if !data.is_empty() {
-            self.cipher.encrypt_block(&mut self.buffer);
-            for (a, b) in self.buffer.iter_mut().zip(data) {
-                *a ^= *b;
-            }
-            self.pos = data.len();
-        }
+        xor(&mut self.state, res);
+        self.cipher.encrypt_block_b2b_mut(&self.state, out);
     }
+}
 
+impl<C> Reset for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
     #[inline]
-    fn finalize(self) -> Output<Self> {
-        let n = C::BlockSize::to_usize();
-        let mut buf = self.buffer.clone();
-        if self.pos == n {
-            xor(&mut buf, &self.key1);
-        } else {
-            xor(&mut buf, &self.key2);
-            buf[self.pos] ^= 0x80;
-        }
-        self.cipher.encrypt_block(&mut buf);
-        Output::new(buf)
-    }
-
     fn reset(&mut self) {
-        self.buffer = Default::default();
-        self.pos = 0;
+        self.state = Default::default();
     }
 }
 
-impl<C> fmt::Debug for Cmac<C>
-where
-    C: BlockCipher + BlockEncrypt + Clone + fmt::Debug,
-    Block<C::BlockSize>: Dbl,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        write!(f, "Cmac-{:?}", self.cipher)
-    }
-}
+// TODO: impl Debug or AlgorithmName
 
 #[inline(always)]
-fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
-    for i in 0..L::to_usize() {
-        buf[i] ^= data[i];
-    }
-}
-
-#[cfg(feature = "std")]
-impl<C> std::io::Write for Cmac<C>
-where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
-{
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Mac::update(self, buf);
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
+fn xor<N: ArrayLength<u8>>(
+    state: &mut GenericArray<u8, N>,
+    data: &GenericArray<u8, N>,
+) {
+    for i in 0..N::USIZE {
+        state[i] ^= data[i];
     }
 }

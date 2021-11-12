@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "blake2-mac",
     "cmac",
     "daa",
     "hmac",
@@ -9,6 +8,9 @@ members = [
 
 [patch.crates-io]
 digest = { git = "https://github.com/RustCrypto/traits/", branch = "new_traits" }
-crypto-mac = { git = "https://github.com/RustCrypto/traits/", branch = "new_traits" }
+cipher = { git = "https://github.com/RustCrypto/traits/", branch = "new_traits" }
 block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "pad_error" }
-blake2 = { git = "https://github.com/RustCrypto/hashes", branch = "digest/v0.10.0-pre" }
+inout = { git = "https://github.com/RustCrypto/utils", branch = "pad_error" }
+aes = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
+kuznyechik = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
+magma = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
