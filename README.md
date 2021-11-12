@@ -4,12 +4,12 @@ Collection of [Message Authentication Code][1] (MAC) algorithms written in pure 
 
 ## Crates
 
-| Name   | Algorithm | Crates.io     | Documentation | MSRV |
-|--------|-----------|---------------|---------------|------|
-| `cmac` | [CMAC]    | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | 1.41 |
-| `daa`  | [DAA]     | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) | 1.41 |
-| `hmac` | [HMAC]    | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) | 1.41 |
-| `pmac` | [PMAC]    | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | 1.41 |
+| Algorithm | Crate  | Crates.io     | Documentation | MSRV |
+|-----------|--------|---------------|---------------|------|
+| [CMAC]    | `cmac` | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | ![Minimum Supported Rust Version][msrv-1.41] |
+| [DAA]     | `daa`  | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) | ![Minimum Supported Rust Version][msrv-1.41] |
+| [HMAC]    | `hmac` | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) | ![Minimum Supported Rust Version][msrv-1.41] |
+| [PMAC]    | `pmac` | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | ![Minimum Supported Rust Version][msrv-1.41] |
 
 ## License
 
@@ -22,8 +22,7 @@ at your option.
 
 ### Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
@@ -31,6 +30,7 @@ for inclusion in the work by you, as defined in the Apache-2.0 license
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 [deps-image]: https://deps.rs/repo/github/RustCrypto/MACs/status.svg
 [deps-link]: https://deps.rs/repo/github/RustCrypto/MACs
+[msrv-1.41]: https://img.shields.io/badge/rustc-1.41.0+-blue.svg
 
 [//]: # (footnotes)
 
