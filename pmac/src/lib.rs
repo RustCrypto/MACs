@@ -8,7 +8,8 @@
 //!
 //! ```rust
 //! use aes::Aes128;
-//! use pmac::{Pmac, Mac, NewMac};
+//! use pmac::{Pmac, Mac};
+//! use hex_literal::hex;
 //!
 //! // Create `Mac` trait implementation, namely PMAC-AES128
 //! let mut mac = Pmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
@@ -21,20 +22,22 @@
 //! // incorrect use of the tag value may permit timing attacks which defeat
 //! // the security provided by the `Output` wrapper
 //! let tag_bytes = result.into_bytes();
+//! assert_eq!(tag_bytes[..], hex!("b8c60dc25262f0bfd071ffa692d04252")[..]);
 //! ```
 //!
 //! To verify the message:
 //!
 //! ```rust
 //! # use aes::Aes128;
-//! # use pmac::{Pmac, Mac, NewMac};
+//! # use pmac::{Pmac, Mac};
+//! # use hex_literal::hex;
 //! let mut mac = Pmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //!
 //! mac.update(b"input message");
 //!
-//! # let tag_bytes = mac.clone().finalize().into_bytes();
+//! let tag_bytes = hex!("b8c60dc25262f0bfd071ffa692d04252");
 //! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
-//! mac.verify(&tag_bytes).unwrap();
+//! mac.verify(&tag_bytes.into()).unwrap();
 //! ```
 //!
 //! [1]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
@@ -47,260 +50,179 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(feature = "std")]
-extern crate std;
+pub use digest;
+pub use digest::Mac;
 
-pub use crypto_mac::{self, FromBlockCipher, Mac, NewMac};
+use cipher::{BlockEncryptMut, BlockCipher, Block};
 
-use core::{fmt, slice};
-use crypto_mac::{
-    cipher::{BlockCipher, BlockEncrypt},
+use digest::{
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
-    Output,
+    crypto_common::{InnerInit, InnerUser, BlockSizeUser},
+    core_api::{UpdateCore, FixedOutputCore, BufferUser, CoreWrapper},
+    block_buffer::LazyBlockBuffer,
+    Output, Reset, OutputSizeUser, MacMarker,
 };
 use dbl::Dbl;
-
-type Block<N> = GenericArray<u8, N>;
-type ParBlocks<N, M> = GenericArray<GenericArray<u8, N>, M>;
 
 /// Will use only precomputed table up to 16*2^20 = 16 MB of input data
 /// (for 128 bit cipher), after that will dynamically calculate L value if
 /// needed. In future it can become parameter of `Pmac`.
 const LC_SIZE: usize = 20;
 
-/// Generic PMAC instance
+/// Generic PMAC instance which operates over bytes.
+pub type Pmac<C> = CoreWrapper<PmacCore<C>>;
+
+/// Generic core PMAC instance which operates over blocks.
 #[derive(Clone)]
-pub struct Pmac<C>
+pub struct PmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
 {
     cipher: C,
-    l_inv: Block<C::BlockSize>,
-    l_cache: [Block<C::BlockSize>; LC_SIZE],
-    buffer: ParBlocks<C::BlockSize, C::ParBlocks>,
-    tag: Block<C::BlockSize>,
-    offset: Block<C::BlockSize>,
-    pos: usize,
+    l_cache: [Block<C>; LC_SIZE],
+    tag: Block<C>,
+    offset: Block<C>,
     counter: usize,
 }
 
-impl<C> Pmac<C>
+impl<C> MacMarker for PmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{}
+
+impl<C> InnerUser for PmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
 {
-    /// Process full buffer and update tag
-    #[inline(always)]
-    fn process_buffer(&mut self) {
-        let mut offset = self.offset.clone();
-        let mut counter = self.counter;
-        let mut buf = self.buffer.clone();
-        for val in buf.iter_mut() {
-            let l = self.get_l(counter);
-            xor(&mut offset, &l);
-            counter += 1;
-            xor(val, &offset);
-        }
-        self.counter = counter;
-        self.offset = offset;
-
-        // encrypt blocks in the buffer
-        self.cipher.encrypt_blocks(&mut buf);
-        // and xor them into tag
-        for val in buf.iter() {
-            xor(&mut self.tag, val);
-        }
-    }
-
-    /// Represent internal buffer as bytes slice (hopefully in future we will
-    /// be able to switch `&mut [u8]` to `&mut [u8; BlockSize*ParBlocks]`)
-    #[inline(always)]
-    fn as_mut_bytes(&mut self) -> &mut [u8] {
-        #[allow(unsafe_code)]
-        unsafe {
-            slice::from_raw_parts_mut(
-                &mut self.buffer as *mut ParBlocks<C::BlockSize, C::ParBlocks> as *mut u8,
-                C::BlockSize::to_usize() * C::ParBlocks::to_usize(),
-            )
-        }
-    }
-
-    #[inline(always)]
-    fn get_l(&self, counter: usize) -> Block<C::BlockSize> {
-        let ntz = counter.trailing_zeros() as usize;
-        if ntz < LC_SIZE {
-            self.l_cache[ntz].clone()
-        } else {
-            let mut block = self.l_cache[LC_SIZE - 1].clone();
-            for _ in LC_SIZE - 1..ntz {
-                block = block.dbl();
-            }
-            block
-        }
-    }
+    type Inner = C;
 }
 
-impl<C> FromBlockCipher for Pmac<C>
+impl<C> BlockSizeUser for PmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
 {
-    type Cipher = C;
+    type BlockSize = C::BlockSize;
+}
 
-    fn from_cipher(cipher: C) -> Self {
-        let mut l0 = Default::default();
-        cipher.encrypt_block(&mut l0);
+impl<C> OutputSizeUser for PmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    type OutputSize = C::BlockSize;
+}
 
-        let mut l_cache: [Block<C::BlockSize>; LC_SIZE] = Default::default();
-        l_cache[0] = l0.clone();
+impl<C> BufferUser for PmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    type Buffer = LazyBlockBuffer<Self::BlockSize>;
+}
+
+impl<C> InnerInit for PmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    #[inline]
+    fn inner_init(mut cipher: C) -> Self {
+        let mut l_cache: [Block<C>; LC_SIZE] = Default::default();
+        cipher.encrypt_block_mut(&mut l_cache[0]);
         for i in 1..LC_SIZE {
             l_cache[i] = l_cache[i - 1].clone().dbl();
         }
 
-        let l_inv = l0.inv_dbl();
-
         Self {
             cipher,
-            l_inv,
             l_cache,
-            buffer: Default::default(),
             tag: Default::default(),
             offset: Default::default(),
-            pos: 0,
             counter: 1,
         }
     }
 }
 
-impl<C> Mac for Pmac<C>
+impl<C> UpdateCore for PmacCore<C>
 where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
 {
-    type OutputSize = C::BlockSize;
-
     #[inline]
-    fn update(&mut self, mut data: &[u8]) {
-        let n = C::BlockSize::to_usize() * C::ParBlocks::to_usize();
+    fn update_blocks(&mut self, blocks: &[Block<Self>]) {
+        // TODO: use parallel encryption, move the branching outside the loop
+        for block in blocks {
+            let ntz = self.counter.trailing_zeros() as usize;
+            let l = if ntz < LC_SIZE {
+                self.l_cache[ntz].clone()
+            } else {
+                let mut block = self.l_cache[LC_SIZE - 1].clone();
+                for _ in LC_SIZE - 1..ntz {
+                    block = block.dbl();
+                }
+                block
+            };
 
-        let p = self.pos;
-        let rem = n - p;
-        if data.len() >= rem {
-            let (l, r) = data.split_at(rem);
-            data = r;
-            self.as_mut_bytes()[p..].clone_from_slice(l);
-        } else {
-            self.as_mut_bytes()[p..p + data.len()].clone_from_slice(data);
-            self.pos += data.len();
-            return;
-        }
-
-        while data.len() >= n {
-            self.process_buffer();
-
-            let (l, r) = data.split_at(n);
-            self.as_mut_bytes().clone_from_slice(l);
-            data = r;
-        }
-
-        self.pos = n;
-
-        if !data.is_empty() {
-            self.process_buffer();
-            self.as_mut_bytes()[..data.len()].clone_from_slice(data);
-            self.pos = data.len();
+            xor(&mut self.offset, &l);
+            self.counter += 1;
+            let mut block = block.clone();
+            xor(&mut block, &self.offset);
+            self.cipher.encrypt_block_mut(&mut block);
+            xor(&mut self.tag, &block);
         }
     }
+}
 
-    fn finalize(self) -> Output<Self> {
-        let mut tag = self.tag.clone();
-        // Special case for empty input
-        if self.pos == 0 {
-            tag[0] = 0x80;
-            self.cipher.encrypt_block(&mut tag);
-            return Output::new(tag);
-        }
-
-        let bs = C::BlockSize::to_usize();
-        let k = self.pos % bs;
-        let is_full = k == 0;
-        // number of full blocks excluding last
-        let n = if is_full {
-            (self.pos / bs) - 1
-        } else {
-            self.pos / bs
-        };
-        assert!(n < C::ParBlocks::to_usize(), "invalid buffer position");
-
-        let mut offset = self.offset.clone();
-        let mut counter = self.counter;
-        for i in 0..n {
-            let mut buf = self.buffer[i].clone();
-
-            let l = self.get_l(counter);
-            xor(&mut offset, &l);
-            xor(&mut buf, &offset);
-            self.cipher.encrypt_block(&mut buf);
-
-            xor(&mut tag, &buf);
-            counter += 1;
-        }
+impl<C> FixedOutputCore for PmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    #[inline]
+    fn finalize_fixed_core(
+        &mut self,
+        buffer: &mut LazyBlockBuffer<Self::BlockSize>,
+        out: &mut Output<Self>,
+    ) {
+        let pos = buffer.get_pos();
+        let is_full = pos == Self::BlockSize::USIZE;
+        let last_block = buffer.pad_zeros();
 
         if is_full {
-            xor(&mut tag, &self.buffer[n]);
-            xor(&mut tag, &self.l_inv);
+            xor(&mut self.tag, last_block);
+            let l_inv = self.l_cache[0].clone().inv_dbl();
+            xor(&mut self.tag, &l_inv);
         } else {
-            let mut block = self.buffer[n].clone();
-            block[k] = 0x80;
-            for v in block[k + 1..].iter_mut() {
-                *v = 0;
-            }
-            xor(&mut tag, &block);
+            last_block[pos] = 0x80;
+            xor(&mut self.tag, last_block);
         }
 
-        self.cipher.encrypt_block(&mut tag);
-        Output::new(tag)
+        self.cipher.encrypt_block_b2b_mut(&self.tag, out);
     }
+}
 
+impl<C> Reset for PmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    #[inline]
     fn reset(&mut self) {
-        self.buffer = Default::default();
         self.tag = Default::default();
         self.offset = Default::default();
-        self.pos = 0;
         self.counter = 1;
     }
 }
 
-impl<C> fmt::Debug for Pmac<C>
-where
-    C: BlockCipher + BlockEncrypt + Clone + fmt::Debug,
-    Block<C::BlockSize>: Dbl,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        write!(f, "Pmac{:?}", self.cipher)
-    }
-}
+// TODO: impl Debug or AlgorithmName
 
 #[inline(always)]
-fn xor<L: ArrayLength<u8>>(buf: &mut Block<L>, data: &Block<L>) {
-    for i in 0..L::to_usize() {
+fn xor<N: ArrayLength<u8>>(buf: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
+    for i in 0..N::USIZE {
         buf[i] ^= data[i];
-    }
-}
-
-#[cfg(feature = "std")]
-impl<C> std::io::Write for Pmac<C>
-where
-    C: BlockCipher + BlockEncrypt + Clone,
-    Block<C::BlockSize>: Dbl,
-{
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Mac::update(self, buf);
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
     }
 }

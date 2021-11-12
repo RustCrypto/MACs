@@ -4,23 +4,11 @@ version = 3
 
 [[package]]
 name = "aes"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e8b47f52ea9bae42228d07ec09eb676433d7c4ed1ebdf0f1d1c29ed446f1ab8"
-dependencies = [
- "cfg-if",
- "cipher 0.3.0",
- "cpufeatures",
- "opaque-debug",
-]
-
-[[package]]
-name = "aes"
 version = "0.8.0"
 source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
  "cfg-if",
- "cipher 0.4.0",
+ "cipher",
  "cpufeatures",
 ]
 
@@ -71,15 +59,6 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ee52072ec15386f770805afd189a01c8841be8696bed250fa2f13c4c0d6dfb7"
-dependencies = [
- "generic-array",
-]
-
-[[package]]
-name = "cipher"
 version = "0.4.0"
 source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#8e443f4cae9a8d7713ed7a9d68b670e9d1c19475"
 dependencies = [
@@ -93,8 +72,8 @@ dependencies = [
 name = "cmac"
 version = "0.6.0"
 dependencies = [
- "aes 0.8.0",
- "cipher 0.4.0",
+ "aes",
+ "cipher",
  "dbl",
  "digest 0.10.0",
  "hex-literal",
@@ -120,18 +99,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crypto-mac"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1d1a86f49236c215f271d40892d5fc950490551400b02ef360692c29815c714"
-dependencies = [
- "blobby",
- "cipher 0.3.0",
- "generic-array",
- "subtle",
-]
-
-[[package]]
 name = "daa"
 version = "0.5.0"
 dependencies = [
@@ -154,7 +121,7 @@ name = "des"
 version = "0.8.0"
 source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
- "cipher 0.4.0",
+ "cipher",
 ]
 
 [[package]]
@@ -230,7 +197,7 @@ name = "kuznyechik"
 version = "0.8.0"
 source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
- "cipher 0.4.0",
+ "cipher",
 ]
 
 [[package]]
@@ -244,7 +211,7 @@ name = "magma"
 version = "0.8.0"
 source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
 dependencies = [
- "cipher 0.4.0",
+ "cipher",
 ]
 
 [[package]]
@@ -268,9 +235,11 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 name = "pmac"
 version = "0.6.0"
 dependencies = [
- "aes 0.7.5",
- "crypto-mac",
+ "aes",
+ "cipher",
  "dbl",
+ "digest 0.10.0",
+ "hex-literal",
 ]
 
 [[package]]
