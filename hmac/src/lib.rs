@@ -74,7 +74,7 @@ use digest::{
         OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
-    HashMarker, InvalidLength, KeyInit, MacMarker, Output,
+    Digest, InvalidLength, KeyInit, MacMarker, Output,
 };
 
 const IPAD: u8 = 0x36;
@@ -87,9 +87,8 @@ pub type Hmac<D> = CoreWrapper<HmacCore<D>>;
 #[derive(Clone)]
 pub struct HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     digest: D::Core,
     opad_digest: D::Core,
@@ -98,53 +97,47 @@ where
 
 impl<D> MacMarker for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
 }
 
 impl<D> BufferKindUser for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     type BufferKind = Eager;
 }
 
 impl<D> KeySizeUser for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     type KeySize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
 }
 
 impl<D> BlockSizeUser for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     type BlockSize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
 }
 
 impl<D> OutputSizeUser for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     type OutputSize = <<D as CoreProxy>::Core as OutputSizeUser>::OutputSize;
 }
 
 impl<D> KeyInit for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     fn new(key: &Key<Self>) -> Self {
         Self::new_from_slice(key.as_slice()).unwrap()
@@ -201,9 +194,8 @@ where
 
 impl<D> UpdateCore for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     #[inline(always)]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -213,9 +205,8 @@ where
 
 impl<D> FixedOutputCore for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core:
-        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     #[inline(always)]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
