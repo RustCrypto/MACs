@@ -57,6 +57,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_root_url = "https://docs.rs/hmac/0.12.0"
 )]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
@@ -76,6 +77,8 @@ use digest::{
     crypto_common::{Key, KeySizeUser},
     Digest, InvalidLength, KeyInit, MacMarker, Output,
 };
+#[cfg(feature = "reset")]
+use digest::Reset;
 
 const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5C;
@@ -91,7 +94,8 @@ where
 {
     digest: D::Core,
     opad_digest: D::Core,
-    // ipad_digest: D,
+    #[cfg(feature = "reset")]
+    der_key: Block<D::Core>,
 }
 
 impl<D> Clone for HmacCore<D>
@@ -103,6 +107,8 @@ where
         Self {
             digest: self.digest.clone(),
             opad_digest: self.opad_digest.clone(),
+            #[cfg(feature = "reset")]
+            der_key: self.der_key.clone(),
         }
     }
 }
@@ -165,12 +171,7 @@ where
         if key.len() <= der_key.len() {
             der_key[..key.len()].copy_from_slice(key);
         } else {
-            let mut h = D::Core::default();
-            let mut hash = Output::<D::Core>::default();
-            let mut buffer = Buffer::<D::Core>::default();
-            buffer.digest_blocks(key, |b| h.update_blocks(b));
-            h.finalize_fixed_core(&mut buffer, &mut hash);
-
+            let hash = D::digest(key);
             // All commonly used hash functions have block size bigger
             // than output hash size, but to be extra rigorous we
             // handle the potential uncommon cases as well.
@@ -184,22 +185,25 @@ where
             }
         }
 
-        for b in der_key.iter_mut() {
+        let mut buf = der_key.clone();
+        for b in buf.iter_mut() {
             *b ^= IPAD;
         }
         let mut digest = D::Core::default();
-        digest.update_blocks(slice::from_ref(&der_key));
+        digest.update_blocks(slice::from_ref(&buf));
 
-        for b in der_key.iter_mut() {
+        for b in buf.iter_mut() {
             *b ^= IPAD ^ OPAD;
         }
 
         let mut opad_digest = D::Core::default();
-        opad_digest.update_blocks(slice::from_ref(&der_key));
+        opad_digest.update_blocks(slice::from_ref(&buf));
 
         Ok(Self {
             opad_digest,
             digest,
+            #[cfg(feature = "reset")]
+            der_key,
         })
     }
 }
@@ -230,6 +234,33 @@ where
         let h = &mut self.opad_digest;
         buffer.digest_blocks(&hash, |b| h.update_blocks(b));
         h.finalize_fixed_core(buffer, out);
+    }
+}
+
+#[cfg(feature = "reset")]
+#[cfg_attr(docsrs, doc(cfg(feature = "reset")))]
+impl<D> Reset for HmacCore<D>
+where
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+{
+    #[inline(always)]
+    fn reset(&mut self) {
+        let mut buf = self.der_key.clone();
+        for b in buf.iter_mut() {
+            *b ^= IPAD;
+        }
+        let mut digest = D::Core::default();
+        digest.update_blocks(slice::from_ref(&buf));
+        self.digest = digest;
+
+        for b in buf.iter_mut() {
+            *b ^= IPAD ^ OPAD;
+        }
+
+        let mut opad_digest = D::Core::default();
+        opad_digest.update_blocks(slice::from_ref(&buf));
+        self.opad_digest = opad_digest;
     }
 }
 
