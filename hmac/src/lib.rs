@@ -10,11 +10,11 @@
 //! To get the authentication code:
 //!
 //! ```rust
-//! use sha2::Sha256Core;
+//! use sha2::Sha256;
 //! use hmac::{Hmac, Mac};
 //!
 //! // Create alias for HMAC-SHA256
-//! type HmacSha256 = Hmac<Sha256Core>;
+//! type HmacSha256 = Hmac<Sha256>;
 //!
 //! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
@@ -32,9 +32,9 @@
 //! To verify the message:
 //!
 //! ```rust
-//! # use sha2::Sha256Core;
+//! # use sha2::Sha256;
 //! # use hmac::{Hmac, Mac};
-//! # type HmacSha256 = Hmac<Sha256Core>;
+//! # type HmacSha256 = Hmac<Sha256>;
 //! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
 //!
@@ -70,8 +70,8 @@ use core::slice;
 use digest::{
     block_buffer::Eager,
     core_api::{
-        Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
-        UpdateCore,
+        Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper, FixedOutputCore,
+        OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
     HashMarker, InvalidLength, KeyInit, MacMarker, Output,
@@ -87,49 +87,64 @@ pub type Hmac<D> = CoreWrapper<HmacCore<D>>;
 #[derive(Clone)]
 pub struct HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    digest: D,
-    opad_digest: D,
+    digest: D::Core,
+    opad_digest: D::Core,
     // ipad_digest: D,
 }
 
-impl<D> MacMarker for HmacCore<D> where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default
+impl<D> MacMarker for HmacCore<D>
+where
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
 }
 
 impl<D> BufferKindUser for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     type BufferKind = Eager;
 }
 
 impl<D> KeySizeUser for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    type KeySize = D::BlockSize;
+    type KeySize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
 }
 
 impl<D> BlockSizeUser for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    type BlockSize = D::BlockSize;
+    type BlockSize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
 }
 
 impl<D> OutputSizeUser for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    type OutputSize = D::OutputSize;
+    type OutputSize = <<D as CoreProxy>::Core as OutputSizeUser>::OutputSize;
 }
 
 impl<D> KeyInit for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     fn new(key: &Key<Self>) -> Self {
         Self::new_from_slice(key.as_slice()).unwrap()
@@ -145,9 +160,9 @@ where
         if key.len() <= der_key.len() {
             der_key[..key.len()].copy_from_slice(key);
         } else {
-            let mut h = D::default();
-            let mut hash = Output::<D>::default();
-            let mut buffer = Buffer::<D>::default();
+            let mut h = D::Core::default();
+            let mut hash = Output::<D::Core>::default();
+            let mut buffer = Buffer::<D::Core>::default();
             buffer.digest_blocks(key, |b| h.update_blocks(b));
             h.finalize_fixed_core(&mut buffer, &mut hash);
 
@@ -167,14 +182,14 @@ where
         for b in der_key.iter_mut() {
             *b ^= IPAD;
         }
-        let mut digest = D::default();
+        let mut digest = D::Core::default();
         digest.update_blocks(slice::from_ref(&der_key));
 
         for b in der_key.iter_mut() {
             *b ^= IPAD ^ OPAD;
         }
 
-        let mut opad_digest = D::default();
+        let mut opad_digest = D::Core::default();
         opad_digest.update_blocks(slice::from_ref(&der_key));
 
         Ok(Self {
@@ -186,7 +201,9 @@ where
 
 impl<D> UpdateCore for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     #[inline(always)]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -196,11 +213,13 @@ where
 
 impl<D> FixedOutputCore for HmacCore<D>
 where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D: CoreProxy,
+    D::Core:
+        HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     #[inline(always)]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
-        let mut hash = Output::<D>::default();
+        let mut hash = Output::<D::Core>::default();
         self.digest.finalize_fixed_core(buffer, &mut hash);
         // finalize_fixed_core should reset the buffer as well, but
         // to be extra safe we reset it explicitly again.
