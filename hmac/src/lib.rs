@@ -84,7 +84,6 @@ const OPAD: u8 = 0x5C;
 pub type Hmac<D> = CoreWrapper<HmacCore<D>>;
 
 /// Generic core HMAC instance, which operates over blocks.
-#[derive(Clone)]
 pub struct HmacCore<D>
 where
     D: CoreProxy + Digest,
@@ -93,6 +92,19 @@ where
     digest: D::Core,
     opad_digest: D::Core,
     // ipad_digest: D,
+}
+
+impl<D> Clone for HmacCore<D>
+where
+    D: CoreProxy + Digest,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            digest: self.digest.clone(),
+            opad_digest: self.opad_digest.clone(),
+        }
+    }
 }
 
 impl<D> MacMarker for HmacCore<D>
