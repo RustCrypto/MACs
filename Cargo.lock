@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "aes"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e048e5ac8512d7019e2226296bd774c50dc40ee3"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -103,7 +103,7 @@ dependencies = [
 [[package]]
 name = "des"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e048e5ac8512d7019e2226296bd774c50dc40ee3"
 dependencies = [
  "cipher",
 ]
@@ -170,7 +170,7 @@ dependencies = [
 [[package]]
 name = "kuznyechik"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e048e5ac8512d7019e2226296bd774c50dc40ee3"
 dependencies = [
  "cipher",
 ]
@@ -184,7 +184,7 @@ checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
 [[package]]
 name = "magma"
 version = "0.8.0"
-source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e676532a82113081bfa53171f0d425dadfdcb9a4"
+source = "git+https://github.com/RustCrypto/block-ciphers/?branch=cipher_v0.4#e048e5ac8512d7019e2226296bd774c50dc40ee3"
 dependencies = [
  "cipher",
 ]

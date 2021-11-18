@@ -32,11 +32,12 @@ pub use digest::Mac;
 
 use des::cipher::BlockEncryptMut;
 
+use core::fmt;
 use des::Des;
 use digest::{
     block_buffer::Eager,
     core_api::{Block, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore},
-    crypto_common::{BlockSizeUser, InnerInit, InnerUser},
+    crypto_common::{AlgorithmName, BlockSizeUser, InnerInit, InnerUser},
     generic_array::{ArrayLength, GenericArray},
     MacMarker, Output, OutputSizeUser, Reset,
 };
@@ -107,7 +108,17 @@ impl Reset for DaaCore {
     }
 }
 
-// TODO: impl Debug or AlgorithmName
+impl AlgorithmName for DaaCore {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Daa")
+    }
+}
+
+impl fmt::Debug for DaaCore {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("DaaCore { ... }")
+    }
+}
 
 #[inline(always)]
 fn xor<N: ArrayLength<u8>>(state: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {

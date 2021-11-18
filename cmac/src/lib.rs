@@ -56,11 +56,12 @@ pub use digest::Mac;
 
 use cipher::{BlockCipher, BlockEncryptMut};
 
+use core::fmt;
 use dbl::Dbl;
 use digest::{
     block_buffer::Lazy,
     core_api::{Block, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore},
-    crypto_common::{BlockSizeUser, InnerInit, InnerUser},
+    crypto_common::{AlgorithmName, BlockSizeUser, InnerInit, InnerUser},
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
     MacMarker, Output, OutputSizeUser, Reset,
 };
@@ -186,7 +187,29 @@ where
     }
 }
 
-// TODO: impl Debug or AlgorithmName
+impl<C> AlgorithmName for CmacCore<C>
+where
+    C: AlgorithmName + BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cmac<")?;
+        C::write_alg_name(f)?;
+        f.write_str(">")
+    }
+}
+
+impl<C> fmt::Debug for CmacCore<C>
+where
+    C: AlgorithmName + BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("CmacCore<")?;
+        C::write_alg_name(f)?;
+        f.write_str("> { ... }")
+    }
+}
 
 #[inline(always)]
 fn xor<N: ArrayLength<u8>>(state: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
