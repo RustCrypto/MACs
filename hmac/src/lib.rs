@@ -67,14 +67,14 @@ extern crate std;
 pub use digest;
 pub use digest::Mac;
 
-use core::slice;
+use core::{fmt, slice};
 #[cfg(feature = "reset")]
 use digest::Reset;
 use digest::{
     block_buffer::Eager,
     core_api::{
-        Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper, FixedOutputCore,
-        OutputSizeUser, UpdateCore,
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper,
+        FixedOutputCore, OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
     Digest, InvalidLength, KeyInit, MacMarker, Output,
@@ -90,12 +90,12 @@ pub type Hmac<D> = CoreWrapper<HmacCore<D>>;
 pub struct HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     digest: D::Core,
     opad_digest: D::Core,
     #[cfg(feature = "reset")]
-    der_key: Block<D::Core>,
+    ipad_digest: D::Core,
 }
 
 impl<D> Clone for HmacCore<D>
@@ -108,7 +108,7 @@ where
             digest: self.digest.clone(),
             opad_digest: self.opad_digest.clone(),
             #[cfg(feature = "reset")]
-            der_key: self.der_key.clone(),
+            ipad_digest: self.ipad_digest.clone(),
         }
     }
 }
@@ -116,14 +116,14 @@ where
 impl<D> MacMarker for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
 }
 
 impl<D> BufferKindUser for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     type BufferKind = Eager;
 }
@@ -131,7 +131,7 @@ where
 impl<D> KeySizeUser for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     type KeySize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
 }
@@ -139,7 +139,7 @@ where
 impl<D> BlockSizeUser for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     type BlockSize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
 }
@@ -147,7 +147,7 @@ where
 impl<D> OutputSizeUser for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     type OutputSize = <<D as CoreProxy>::Core as OutputSizeUser>::OutputSize;
 }
@@ -155,7 +155,7 @@ where
 impl<D> KeyInit for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     fn new(key: &Key<Self>) -> Self {
         Self::new_from_slice(key.as_slice()).unwrap()
@@ -200,10 +200,10 @@ where
         opad_digest.update_blocks(slice::from_ref(&buf));
 
         Ok(Self {
+            #[cfg(feature = "reset")]
+            ipad_digest: digest.clone(),
             opad_digest,
             digest,
-            #[cfg(feature = "reset")]
-            der_key,
         })
     }
 }
@@ -211,7 +211,7 @@ where
 impl<D> UpdateCore for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     #[inline(always)]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -222,7 +222,7 @@ where
 impl<D> FixedOutputCore for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     #[inline(always)]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
@@ -231,7 +231,10 @@ where
         // finalize_fixed_core should reset the buffer as well, but
         // to be extra safe we reset it explicitly again.
         buffer.reset();
+        #[cfg(not(feature = "reset"))]
         let h = &mut self.opad_digest;
+        #[cfg(feature = "reset")]
+        let mut h = self.opad_digest.clone();
         buffer.digest_blocks(&hash, |b| h.update_blocks(b));
         h.finalize_fixed_core(buffer, out);
     }
@@ -242,26 +245,44 @@ where
 impl<D> Reset for HmacCore<D>
 where
     D: CoreProxy + Digest,
-    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+    D::Core: UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default + Clone,
 {
     #[inline(always)]
     fn reset(&mut self) {
-        let mut buf = self.der_key.clone();
-        for b in buf.iter_mut() {
-            *b ^= IPAD;
-        }
-        let mut digest = D::Core::default();
-        digest.update_blocks(slice::from_ref(&buf));
-        self.digest = digest;
-
-        for b in buf.iter_mut() {
-            *b ^= IPAD ^ OPAD;
-        }
-
-        let mut opad_digest = D::Core::default();
-        opad_digest.update_blocks(slice::from_ref(&buf));
-        self.opad_digest = opad_digest;
+        self.digest = self.ipad_digest.clone();
     }
 }
 
-// TODO: impl Debug or AlgorithmName
+impl<D> AlgorithmName for HmacCore<D>
+where
+    D: CoreProxy + Digest,
+    D::Core: AlgorithmName
+        + UpdateCore
+        + FixedOutputCore
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone,
+{
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Hmac<")?;
+        <D::Core as AlgorithmName>::write_alg_name(f)?;
+        f.write_str(">")
+    }
+}
+
+impl<D> fmt::Debug for HmacCore<D>
+where
+    D: CoreProxy + Digest,
+    D::Core: AlgorithmName
+        + UpdateCore
+        + FixedOutputCore
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("HmacCore<")?;
+        <D::Core as AlgorithmName>::write_alg_name(f)?;
+        f.write_str("> { ... }")
+    }
+}
