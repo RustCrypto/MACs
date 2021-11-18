@@ -19,8 +19,9 @@
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_root_url = "https://docs.rs/daa/0.6.0"
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -33,15 +34,12 @@ use des::cipher::BlockEncryptMut;
 
 use des::Des;
 use digest::{
-    block_buffer::BlockBuffer,
-    core_api::{BufferUser, CoreWrapper, FixedOutputCore, UpdateCore},
+    block_buffer::Eager,
+    core_api::{Block, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore},
     crypto_common::{BlockSizeUser, InnerInit, InnerUser},
     generic_array::{ArrayLength, GenericArray},
     MacMarker, Output, OutputSizeUser, Reset,
 };
-
-/// Block type over which DAA operates.
-pub type Block = des::cipher::Block<Des>;
 
 /// DAA type which operates over slices.
 pub type Daa = CoreWrapper<DaaCore>;
@@ -50,13 +48,17 @@ pub type Daa = CoreWrapper<DaaCore>;
 #[derive(Clone)]
 pub struct DaaCore {
     cipher: Des,
-    state: Block,
+    state: Block<Des>,
 }
 
 impl MacMarker for DaaCore {}
 
 impl InnerUser for DaaCore {
     type Inner = Des;
+}
+
+impl BufferKindUser for DaaCore {
+    type BufferKind = Eager;
 }
 
 impl BlockSizeUser for DaaCore {
@@ -76,12 +78,8 @@ impl InnerInit for DaaCore {
     }
 }
 
-impl BufferUser for DaaCore {
-    type Buffer = BlockBuffer<Self::BlockSize>;
-}
-
 impl UpdateCore for DaaCore {
-    fn update_blocks(&mut self, blocks: &[Block]) {
+    fn update_blocks(&mut self, blocks: &[Block<Self>]) {
         for block in blocks {
             xor(&mut self.state, block);
             self.cipher.encrypt_block_mut(&mut self.state);
@@ -91,11 +89,7 @@ impl UpdateCore for DaaCore {
 
 impl FixedOutputCore for DaaCore {
     #[inline]
-    fn finalize_fixed_core(
-        &mut self,
-        buffer: &mut BlockBuffer<Self::BlockSize>,
-        out: &mut Output<Self>,
-    ) {
+    fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
         let pos = buffer.get_pos();
         let res = buffer.pad_with_zeros();
         if pos != 0 {

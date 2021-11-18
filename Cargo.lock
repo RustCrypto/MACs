@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "cmac"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "aes",
  "cipher",
@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "daa"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "des",
  "digest",
@@ -199,7 +199,7 @@ dependencies = [
 
 [[package]]
 name = "pmac"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "aes",
  "cipher",

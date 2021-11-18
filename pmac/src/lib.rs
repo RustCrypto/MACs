@@ -44,8 +44,9 @@
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_root_url = "https://docs.rs/pmac/0.7.0"
 )]
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -53,12 +54,12 @@
 pub use digest;
 pub use digest::Mac;
 
-use cipher::{Block, BlockCipher, BlockEncryptMut};
+use cipher::{BlockCipher, BlockEncryptMut};
 
 use dbl::Dbl;
 use digest::{
-    block_buffer::LazyBlockBuffer,
-    core_api::{BufferUser, CoreWrapper, FixedOutputCore, UpdateCore},
+    block_buffer::Lazy,
+    core_api::{Block, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore},
     crypto_common::{BlockSizeUser, InnerInit, InnerUser},
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
     MacMarker, Output, OutputSizeUser, Reset,
@@ -117,12 +118,12 @@ where
     type OutputSize = C::BlockSize;
 }
 
-impl<C> BufferUser for PmacCore<C>
+impl<C> BufferKindUser for PmacCore<C>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
 {
-    type Buffer = LazyBlockBuffer<Self::BlockSize>;
+    type BufferKind = Lazy;
 }
 
 impl<C> InnerInit for PmacCore<C>
@@ -184,14 +185,10 @@ where
     Block<C>: Dbl,
 {
     #[inline]
-    fn finalize_fixed_core(
-        &mut self,
-        buffer: &mut LazyBlockBuffer<Self::BlockSize>,
-        out: &mut Output<Self>,
-    ) {
+    fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
         let pos = buffer.get_pos();
         let is_full = pos == Self::BlockSize::USIZE;
-        let last_block = buffer.pad_zeros();
+        let last_block = buffer.pad_with_zeros();
 
         if is_full {
             xor(&mut self.tag, last_block);

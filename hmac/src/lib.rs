@@ -53,8 +53,9 @@
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_root_url = "https://docs.rs/pmac/0.12.0"
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -68,9 +69,12 @@ pub use digest::Mac;
 use core::slice;
 use digest::{
     block_buffer::Eager,
+    core_api::{
+        Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
+        UpdateCore,
+    },
     crypto_common::{Key, KeySizeUser},
-    core_api::{Block, OutputSizeUser, BlockSizeUser, BufferKindUser, Buffer, FixedOutputCore, UpdateCore, CoreWrapper},
-    InvalidLength, KeyInit, Output, HashMarker, MacMarker,
+    HashMarker, InvalidLength, KeyInit, MacMarker, Output,
 };
 
 const IPAD: u8 = 0x36;
@@ -90,10 +94,10 @@ where
     // ipad_digest: D,
 }
 
-impl<D> MacMarker for HmacCore<D>
-where
-    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
-{ }
+impl<D> MacMarker for HmacCore<D> where
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default
+{
+}
 
 impl<D> BufferKindUser for HmacCore<D>
 where
@@ -122,7 +126,6 @@ where
 {
     type OutputSize = D::OutputSize;
 }
-
 
 impl<D> KeyInit for HmacCore<D>
 where
@@ -174,7 +177,10 @@ where
         let mut opad_digest = D::default();
         opad_digest.update_blocks(slice::from_ref(&der_key));
 
-        Ok(Self { opad_digest, digest })
+        Ok(Self {
+            opad_digest,
+            digest,
+        })
     }
 }
 

@@ -44,8 +44,9 @@
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_root_url = "https://docs.rs/cmac/0.7.0"
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -53,12 +54,12 @@
 pub use digest;
 pub use digest::Mac;
 
-use cipher::{Block, BlockCipher, BlockEncryptMut};
+use cipher::{BlockCipher, BlockEncryptMut};
 
 use dbl::Dbl;
 use digest::{
-    block_buffer::LazyBlockBuffer,
-    core_api::{BufferUser, CoreWrapper, FixedOutputCore, UpdateCore},
+    block_buffer::Lazy,
+    core_api::{Block, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore},
     crypto_common::{BlockSizeUser, InnerInit, InnerUser},
     generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
     MacMarker, Output, OutputSizeUser, Reset,
@@ -111,6 +112,14 @@ where
     type OutputSize = C::BlockSize;
 }
 
+impl<C> BufferKindUser for CmacCore<C>
+where
+    C: BlockCipher + BlockEncryptMut,
+    Block<C>: Dbl,
+{
+    type BufferKind = Lazy;
+}
+
 impl<C> InnerInit for CmacCore<C>
 where
     C: BlockCipher + BlockEncryptMut,
@@ -146,27 +155,15 @@ where
     }
 }
 
-impl<C> BufferUser for CmacCore<C>
-where
-    C: BlockCipher + BlockEncryptMut,
-    Block<C>: Dbl,
-{
-    type Buffer = LazyBlockBuffer<C::BlockSize>;
-}
-
 impl<C> FixedOutputCore for CmacCore<C>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
 {
     #[inline]
-    fn finalize_fixed_core(
-        &mut self,
-        buffer: &mut LazyBlockBuffer<Self::BlockSize>,
-        out: &mut Output<Self>,
-    ) {
+    fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
         let pos = buffer.get_pos();
-        let mut res = buffer.pad_zeros();
+        let mut res = buffer.pad_with_zeros();
         if pos == C::BlockSize::USIZE {
             xor(&mut res, &self.key1);
         } else {
