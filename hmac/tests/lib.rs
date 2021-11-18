@@ -4,10 +4,10 @@
 
 #![no_std]
 
-#[cfg(feature = "reset")]
-use digest::new_resettable_mac_test as new_test;
 #[cfg(not(feature = "reset"))]
 use digest::new_mac_test as new_test;
+#[cfg(feature = "reset")]
+use digest::new_resettable_mac_test as new_test;
 use hmac::Hmac;
 
 new_test!(hmac_md5, "md5", Hmac<md5::Md5>);

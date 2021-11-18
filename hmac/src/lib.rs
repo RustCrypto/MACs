@@ -68,6 +68,8 @@ pub use digest;
 pub use digest::Mac;
 
 use core::slice;
+#[cfg(feature = "reset")]
+use digest::Reset;
 use digest::{
     block_buffer::Eager,
     core_api::{
@@ -77,8 +79,6 @@ use digest::{
     crypto_common::{Key, KeySizeUser},
     Digest, InvalidLength, KeyInit, MacMarker, Output,
 };
-#[cfg(feature = "reset")]
-use digest::Reset;
 
 const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5C;
