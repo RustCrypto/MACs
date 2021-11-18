@@ -15,3 +15,6 @@ aes = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v
 kuznyechik = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
 magma = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
 des = { git = "https://github.com/RustCrypto/block-ciphers/", branch = "cipher_v0.4" }
+md-5 = { git = "https://github.com/RustCrypto/hashes/", branch = "digest/v0.10.0-pre" }
+sha2 = { git = "https://github.com/RustCrypto/hashes/", branch = "digest/v0.10.0-pre" }
+streebog = { git = "https://github.com/RustCrypto/hashes/", branch = "digest/v0.10.0-pre" }

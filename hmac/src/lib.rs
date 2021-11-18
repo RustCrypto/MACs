@@ -1,8 +1,8 @@
 //! Generic implementation of Hash-based Message Authentication Code (HMAC).
 //!
 //! To use it you'll need a cryptographic hash function implementation from
-//! RustCrypto project. You can either import specific crate (e.g. `sha2`), or
-//! meta-crate `crypto-hashes` which reexport all related crates.
+//! the RustCrypto project, e.g. the from the [`sha2`](https://docs.rs/sha2/)
+//! crate.
 //!
 //! # Usage
 //! Let us demonstrate how to use HMAC using SHA256 as an example.
@@ -10,32 +10,31 @@
 //! To get the authentication code:
 //!
 //! ```rust
-//! use sha2::Sha256;
-//! use hmac::{Hmac, Mac, NewMac};
+//! use sha2::Sha256Core;
+//! use hmac::{Hmac, Mac};
 //!
 //! // Create alias for HMAC-SHA256
-//! type HmacSha256 = Hmac<Sha256>;
+//! type HmacSha256 = Hmac<Sha256Core>;
 //!
-//! // Create HMAC-SHA256 instance which implements `Mac` trait
 //! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
 //! mac.update(b"input message");
 //!
-//! // `result` has type `Output` which is a thin wrapper around array of
+//! // `result` has type `CtOutput` which is a thin wrapper around array of
 //! // bytes for providing constant time equality check
 //! let result = mac.finalize();
-//! // To get underlying array use `into_bytes` method, but be careful, since
-//! // incorrect use of the code value may permit timing attacks which defeat
-//! // the security provided by the `Output`
+//! // To get underlying array use `into_bytes`, but be careful, since
+//! // incorrect use of the code value may permit timing attacks which defeats
+//! // the security provided by the `CtOutput`
 //! let code_bytes = result.into_bytes();
 //! ```
 //!
 //! To verify the message:
 //!
 //! ```rust
-//! # use sha2::Sha256;
-//! # use hmac::{Hmac, Mac, NewMac};
-//! # type HmacSha256 = Hmac<Sha256>;
+//! # use sha2::Sha256Core;
+//! # use hmac::{Hmac, Mac};
+//! # type HmacSha256 = Hmac<Sha256Core>;
 //! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
 //!     .expect("HMAC can take key of any size");
 //!
@@ -63,151 +62,147 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use crypto_mac::{self, Mac, NewMac};
 pub use digest;
+pub use digest::Mac;
 
-use core::{cmp::min, fmt};
-use crypto_mac::{
-    generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
-    InvalidKeyLength, Output,
+use core::slice;
+use digest::{
+    block_buffer::Eager,
+    crypto_common::{Key, KeySizeUser},
+    core_api::{Block, OutputSizeUser, BlockSizeUser, BufferKindUser, Buffer, FixedOutputCore, UpdateCore, CoreWrapper},
+    InvalidLength, KeyInit, Output, HashMarker, MacMarker,
 };
-use digest::{BlockInput, FixedOutput, Reset, Update};
 
 const IPAD: u8 = 0x36;
 const OPAD: u8 = 0x5C;
 
-/// The `Hmac` struct represents an HMAC using a given hash function `D`.
-pub struct Hmac<D>
+/// Generic HMAC instance.
+pub type Hmac<D> = CoreWrapper<HmacCore<D>>;
+
+/// Generic core HMAC instance, which operates over blocks.
+#[derive(Clone)]
+pub struct HmacCore<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
-    D::BlockSize: ArrayLength<u8>,
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     digest: D,
-    i_key_pad: GenericArray<u8, D::BlockSize>,
     opad_digest: D,
+    // ipad_digest: D,
 }
 
-impl<D> Clone for Hmac<D>
+impl<D> MacMarker for HmacCore<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
-    D::BlockSize: ArrayLength<u8>,
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+{ }
+
+impl<D> BufferKindUser for HmacCore<D>
+where
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    fn clone(&self) -> Hmac<D> {
-        Hmac {
-            digest: self.digest.clone(),
-            i_key_pad: self.i_key_pad.clone(),
-            opad_digest: self.opad_digest.clone(),
-        }
-    }
+    type BufferKind = Eager;
 }
 
-impl<D> fmt::Debug for Hmac<D>
+impl<D> KeySizeUser for HmacCore<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + fmt::Debug,
-    D::BlockSize: ArrayLength<u8>,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Hmac")
-            .field("digest", &self.digest)
-            .field("i_key_pad", &self.i_key_pad)
-            .field("opad_digest", &self.opad_digest)
-            .finish()
-    }
-}
-
-impl<D> NewMac for Hmac<D>
-where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
-    D::BlockSize: ArrayLength<u8>,
-    D::OutputSize: ArrayLength<u8>,
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
     type KeySize = D::BlockSize;
+}
 
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+impl<D> BlockSizeUser for HmacCore<D>
+where
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+{
+    type BlockSize = D::BlockSize;
+}
+
+impl<D> OutputSizeUser for HmacCore<D>
+where
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+{
+    type OutputSize = D::OutputSize;
+}
+
+
+impl<D> KeyInit for HmacCore<D>
+where
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
+{
+    fn new(key: &Key<Self>) -> Self {
         Self::new_from_slice(key.as_slice()).unwrap()
     }
 
     #[inline]
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        let mut hmac = Self {
-            digest: Default::default(),
-            i_key_pad: GenericArray::generate(|_| IPAD),
-            opad_digest: Default::default(),
-        };
-
-        let mut opad = GenericArray::<u8, D::BlockSize>::generate(|_| OPAD);
-        debug_assert!(hmac.i_key_pad.len() == opad.len());
-
-        // The key that Hmac processes must be the same as the block size of the
-        // underlying Digest. If the provided key is smaller than that, we just
-        // pad it with zeros. If its larger, we hash it and then pad it with
-        // zeros.
-        if key.len() <= hmac.i_key_pad.len() {
-            for (k_idx, k_itm) in key.iter().enumerate() {
-                hmac.i_key_pad[k_idx] ^= *k_itm;
-                opad[k_idx] ^= *k_itm;
-            }
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        let mut der_key = Block::<Self>::default();
+        // The key that HMAC processes must be the same as the block size of the
+        // underlying hash function. If the provided key is smaller than that,
+        // we just pad it with zeros. If its larger, we hash it and then pad it
+        // with zeros.
+        if key.len() <= der_key.len() {
+            der_key[..key.len()].copy_from_slice(key);
         } else {
-            let mut digest = D::default();
-            digest.update(key);
-            let output = digest.finalize_fixed();
-            // `n` is calculated at compile time and will equal
-            // D::OutputSize. This is used to ensure panic-free code
-            let n = min(output.len(), hmac.i_key_pad.len());
-            for idx in 0..n {
-                hmac.i_key_pad[idx] ^= output[idx];
-                opad[idx] ^= output[idx];
+            let mut h = D::default();
+            let mut hash = Output::<D>::default();
+            let mut buffer = Buffer::<D>::default();
+            buffer.digest_blocks(key, |b| h.update_blocks(b));
+            h.finalize_fixed_core(&mut buffer, &mut hash);
+
+            // All commonly used hash functions have block size bigger
+            // than output hash size, but to be extra rigorous we
+            // handle the potential uncommon cases as well.
+            // The condition is calcualted at compile time, so this
+            // branch gets removed in the final binary.
+            if hash.len() <= der_key.len() {
+                der_key[..hash.len()].copy_from_slice(&hash);
+            } else {
+                let n = der_key.len();
+                der_key.copy_from_slice(&hash[..n]);
             }
         }
 
-        hmac.digest.update(&hmac.i_key_pad);
-        hmac.opad_digest.update(&opad);
+        for b in der_key.iter_mut() {
+            *b ^= IPAD;
+        }
+        let mut digest = D::default();
+        digest.update_blocks(slice::from_ref(&der_key));
 
-        Ok(hmac)
+        for b in der_key.iter_mut() {
+            *b ^= IPAD ^ OPAD;
+        }
+
+        let mut opad_digest = D::default();
+        opad_digest.update_blocks(slice::from_ref(&der_key));
+
+        Ok(Self { opad_digest, digest })
     }
 }
 
-impl<D> Mac for Hmac<D>
+impl<D> UpdateCore for HmacCore<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
-    D::BlockSize: ArrayLength<u8>,
-    D::OutputSize: ArrayLength<u8>,
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    type OutputSize = D::OutputSize;
-
-    #[inline]
-    fn update(&mut self, data: &[u8]) {
-        self.digest.update(data);
-    }
-
-    #[inline]
-    fn finalize(self) -> Output<Self> {
-        let mut opad_digest = self.opad_digest.clone();
-        let hash = self.digest.finalize_fixed();
-        opad_digest.update(&hash);
-        Output::new(opad_digest.finalize_fixed())
-    }
-
-    #[inline]
-    fn reset(&mut self) {
-        self.digest.reset();
-        self.digest.update(&self.i_key_pad);
+    #[inline(always)]
+    fn update_blocks(&mut self, blocks: &[Block<Self>]) {
+        self.digest.update_blocks(blocks);
     }
 }
 
-#[cfg(feature = "std")]
-impl<D> std::io::Write for Hmac<D>
+impl<D> FixedOutputCore for HmacCore<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
-    D::BlockSize: ArrayLength<u8>,
-    D::OutputSize: ArrayLength<u8>,
+    D: HashMarker + UpdateCore + FixedOutputCore + BufferKindUser<BufferKind = Eager> + Default,
 {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Mac::update(self, buf);
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
+    #[inline(always)]
+    fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
+        let mut hash = Output::<D>::default();
+        self.digest.finalize_fixed_core(buffer, &mut hash);
+        // finalize_fixed_core should reset the buffer as well, but
+        // to be extra safe we reset it explicitly again.
+        buffer.reset();
+        let h = &mut self.opad_digest;
+        buffer.digest_blocks(&hash, |b| h.update_blocks(b));
+        h.finalize_fixed_core(buffer, out);
     }
 }
+
+// TODO: impl Debug or AlgorithmName

@@ -20,33 +20,17 @@ checksum = "fc52553543ecb104069b0ff9e0fcc5c739ad16202935528a112d974e8f1a4ee8"
 
 [[package]]
 name = "block-buffer"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
-dependencies = [
- "block-padding 0.2.1",
- "generic-array",
-]
-
-[[package]]
-name = "block-buffer"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#67609bfb69b7369f0f7f6c727c36d33b1a199cc0"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#24b145e4b2935911e139d70769c4ff1573845b88"
 dependencies = [
- "block-padding 0.3.0",
+ "block-padding",
  "generic-array",
 ]
-
-[[package]]
-name = "block-padding"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
 name = "block-padding"
 version = "0.3.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#67609bfb69b7369f0f7f6c727c36d33b1a199cc0"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#24b145e4b2935911e139d70769c4ff1573845b88"
 dependencies = [
  "generic-array",
 ]
@@ -60,9 +44,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.4.0"
-source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#402b17441ac390801e0121c04f2c615223ed7c2d"
+source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#15507cfbd46efa6511a3a420dcf79ceb0170833a"
 dependencies = [
- "block-buffer 0.10.0",
+ "block-buffer",
  "crypto-common",
  "generic-array",
  "inout",
@@ -75,7 +59,7 @@ dependencies = [
  "aes",
  "cipher",
  "dbl",
- "digest 0.10.0",
+ "digest",
  "hex-literal",
  "kuznyechik",
  "magma",
@@ -93,7 +77,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#402b17441ac390801e0121c04f2c615223ed7c2d"
+source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#15507cfbd46efa6511a3a420dcf79ceb0170833a"
 dependencies = [
  "generic-array",
 ]
@@ -103,7 +87,7 @@ name = "daa"
 version = "0.5.0"
 dependencies = [
  "des",
- "digest 0.10.0",
+ "digest",
  "hex-literal",
 ]
 
@@ -126,20 +110,11 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
-dependencies = [
- "generic-array",
-]
-
-[[package]]
-name = "digest"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#402b17441ac390801e0121c04f2c615223ed7c2d"
+source = "git+https://github.com/RustCrypto/traits/?branch=new_traits#15507cfbd46efa6511a3a420dcf79ceb0170833a"
 dependencies = [
  "blobby",
- "block-buffer 0.10.0",
+ "block-buffer",
  "crypto-common",
  "generic-array",
  "subtle",
@@ -178,7 +153,7 @@ dependencies = [
 name = "hmac"
 version = "0.12.0"
 dependencies = [
- "digest 0.10.0",
+ "digest",
  "md-5",
  "sha2",
  "streebog",
@@ -187,7 +162,7 @@ dependencies = [
 [[package]]
 name = "inout"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#67609bfb69b7369f0f7f6c727c36d33b1a199cc0"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#24b145e4b2935911e139d70769c4ff1573845b88"
 dependencies = [
  "generic-array",
 ]
@@ -216,20 +191,11 @@ dependencies = [
 
 [[package]]
 name = "md-5"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b5a279bb9607f9f53c22d496eade00d138d1bdcccd07d74650387cf94942a15"
+version = "0.10.0"
+source = "git+https://github.com/RustCrypto/hashes/?branch=digest/v0.10.0-pre#3bb918d487edac34ec96943ce37e4f8b3d015cf4"
 dependencies = [
- "block-buffer 0.9.0",
- "digest 0.9.0",
- "opaque-debug",
+ "digest",
 ]
-
-[[package]]
-name = "opaque-debug"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "pmac"
@@ -238,7 +204,7 @@ dependencies = [
  "aes",
  "cipher",
  "dbl",
- "digest 0.10.0",
+ "digest",
  "hex-literal",
 ]
 
@@ -250,26 +216,20 @@ checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
 
 [[package]]
 name = "sha2"
-version = "0.9.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b69f9a4c9740d74c5baa3fd2e547f9525fa8088a8a958e0ca2409a514e33f5fa"
+version = "0.10.0"
+source = "git+https://github.com/RustCrypto/hashes/?branch=digest/v0.10.0-pre#3bb918d487edac34ec96943ce37e4f8b3d015cf4"
 dependencies = [
- "block-buffer 0.9.0",
  "cfg-if",
  "cpufeatures",
- "digest 0.9.0",
- "opaque-debug",
+ "digest",
 ]
 
 [[package]]
 name = "streebog"
-version = "0.9.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9a21c1a3920381f27c666a81ad2481abc005900ac871a80b479e1869d54e753"
+version = "0.10.0"
+source = "git+https://github.com/RustCrypto/hashes/?branch=digest/v0.10.0-pre#3bb918d487edac34ec96943ce37e4f8b3d015cf4"
 dependencies = [
- "block-buffer 0.9.0",
- "digest 0.9.0",
- "opaque-debug",
+ "digest",
 ]
 
 [[package]]
