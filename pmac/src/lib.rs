@@ -48,7 +48,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_root_url = "https://docs.rs/pmac/0.7.0"
 )]
-#![deny(unsafe_code)]
+// #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use digest;
@@ -66,17 +66,16 @@ use digest::{
     MacMarker, Output, OutputSizeUser, Reset,
 };
 
-/// Will use only precomputed table up to 16*2^20 = 16 MB of input data
-/// (for 128 bit cipher), after that will dynamically calculate L value if
-/// needed. In future it can become parameter of `Pmac`.
-const LC_SIZE: usize = 20;
-
 /// Generic PMAC instance which operates over bytes.
-pub type Pmac<C> = CoreWrapper<PmacCore<C>>;
+pub type Pmac<C> = CoreWrapper<PmacCore<C, 20>>;
 
 /// Generic core PMAC instance which operates over blocks.
+///
+/// The `LC_SIZE` constant determines size of a precomputed lookup table.
+/// The [`Pmac`] alias uses value equal to 20, which for 128 bit cipher
+/// sufficient for 16*2^20 = 16 MB of input data.
 #[derive(Clone)]
-pub struct PmacCore<C>
+pub struct PmacCore<C, const LC_SIZE: usize>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -88,14 +87,14 @@ where
     counter: usize,
 }
 
-impl<C> MacMarker for PmacCore<C>
+impl<C, const LC_SIZE: usize> MacMarker for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
 {
 }
 
-impl<C> InnerUser for PmacCore<C>
+impl<C, const LC_SIZE: usize> InnerUser for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -103,7 +102,7 @@ where
     type Inner = C;
 }
 
-impl<C> BlockSizeUser for PmacCore<C>
+impl<C, const LC_SIZE: usize> BlockSizeUser for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -111,7 +110,7 @@ where
     type BlockSize = C::BlockSize;
 }
 
-impl<C> OutputSizeUser for PmacCore<C>
+impl<C, const LC_SIZE: usize> OutputSizeUser for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -119,7 +118,7 @@ where
     type OutputSize = C::BlockSize;
 }
 
-impl<C> BufferKindUser for PmacCore<C>
+impl<C, const LC_SIZE: usize> BufferKindUser for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -127,17 +126,26 @@ where
     type BufferKind = Lazy;
 }
 
-impl<C> InnerInit for PmacCore<C>
+impl<C, const LC_SIZE: usize> InnerInit for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
 {
     #[inline]
     fn inner_init(mut cipher: C) -> Self {
-        let mut l_cache: [Block<C>; LC_SIZE] = Default::default();
-        cipher.encrypt_block_mut(&mut l_cache[0]);
-        for i in 1..LC_SIZE {
-            l_cache[i] = l_cache[i - 1].clone().dbl();
+        // SAFETY: [Block<C>; LC_SIZE] is equivalent to
+        // [[u8; BLOCK_SIZE]; LC_SIZE], so `zeroed` returns
+        // a valid value for it
+        // TODO: replace with `[(); LC_SIZE].map(..)` or
+        // `[[0u8; BLOCK_SIZE]; L]` on MSRV bump
+        let mut l_cache: [Block<C>; LC_SIZE] = unsafe {
+            core::mem::zeroed()
+        };
+        if LC_SIZE != 0 {
+            cipher.encrypt_block_mut(&mut l_cache[0]);
+            for i in 1..LC_SIZE {
+                l_cache[i] = l_cache[i - 1].clone().dbl();
+            }
         }
 
         Self {
@@ -150,7 +158,7 @@ where
     }
 }
 
-impl<C> UpdateCore for PmacCore<C>
+impl<C, const LC_SIZE: usize> UpdateCore for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -180,7 +188,7 @@ where
     }
 }
 
-impl<C> FixedOutputCore for PmacCore<C>
+impl<C, const LC_SIZE: usize> FixedOutputCore for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -204,7 +212,7 @@ where
     }
 }
 
-impl<C> Reset for PmacCore<C>
+impl<C, const LC_SIZE: usize> Reset for PmacCore<C, LC_SIZE>
 where
     C: BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -217,7 +225,7 @@ where
     }
 }
 
-impl<C> AlgorithmName for PmacCore<C>
+impl<C, const LC_SIZE: usize> AlgorithmName for PmacCore<C, LC_SIZE>
 where
     C: AlgorithmName + BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
@@ -229,7 +237,7 @@ where
     }
 }
 
-impl<C> fmt::Debug for PmacCore<C>
+impl<C, const LC_SIZE: usize> fmt::Debug for PmacCore<C, LC_SIZE>
 where
     C: AlgorithmName + BlockCipher + BlockEncryptMut,
     Block<C>: Dbl,
