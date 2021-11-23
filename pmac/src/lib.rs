@@ -138,9 +138,7 @@ where
         // a valid value for it
         // TODO: replace with `[(); LC_SIZE].map(..)` or
         // `[[0u8; BLOCK_SIZE]; L]` on MSRV bump
-        let mut l_cache: [Block<C>; LC_SIZE] = unsafe {
-            core::mem::zeroed()
-        };
+        let mut l_cache: [Block<C>; LC_SIZE] = unsafe { core::mem::zeroed() };
         if LC_SIZE != 0 {
             cipher.encrypt_block_mut(&mut l_cache[0]);
             for i in 1..LC_SIZE {
