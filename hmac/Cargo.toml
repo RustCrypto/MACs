@@ -1,6 +1,6 @@
 [package]
 name = "hmac"
-version = "0.11.0"
+version = "0.12.0" # Also update html_root_url in lib.rs when bumping this
 description = "Generic implementation of Hash-based Message Authentication Code (HMAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,14 +12,16 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-crypto-mac = "0.11"
-digest = "0.9"
+digest = { version = "0.10", features = ["mac"] }
 
 [dev-dependencies]
-crypto-mac = { version = "0.11", features = ["dev"] }
-md-5 = { version = "0.9", default-features = false }
-sha2 = { version = "0.9", default-features = false }
-streebog = { version = "0.9", default-features = false }
+digest = { version = "0.10", features = ["dev"] }
+md-5 = { version = "0.10", default-features = false }
+sha-1 = { version = "0.10", default-features = false }
+sha2 = { version = "0.10", default-features = false }
+streebog = { version = "0.10", default-features = false }
+hex-literal = "0.2"
 
 [features]
-std = ["crypto-mac/std"]
+std = ["digest/std"]
+reset = [] # Enable ability to reset HMAC instances

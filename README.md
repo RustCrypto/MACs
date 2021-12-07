@@ -1,15 +1,21 @@
-# RustCrypto: Message Authentication Codes ![Rust Version][rustc-image] [![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link]
+# RustCrypto: Message Authentication Codes
+
+[![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link] ![Apache2/MIT licensed][license-image]
 
 Collection of [Message Authentication Code][1] (MAC) algorithms written in pure Rust.
 
-## Crates
+## Supported Algorithms
 
-| Name   | Algorithm | Crates.io     | Documentation | Build Status |
-|--------|-----------|---------------|---------------|--------------|
-| `cmac` | [CMAC]    | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | [![Build](https://github.com/RustCrypto/MACs/workflows/cmac/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/MACs/actions?query=workflow:cmac+branch:master)
-| `daa`  | [DAA]     | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) | [![Build](https://github.com/RustCrypto/MACs/workflows/daa/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/MACs/actions?query=workflow:daa+branch:master)
-| `hmac` | [HMAC]    | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) | [![Build](https://github.com/RustCrypto/MACs/workflows/hmac/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/MACs/actions?query=workflow:hmac+branch:master)
-| `pmac` | [PMAC]    | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | [![Build](https://github.com/RustCrypto/MACs/workflows/pmac/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/MACs/actions?query=workflow:pmac+branch:master)
+| Algorithm | Crate    | Crates.io     | Documentation | MSRV |
+|-----------|----------|:-------------:|:-------------:|:----:|
+| [CMAC]    | [`cmac`] | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | ![MSRV 1.41][msrv-1.41] |
+| [DAA]     | [`daa`]  | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) | ![MSRV 1.41][msrv-1.41] |
+| [HMAC]    | [`hmac`] | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) | ![MSRV 1.41][msrv-1.41] |
+| [PMAC]    | [`pmac`] | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | ![MSRV 1.41][msrv-1.41] |
+
+### Minimum Supported Rust Version (MSRV) Policy
+
+MSRV bumps are considered breaking changes and will be performed only with minor version bump.
 
 ## License
 
@@ -22,16 +28,23 @@ at your option.
 
 ### Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
+[license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [deps-image]: https://deps.rs/repo/github/RustCrypto/MACs/status.svg
 [deps-link]: https://deps.rs/repo/github/RustCrypto/MACs
+[msrv-1.41]: https://img.shields.io/badge/rustc-1.41.0+-blue.svg
+
+[//]: # (crates)
+
+[`cmac`]: ./cmac
+[`daa`]: ./daa
+[`hmac`]: ./hmac
+[`pmac`]: ./pmac
 
 [//]: # (footnotes)
 
