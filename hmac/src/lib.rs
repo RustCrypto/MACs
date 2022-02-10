@@ -12,7 +12,7 @@
 //! On the other hand, [`SimpleHmac`] is a bit less efficient memory-wise,
 //! but works with all hash functions which implement the [`Digest`] trait.
 //!
-//! # Usage
+//! # Examples
 //! Let us demonstrate how to use HMAC using the SHA-256 hash function.
 //!
 //! In the following examples [`Hmac`] is interchangeable with [`SimpleHmac`].
@@ -77,12 +77,12 @@
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_root_url = "https://docs.rs/hmac/0.12.0"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "std")]

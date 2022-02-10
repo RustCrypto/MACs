@@ -1,51 +1,36 @@
-//! Generic implementation of [Cipher-based Message Authentication Code (CMAC)][1],
-//! otherwise known as OMAC1.
+//! [Cipher Block Chaining Message Authentication Code (CBC-MAC)][CBC-MAC]
+//! implemented in pure Rust and generic over block cipher.
+//!
+//! **WARNING!** The algorithm has known weaknesses in case of variable-length
+//! messages. See the linked Wikipedia article for more information.
 //!
 //! # Examples
-//! We will use AES-128 block cipher from [aes](https://docs.rs/aes) crate.
 //!
-//! To get the authentication code:
+//! ```
+//! use cbc_mac::{CbcMac, Mac};
+//! use des::Des;
+//! use hex_literal::hex;
 //!
-//! ```rust
-//! use aes::Aes128;
-//! use cmac::{Cmac, Mac};
+//! // CBC-MAC with the DES block cipher is equivalent to DAA
+//! type Daa = CbcMac<Des>;
 //!
-//! // Create `Mac` trait implementation, namely CMAC-AES128
-//! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
-//! mac.update(b"input message");
-//!
-//! // `result` has type `Output` which is a thin wrapper around array of
-//! // bytes for providing constant time equality check
-//! let result = mac.finalize();
-//! // To get underlying array use the `into_bytes` method, but be careful,
-//! // since incorrect use of the tag value may permit timing attacks which
-//! // defeat the security provided by the `Output` wrapper
-//! let tag_bytes = result.into_bytes();
+//! // test from FIPS 113
+//! let key = hex!("0123456789ABCDEF");
+//! let mut mac = Daa::new_from_slice(&key).unwrap();
+//! mac.update(b"7654321 Now is the time for ");
+//! let correct = hex!("F1D30F6849312CA4");
+//! mac.verify_slice(&correct).unwrap();
 //! ```
 //!
-//! To verify the message:
-//!
-//! ```rust
-//! # use aes::Aes128;
-//! # use cmac::{Cmac, Mac};
-//! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
-//!
-//! mac.update(b"input message");
-//!
-//! # let tag_bytes = mac.clone().finalize().into_bytes();
-//! // `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
-//! mac.verify(&tag_bytes).unwrap();
-//! ```
-//!
-//! [1]: https://en.wikipedia.org/wiki/One-key_MAC
+//! [CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC#Security_with_fixed_and_variable-length_messages
 
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/cmac/0.7.0"
+    html_root_url = "https://docs.rs/cbc-mac/0.1.0"
 )]
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
@@ -53,9 +38,8 @@ pub use digest::{self, Mac};
 
 use cipher::{BlockBackend, BlockCipher, BlockClosure, BlockEncryptMut};
 use core::fmt;
-use dbl::Dbl;
 use digest::{
-    block_buffer::Lazy,
+    block_buffer::Eager,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
         UpdateCore,
@@ -72,54 +56,44 @@ use digest::{
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Generic CMAC instance.
-pub type Cmac<C> = CoreWrapper<CmacCore<C>>;
+pub type CbcMac<C> = CoreWrapper<CbcMacCore<C>>;
 
 /// Generic core CMAC instance, which operates over blocks.
 #[derive(Clone)]
-pub struct CmacCore<C>
+pub struct CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     cipher: C,
     state: Block<C>,
 }
 
-impl<C> BlockSizeUser for CmacCore<C>
+impl<C> BlockSizeUser for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     type BlockSize = C::BlockSize;
 }
 
-impl<C> OutputSizeUser for CmacCore<C>
+impl<C> OutputSizeUser for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     type OutputSize = C::BlockSize;
 }
 
-impl<C> InnerUser for CmacCore<C>
+impl<C> InnerUser for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     type Inner = C;
 }
 
-impl<C> MacMarker for CmacCore<C>
-where
-    C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
-{
-}
+impl<C> MacMarker for CbcMacCore<C> where C: BlockCipher + BlockEncryptMut + Clone {}
 
-impl<C> InnerInit for CmacCore<C>
+impl<C> InnerInit for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     #[inline]
     fn inner_init(cipher: C) -> Self {
@@ -128,18 +102,16 @@ where
     }
 }
 
-impl<C> BufferKindUser for CmacCore<C>
+impl<C> BufferKindUser for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
-    type BufferKind = Lazy;
+    type BufferKind = Eager;
 }
 
-impl<C> UpdateCore for CmacCore<C>
+impl<C> UpdateCore for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -167,10 +139,9 @@ where
     }
 }
 
-impl<C> Reset for CmacCore<C>
+impl<C> Reset for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -178,10 +149,9 @@ where
     }
 }
 
-impl<C> FixedOutputCore for CmacCore<C>
+impl<C> FixedOutputCore for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
 {
@@ -189,44 +159,31 @@ where
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
         let Self { state, cipher } = self;
         let pos = buffer.get_pos();
-        let buf = buffer.pad_with_zeros();
-
-        let mut subkey = Default::default();
-        cipher.encrypt_block_mut(&mut subkey);
-        let key1 = subkey.dbl();
-
-        xor(state, buf);
-        if pos == buf.len() {
-            xor(state, &key1);
-        } else {
-            state[pos] ^= 0x80;
-            let key2 = key1.dbl();
-            xor(state, &key2);
+        if pos != 0 {
+            xor(state, buffer.pad_with_zeros());
+            cipher.encrypt_block_mut(state);
         }
-        cipher.encrypt_block_mut(state);
         out.copy_from_slice(state);
     }
 }
 
-impl<C> AlgorithmName for CmacCore<C>
+impl<C> AlgorithmName for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
-    Block<C>: Dbl,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Cmac<")?;
+        f.write_str("CbcMac<")?;
         <C as AlgorithmName>::write_alg_name(f)?;
         f.write_str(">")
     }
 }
 
-impl<C> fmt::Debug for CmacCore<C>
+impl<C> fmt::Debug for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
-    Block<C>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("CmacCore<")?;
+        f.write_str("CbcMacCore<")?;
         <C as AlgorithmName>::write_alg_name(f)?;
         f.write_str("> { ... }")
     }
@@ -234,10 +191,9 @@ where
 
 #[cfg(feature = "zeroize")]
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl<C> Drop for CmacCore<C>
+impl<C> Drop for CbcMacCore<C>
 where
     C: BlockCipher + BlockEncryptMut + Clone,
-    Block<C>: Dbl,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -246,10 +202,8 @@ where
 
 #[cfg(feature = "zeroize")]
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl<C> ZeroizeOnDrop for CmacCore<C>
-where
-    C: BlockCipher + BlockEncryptMut + Clone + ZeroizeOnDrop,
-    Block<C>: Dbl,
+impl<C> ZeroizeOnDrop for CbcMacCore<C> where
+    C: BlockCipher + BlockEncryptMut + Clone + ZeroizeOnDrop
 {
 }
 

@@ -1,25 +1,25 @@
 [package]
-name = "pmac"
-version = "0.7.0" # Also update html_root_url in lib.rs when bumping this
-description = "Generic implementation of Parallelizable Message Authentication Code"
+name = "cbc-mac"
+version = "0.1.0" # Also update html_root_url in lib.rs when bumping this
+description = "Implementation of Cipher Block Chaining Message Authentication Code (CBC-MAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 rust-version = "1.56"
 readme = "README.md"
-documentation = "https://docs.rs/pmac"
+documentation = "https://docs.rs/cbc-mac"
 repository = "https://github.com/RustCrypto/MACs"
-keywords = ["crypto", "mac", "pmac"]
-categories = ["cryptography", "no-std"]
+keywords = ["crypto", "mac", "daa"]
 
 [dependencies]
 digest = { version = "0.10.2", features = ["mac"] }
 cipher = "0.4"
-dbl = "0.3"
 
 [dev-dependencies]
 aes = "0.8"
+des = "0.8"
 digest = { version = "0.10", features = ["dev"] }
+hex-literal = "0.2"
 
 [features]
 std = ["digest/std"]

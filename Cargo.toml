@@ -1,7 +1,9 @@
 [workspace]
 members = [
+    "cbc-mac",
     "cmac",
-    "daa",
-    "hmac",
     "pmac",
 ]
+
+[profile.dev]
+opt-level = 2

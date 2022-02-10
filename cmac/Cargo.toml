@@ -1,26 +1,34 @@
 [package]
 name = "cmac"
-version = "0.6.0"
+version = "0.7.0" # Also update html_root_url in lib.rs when bumping this
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
+readme = "README.md"
 documentation = "https://docs.rs/cmac"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "cmac", "omac"]
 categories = ["cryptography", "no-std"]
-readme = "README.md"
-edition = "2018"
 
 [dependencies]
-crypto-mac = { version = "0.11", features = ["cipher"] }
+digest = { version = "0.10.2", features = ["mac"] }
+cipher = "0.4"
 dbl = "0.3"
 
 [dev-dependencies]
-aes = { version = "0.7", features = ["force-soft"] } # Uses `force-soft` for MSRV 1.41
-crypto-mac = { version = "0.11", features = ["dev"] }
+digest = { version = "0.10", features = ["dev"] }
 hex-literal = "0.2"
-kuznyechik = "0.7"
-magma = "0.7"
+aes = "0.8"
+des = "0.8"
+kuznyechik = "0.8"
+magma = "0.8"
 
 [features]
-std = ["crypto-mac/std"]
+std = ["digest/std"]
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
