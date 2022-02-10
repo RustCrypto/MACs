@@ -8,10 +8,10 @@ Collection of [Message Authentication Code][1] (MAC) algorithms written in pure 
 
 | Algorithm | Crate    | Crates.io     | Documentation | MSRV |
 |-----------|----------|:-------------:|:-------------:|:----:|
-| [CMAC]    | [`cmac`] | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | ![MSRV 1.41][msrv-1.41] |
-| [DAA]     | [`daa`]  | [![crates.io](https://img.shields.io/crates/v/daa.svg)](https://crates.io/crates/daa) | [![Documentation](https://docs.rs/daa/badge.svg)](https://docs.rs/daa) | ![MSRV 1.41][msrv-1.41] |
+| [CBC-MAC] | [`cbc-mac`] | [![crates.io](https://img.shields.io/crates/v/cbc-mac.svg)](https://crates.io/crates/cbc-mac) | [![Documentation](https://docs.rs/cbc-mac/badge.svg)](https://docs.rs/cbc-mac) | ![MSRV 1.56][msrv-1.56] |
+| [CMAC]    | [`cmac`] | [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac) | [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac) | ![MSRV 1.56][msrv-1.56] |
 | [HMAC]    | [`hmac`] | [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac) | [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac) | ![MSRV 1.41][msrv-1.41] |
-| [PMAC]    | [`pmac`] | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | ![MSRV 1.41][msrv-1.41] |
+| [PMAC]    | [`pmac`] | [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac) | [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac) | ![MSRV 1.56][msrv-1.56] |
 
 ### Minimum Supported Rust Version (MSRV) Policy
 
@@ -38,11 +38,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [deps-image]: https://deps.rs/repo/github/RustCrypto/MACs/status.svg
 [deps-link]: https://deps.rs/repo/github/RustCrypto/MACs
 [msrv-1.41]: https://img.shields.io/badge/rustc-1.41.0+-blue.svg
+[msrv-1.56]: https://img.shields.io/badge/rustc-1.56.0+-blue.svg
 
 [//]: # (crates)
 
+[`cbc-mac`]: ./cbc-mac
 [`cmac`]: ./cmac
-[`daa`]: ./daa
 [`hmac`]: ./hmac
 [`pmac`]: ./pmac
 
@@ -52,8 +53,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 [//]: # (algorithms)
 
+[CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC
 [CMAC]: https://en.wikipedia.org/wiki/One-key_MAC
-[DAA]: https://en.wikipedia.org/wiki/Data_Authentication_Algorithm
 [HMAC]: https://en.wikipedia.org/wiki/HMAC
 [PMAC]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
 
