@@ -1,6 +1,8 @@
 # RustCrypto: Message Authentication Codes
 
-[![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link] ![Apache2/MIT licensed][license-image]
+[![Project Chat][chat-image]][chat-link]
+[![dependency status][deps-image]][deps-link]
+![Apache2/MIT licensed][license-image]
 
 Collection of [Message Authentication Code][1] (MAC) algorithms written in pure Rust.
 
