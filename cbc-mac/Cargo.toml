@@ -19,7 +19,7 @@ cipher = "0.4"
 aes = "0.8"
 des = "0.8"
 digest = { version = "0.10", features = ["dev"] }
-hex-literal = "0.2"
+hex-literal = "0.3"
 
 [features]
 std = ["digest/std"]
