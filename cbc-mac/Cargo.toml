@@ -1,6 +1,6 @@
 [package]
 name = "cbc-mac"
-version = "0.1.0" # Also update html_root_url in lib.rs when bumping this
+version = "0.1.1" # Also update html_root_url in lib.rs when bumping this
 description = "Implementation of Cipher Block Chaining Message Authentication Code (CBC-MAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
