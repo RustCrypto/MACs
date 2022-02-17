@@ -1,6 +1,6 @@
 [package]
 name = "pmac"
-version = "0.7.0" # Also update html_root_url in lib.rs when bumping this
+version = "0.7.1" # Also update html_root_url in lib.rs when bumping this
 description = "Generic implementation of Parallelizable Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,13 +13,13 @@ keywords = ["crypto", "mac", "pmac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-digest = { version = "0.10.2", features = ["mac"] }
-cipher = "0.4"
+digest = { version = "0.10.3", features = ["mac"] }
+cipher = "0.4.2"
 dbl = "0.3"
 
 [dev-dependencies]
 aes = "0.8"
-digest = { version = "0.10", features = ["dev"] }
+digest = { version = "0.10.3", features = ["dev"] }
 
 [features]
 std = ["digest/std"]
