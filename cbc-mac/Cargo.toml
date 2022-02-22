@@ -13,7 +13,7 @@ keywords = ["crypto", "mac", "daa"]
 
 [dependencies]
 digest = { version = "0.10.3", features = ["mac"] }
-cipher = "0.4.2"
+cipher = "0.4.3"
 
 [dev-dependencies]
 aes = "0.8"
