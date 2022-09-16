@@ -11,10 +11,6 @@ repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "hmac", "digest"]
 categories = ["cryptography", "no-std"]
 
-# Hack to allow this crate to coexist with 2021 edition crates
-[workspace]
-members = ["."]
-
 [dependencies]
 digest = { version = "0.10.3", features = ["mac"] }
 

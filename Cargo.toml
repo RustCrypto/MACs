@@ -4,6 +4,9 @@ members = [
     "cmac",
     "pmac",
 ]
+exclude = [
+    "hmac",
+]
 
 [profile.dev]
 opt-level = 2
