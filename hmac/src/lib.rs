@@ -118,7 +118,7 @@ fn get_der_key<D: Digest + BlockSizeUser>(key: &[u8]) -> Block<D> {
         // All commonly used hash functions have block size bigger
         // than output hash size, but to be extra rigorous we
         // handle the potential uncommon cases as well.
-        // The condition is calcualted at compile time, so this
+        // The condition is calculated at compile time, so this
         // branch gets removed from the final binary.
         if hash.len() <= der_key.len() {
             der_key[..hash.len()].copy_from_slice(&hash);
