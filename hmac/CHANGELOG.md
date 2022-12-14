@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `digest` crate dependency to v0.10 and remove `crypto-mac` ([#97])
 - Use a more efficient state representation by using block-level hash API ([#97])
+- Reset functionality is now optional and gated on disabled-by-default reset feature ([#97])
 
 ### Added
 - `SimpleHmac` as a less constrained alternative to `Hmac` ([#97])
