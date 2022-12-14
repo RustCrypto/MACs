@@ -71,6 +71,12 @@
 //! to remove potential panic. This is done by truncating hash output to the hash
 //! block size if needed.
 //!
+//! # Crate features
+//! - `std`: enables functionality dependent on `std` (e.g. implementation of
+//!   the [`Error`][std::error::Error] trait for error types)
+//! - `reset`: enables implementation of the [`Reset`][digest::Reset] trait
+//!   (note that it makes HMAC states bigger)
+//! 
 //! [`digest`]: https://docs.rs/digest
 //! [`sha2`]: https://docs.rs/sha2
 //! [`RustCrypto/hashes`]: https://github.com/RustCrypto/hashes
