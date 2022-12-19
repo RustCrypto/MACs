@@ -38,10 +38,10 @@
 //! // incorrect use of the code value may permit timing attacks which defeats
 //! // the security provided by the `CtOutput`
 //! let code_bytes = result.into_bytes();
-//! let expected = hex!("
-//!     97d2a569059bbcd8ead4444ff99071f4
-//!     c01d005bcefe0d3567e1be628e5fdcd9
-//! ");
+//! let expected = hex!(
+//!     "97d2a569059bbcd8ead4444ff99071f4"
+//!     "c01d005bcefe0d3567e1be628e5fdcd9"
+//! );
 //! assert_eq!(code_bytes[..], expected[..]);
 //! ```
 //!
@@ -57,10 +57,10 @@
 //!
 //! mac.update(b"input message");
 //!
-//! let code_bytes = hex!("
-//!     97d2a569059bbcd8ead4444ff99071f4
-//!     c01d005bcefe0d3567e1be628e5fdcd9
-//! ");
+//! let code_bytes = hex!(
+//!     "97d2a569059bbcd8ead4444ff99071f4"
+//!     "c01d005bcefe0d3567e1be628e5fdcd9"
+//! );
 //! // `verify_slice` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
 //! mac.verify_slice(&code_bytes[..]).unwrap();
 //! ```
@@ -76,7 +76,7 @@
 //!   the [`Error`][std::error::Error] trait for error types)
 //! - `reset`: enables implementation of the [`Reset`][digest::Reset] trait
 //!   (note that it makes HMAC states bigger)
-//! 
+//!
 //! [`digest`]: https://docs.rs/digest
 //! [`sha2`]: https://docs.rs/sha2
 //! [`RustCrypto/hashes`]: https://github.com/RustCrypto/hashes
@@ -84,8 +84,7 @@
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/hmac/0.12.1"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![forbid(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -105,7 +104,7 @@ use digest::{
 mod optim;
 mod simple;
 
-pub use optim::{Hmac, HmacCore};
+pub use optim::{EagerHash, Hmac, HmacCore};
 pub use simple::SimpleHmac;
 
 const IPAD: u8 = 0x36;

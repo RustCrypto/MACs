@@ -2,11 +2,16 @@
 members = [
     "cbc-mac",
     "cmac",
-    "pmac",
-]
-exclude = [
     "hmac",
+    "pmac",
 ]
 
 [profile.dev]
 opt-level = 2
+
+[patch.crates-io]
+digest = { git="https://github.com/RustCrypto/traits", branch = "digest_v0.11" }
+md-5 = { git="https://github.com/RustCrypto/hashes", branch="digest_v0.11"}
+sha1 = { git="https://github.com/RustCrypto/hashes", branch="digest_v0.11"}
+sha2 = { git="https://github.com/RustCrypto/hashes", branch="digest_v0.11"}
+streebog = { git="https://github.com/RustCrypto/hashes", branch="digest_v0.11"}

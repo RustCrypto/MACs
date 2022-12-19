@@ -1,52 +1,50 @@
 use super::{get_der_key, IPAD, OPAD};
 use core::{fmt, slice};
-#[cfg(feature = "reset")]
-use digest::Reset;
 use digest::{
     block_buffer::Eager,
     core_api::{
-        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper,
-        FixedOutputCore, OutputSizeUser, UpdateCore,
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
+        OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
-    generic_array::typenum::{IsLess, Le, NonZero, U256},
     HashMarker, InvalidLength, KeyInit, MacMarker, Output,
 };
 
 /// Generic HMAC instance.
 pub type Hmac<D> = CoreWrapper<HmacCore<D>>;
 
-/// Generic core HMAC instance, which operates over blocks.
-pub struct HmacCore<D>
+/// Trait implemented by eager hashes which expose their block-level core.
+pub trait EagerHash {
+    /// Block-level core type of the hash.
+    type Core: HashMarker
+        + UpdateCore
+        + FixedOutputCore
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone;
+}
+
+impl<C> EagerHash for CoreWrapper<C>
 where
-    D: CoreProxy,
-    D::Core: HashMarker
+    C: HashMarker
         + UpdateCore
         + FixedOutputCore
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
+    type Core = C;
+}
+
+/// Generic core HMAC instance, which operates over blocks.
+pub struct HmacCore<D: EagerHash> {
     digest: D::Core,
     opad_digest: D::Core,
     #[cfg(feature = "reset")]
     ipad_digest: D::Core,
 }
 
-impl<D> Clone for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
+impl<D: EagerHash> Clone for HmacCore<D> {
     fn clone(&self) -> Self {
         Self {
             digest: self.digest.clone(),
@@ -57,92 +55,25 @@ where
     }
 }
 
-impl<D> MacMarker for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
-}
+impl<D: EagerHash> MacMarker for HmacCore<D> {}
 
-impl<D> BufferKindUser for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
+impl<D: EagerHash> BufferKindUser for HmacCore<D> {
     type BufferKind = Eager;
 }
 
-impl<D> KeySizeUser for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
-    type KeySize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
+impl<D: EagerHash> KeySizeUser for HmacCore<D> {
+    type KeySize = <<D as EagerHash>::Core as BlockSizeUser>::BlockSize;
 }
 
-impl<D> BlockSizeUser for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
-    type BlockSize = <<D as CoreProxy>::Core as BlockSizeUser>::BlockSize;
+impl<D: EagerHash> BlockSizeUser for HmacCore<D> {
+    type BlockSize = <<D as EagerHash>::Core as BlockSizeUser>::BlockSize;
 }
 
-impl<D> OutputSizeUser for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
-    type OutputSize = <<D as CoreProxy>::Core as OutputSizeUser>::OutputSize;
+impl<D: EagerHash> OutputSizeUser for HmacCore<D> {
+    type OutputSize = <<D as EagerHash>::Core as OutputSizeUser>::OutputSize;
 }
 
-impl<D> KeyInit for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
+impl<D: EagerHash> KeyInit for HmacCore<D> {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
         Self::new_from_slice(key.as_slice()).unwrap()
@@ -173,36 +104,14 @@ where
     }
 }
 
-impl<D> UpdateCore for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
+impl<D: EagerHash> UpdateCore for HmacCore<D> {
     #[inline(always)]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
         self.digest.update_blocks(blocks);
     }
 }
 
-impl<D> FixedOutputCore for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
+impl<D: EagerHash> FixedOutputCore for HmacCore<D> {
     #[inline(always)]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
         let mut hash = Output::<D::Core>::default();
@@ -221,36 +130,16 @@ where
 
 #[cfg(feature = "reset")]
 #[cfg_attr(docsrs, doc(cfg(feature = "reset")))]
-impl<D> Reset for HmacCore<D>
-where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
-{
+impl<D: EagerHash> digest::Reset for HmacCore<D> {
     #[inline(always)]
     fn reset(&mut self) {
         self.digest = self.ipad_digest.clone();
     }
 }
 
-impl<D> AlgorithmName for HmacCore<D>
+impl<D: EagerHash> AlgorithmName for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + AlgorithmName
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
+    D::Core: AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Hmac<")?;
@@ -259,18 +148,9 @@ where
     }
 }
 
-impl<D> fmt::Debug for HmacCore<D>
+impl<D: EagerHash> fmt::Debug for HmacCore<D>
 where
-    D: CoreProxy,
-    D::Core: HashMarker
-        + AlgorithmName
-        + UpdateCore
-        + FixedOutputCore
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
+    D::Core: AlgorithmName,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("HmacCore<")?;

@@ -1,11 +1,11 @@
 [package]
 name = "cmac"
-version = "0.7.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.0"
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.57"
 readme = "README.md"
 documentation = "https://docs.rs/cmac"
 repository = "https://github.com/RustCrypto/MACs"
@@ -13,12 +13,12 @@ keywords = ["crypto", "mac", "cmac", "omac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-digest = { version = "0.10.3", features = ["mac"] }
+digest = { version = "0.11", features = ["mac"] }
 cipher = "0.4.2"
 dbl = "0.3"
 
 [dev-dependencies]
-digest = { version = "0.10.3", features = ["dev"] }
+digest = { version = "0.11", features = ["dev"] }
 hex-literal = "0.3"
 aes = "0.8"
 des = "0.8"

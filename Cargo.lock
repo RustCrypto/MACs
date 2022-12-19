@@ -21,16 +21,16 @@ checksum = "847495c209977a90e8aad588b959d0ca9f5dc228096d29a6bd3defd53f35eaec"
 
 [[package]]
 name = "block-buffer"
-version = "0.10.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69cce20737498f97b993470a6e536b8523f0af7892a4f928cceb1ac5e52ebe7e"
+version = "0.11.0-pre"
+source = "git+https://github.com/RustCrypto/utils?branch=hex_literal_0.11#b7630ebd7df40ed4f3baa5bcab976543469bf378"
 dependencies = [
+ "crypto-common 0.2.0-pre",
  "generic-array",
 ]
 
 [[package]]
 name = "cbc-mac"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "aes",
  "cipher",
@@ -51,14 +51,14 @@ version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d1873270f8f7942c191139cb8a40fd228da6c3fd2fc376d7e92d47aa14aeb59e"
 dependencies = [
- "crypto-common",
+ "crypto-common 0.1.6",
  "inout",
  "zeroize",
 ]
 
 [[package]]
 name = "cmac"
-version = "0.7.1"
+version = "0.8.0"
 dependencies = [
  "aes",
  "cipher",
@@ -90,6 +90,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-common"
+version = "0.2.0-pre"
+source = "git+https://github.com/RustCrypto/traits?branch=crypto_common_v0.2#48d751024011dd39abb3926dacb66b6ca7d7ef37"
+dependencies = [
+ "generic-array",
+ "typenum",
+]
+
+[[package]]
 name = "dbl"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -109,13 +118,12 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f"
+version = "0.11.0"
+source = "git+https://github.com/RustCrypto/traits?branch=digest_v0.11#c4e2e77a21300c3f46ddaf5cb6739b09b865dd98"
 dependencies = [
  "blobby",
  "block-buffer",
- "crypto-common",
+ "crypto-common 0.2.0-pre",
  "subtle",
 ]
 
@@ -134,6 +142,18 @@ name = "hex-literal"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
+
+[[package]]
+name = "hmac"
+version = "0.13.0"
+dependencies = [
+ "digest",
+ "hex-literal",
+ "md-5",
+ "sha1",
+ "sha2",
+ "streebog",
+]
 
 [[package]]
 name = "inout"
@@ -169,12 +189,48 @@ dependencies = [
 ]
 
 [[package]]
+name = "md-5"
+version = "0.11.0"
+source = "git+https://github.com/RustCrypto/hashes?branch=digest_v0.11#e87e3c53d9f129bc3780757b5d37d9de89bbf2bc"
+dependencies = [
+ "digest",
+]
+
+[[package]]
 name = "pmac"
-version = "0.7.1"
+version = "0.8.0"
 dependencies = [
  "aes",
  "cipher",
  "dbl",
+ "digest",
+]
+
+[[package]]
+name = "sha1"
+version = "0.11.0"
+source = "git+https://github.com/RustCrypto/hashes?branch=digest_v0.11#e87e3c53d9f129bc3780757b5d37d9de89bbf2bc"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest",
+]
+
+[[package]]
+name = "sha2"
+version = "0.11.0"
+source = "git+https://github.com/RustCrypto/hashes?branch=digest_v0.11#e87e3c53d9f129bc3780757b5d37d9de89bbf2bc"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest",
+]
+
+[[package]]
+name = "streebog"
+version = "0.11.0"
+source = "git+https://github.com/RustCrypto/hashes?branch=digest_v0.11#e87e3c53d9f129bc3780757b5d37d9de89bbf2bc"
+dependencies = [
  "digest",
 ]
 
