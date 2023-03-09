@@ -14,7 +14,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 digest = { version = "0.10.3", features = ["mac"] }
-cipher = "0.4.2"
+cipher = "0.4.4"
 dbl = "0.3"
 
 [dev-dependencies]
