@@ -6,4 +6,9 @@ use digest::new_resettable_mac_test;
 // https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/CAVP-TESTING-BLOCK-CIPHER-MODES
 //
 // Test vectors in this file use 64 KiB of data, so they are excluded from published packages.
-new_resettable_mac_test!(cmac_aes128_cavp, "cavp_aes128_large", Cmac<Aes128>, trunc_left);
+new_resettable_mac_test!(
+    cmac_aes128_cavp,
+    "cavp_aes128_large",
+    Cmac<Aes128>,
+    trunc_left
+);
