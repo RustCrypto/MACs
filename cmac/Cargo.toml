@@ -11,6 +11,7 @@ documentation = "https://docs.rs/cmac"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "cmac", "omac"]
 categories = ["cryptography", "no-std"]
+exclude = ["tests/cavp_large.rs", "tests/data/cavp_aes128_large.blb"]
 
 [dependencies]
 digest = { version = "0.10.3", features = ["mac"] }
