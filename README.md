@@ -8,8 +8,8 @@ Collection of [Message Authentication Code][1] (MAC) algorithms written in pure 
 
 ## Supported Algorithms
 
-| Algorithm  | Crate        |                                            Crates.io                                            |                                  Documentation                                   |          MSRV           |
-|------------|--------------|:-----------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------:|:-----------------------:|
+| Algorithm  | Crate        | Crates.io | Documentation | MSRV |
+|------------|--------------|:---------:|:-------------:|:----:|
 | [BelT MAC] | [`belt-mac`] | [![crates.io](https://img.shields.io/crates/v/belt-mac.svg)](https://crates.io/crates/belt-mac) | [![Documentation](https://docs.rs/belt-mac/badge.svg)](https://docs.rs/belt-mac) | ![MSRV 1.57][msrv-1.57] |
 | [CBC-MAC]  | [`cbc-mac`]  |  [![crates.io](https://img.shields.io/crates/v/cbc-mac.svg)](https://crates.io/crates/cbc-mac)  |  [![Documentation](https://docs.rs/cbc-mac/badge.svg)](https://docs.rs/cbc-mac)  | ![MSRV 1.56][msrv-1.56] |
 | [CMAC]     | [`cmac`]     |     [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac)     |     [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac)     | ![MSRV 1.56][msrv-1.56] |

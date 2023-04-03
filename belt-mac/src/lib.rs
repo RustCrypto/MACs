@@ -135,16 +135,14 @@ where
 {
     #[inline]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
-        let Self { state, cipher, r } = self;
         let pos = buffer.get_pos();
         let buf = buffer.pad_with_zeros();
-        if pos != buf.len() {
-            buf[pos] = 0x80;
-        }
 
+        let cipher = &mut self.cipher;
+        let r = &self.r;
         let bs = r.len();
         let mut new_r = Block::<C>::default();
-        if pos == buf.len() {
+        if pos == bs {
             // phi1
             let (h1, h2) = new_r.split_at_mut(bs - 4);
             h1.copy_from_slice(&r[4..]);
@@ -152,6 +150,7 @@ where
                 h2[i] = r[i] ^ r[4 + i];
             }
         } else {
+            buf[pos] = 0x80;
             // phi2
             let (h1, h2) = new_r.split_at_mut(4);
             for i in 0..4 {
@@ -160,10 +159,10 @@ where
             h2.copy_from_slice(&r[..bs - 4]);
         }
 
-        xor(state, buf);
-        xor(state, &new_r);
-        cipher.encrypt_block_mut(state);
-        out.copy_from_slice(state);
+        let mut state = self.state.clone();
+        xor(&mut state, buf);
+        xor(&mut state, &new_r);
+        cipher.encrypt_block_b2b_mut(&state, out);
     }
 }
 
