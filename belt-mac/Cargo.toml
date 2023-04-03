@@ -1,0 +1,31 @@
+[package]
+name = "belt-mac"
+version = "0.1.0"
+description = "MAC specified by the BelT standard"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.57"
+readme = "README.md"
+documentation = "https://docs.rs/belt-mac"
+repository = "https://github.com/RustCrypto/MACs"
+keywords = ["crypto", "mac", "belt-mac"]
+categories = ["cryptography", "no-std"]
+
+[dependencies]
+belt-block = { version = "0.1" }
+digest = { version = "0.10.3", features = ["mac"] }
+cipher = "0.4"
+
+[dev-dependencies]
+cipher = { version = "0.4", features = ["dev"] }
+digest = { version = "0.10", features = ["dev"] }
+hex-literal = "0.4"
+
+[features]
+std = ["digest/std"]
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
