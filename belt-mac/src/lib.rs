@@ -8,12 +8,11 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
-mod utils;
+pub use digest::{self, Mac};
 
 use belt_block::BeltBlock;
 use cipher::{BlockBackend, BlockCipher, BlockClosure, BlockEncryptMut};
 use core::fmt;
-pub use digest::{self, Mac};
 use digest::{
     block_buffer::Lazy,
     core_api::{
@@ -28,7 +27,6 @@ use digest::{
     MacMarker, Output, OutputSizeUser, Reset,
 };
 
-use crate::utils::{phi1, phi2};
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -144,14 +142,26 @@ where
             buf[pos] = 0x80;
         }
 
-        let r = if pos == buf.len() {
-            phi1::<C>(r)
+        let bs = r.len();
+        let mut new_r = Block::<C>::default();
+        if pos == buf.len() {
+            // phi1
+            let (h1, h2) = new_r.split_at_mut(bs - 4);
+            h1.copy_from_slice(&r[4..]);
+            for i in 0..4 {
+                h2[i] = r[i] ^ r[4 + i];
+            }
         } else {
-            phi2::<C>(r)
-        };
+            // phi2
+            let (h1, h2) = new_r.split_at_mut(4);
+            for i in 0..4 {
+                h1[i] = r[i] ^ r[bs - 4 + i];
+            }
+            h2.copy_from_slice(&r[..bs - 4]);
+        }
 
         xor(state, buf);
-        xor(state, &r);
+        xor(state, &new_r);
         cipher.encrypt_block_mut(state);
         out.copy_from_slice(state);
     }

@@ -7,17 +7,33 @@
 [![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
-Pure Rust implementation of the [`belt-mac`].
+Pure Rust implementation of [`belt-mac`].
 
 # Example
 ```rust
-```
+use belt_mac::{BeltMac, Mac};
+use hex_literal::hex;
 
-[Documentation][docs-link]
+let key = [0x42; 32];
+let msg = b"input message";
+let expected_tag = hex!("9f5c9623b4eff8802195e81bcd841959");
+
+// To get the authentication code:
+let mut mac: BeltMac = BeltMac::new_from_slice(&key).unwrap();
+mac.update(msg);
+let tag = mac.finalize();
+let tag_bytes = tag.into_bytes();
+assert_eq!(&tag_bytes[..], &expected_tag[..]);
+
+// To verify the message:
+let mut mac: BeltMac = BeltMac::new_from_slice(&key).unwrap();
+mac.update(b"input message");
+mac.verify(&tag_bytes).unwrap();
+```
 
 ## Minimum Supported Rust Version
 
-Rust **1.56** or higher.
+Rust **1.57** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
