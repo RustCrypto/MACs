@@ -1,9 +1,9 @@
 #![feature(test)]
 extern crate test;
 
+use belt_block::BeltBlock;
 use belt_mac::{BeltMac, Mac};
 use test::Bencher;
-use belt_block::BeltBlock;
 
 digest::bench_update!(
     BeltMac::<BeltBlock>::new(&Default::default());
