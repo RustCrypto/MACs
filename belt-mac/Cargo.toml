@@ -16,12 +16,10 @@ categories = ["cryptography", "no-std"]
 belt-block = { version = "0.1" }
 digest = { version = "0.10", features = ["mac"] }
 cipher = "0.4"
-cmac = { path = "../cmac" }
 
 [dev-dependencies]
 cipher = { version = "0.4", features = ["dev"] }
 digest = { version = "0.10", features = ["dev"] }
-hex-literal = "0.4.0"
 
 [features]
 std = ["digest/std"]
