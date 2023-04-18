@@ -29,7 +29,7 @@ dependencies = [
  "belt-block",
  "cipher",
  "digest",
- "hex-literal 0.4.1",
+ "hex-literal",
 ]
 
 [[package]]
@@ -55,7 +55,7 @@ dependencies = [
  "cipher",
  "des",
  "digest",
- "hex-literal 0.3.4",
+ "hex-literal",
 ]
 
 [[package]]
@@ -85,7 +85,7 @@ dependencies = [
  "dbl",
  "des",
  "digest",
- "hex-literal 0.3.4",
+ "hex-literal",
  "kuznyechik",
  "magma",
 ]
@@ -148,12 +148,6 @@ dependencies = [
  "typenum",
  "version_check",
 ]
-
-[[package]]
-name = "hex-literal"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
 
 [[package]]
 name = "hex-literal"
