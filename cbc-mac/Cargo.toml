@@ -12,13 +12,13 @@ repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "daa"]
 
 [dependencies]
-digest = { version = "0.10.3", features = ["mac"] }
+digest = { version = "0.10.7", features = ["mac"] }
 cipher = "0.4.2"
 
 [dev-dependencies]
 aes = "0.8"
 des = "0.8"
-digest = { version = "0.10.3", features = ["dev"] }
+digest = { version = "0.10.7", features = ["dev"] }
 hex-literal = "0.3"
 
 [features]
