@@ -2,10 +2,19 @@
 use digest::new_mac_test as test;
 #[cfg(feature = "reset")]
 use digest::new_resettable_mac_test as test;
-use hmac::{Hmac, SimpleHmac};
+use hmac::{Hmac, HmacCore, SimpleHmac};
 use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512};
 use streebog::{Streebog256, Streebog512};
+
+#[test]
+fn test_debug_impls() {
+    fn needs_debug<T: std::fmt::Debug>() {}
+
+    needs_debug::<Hmac<Sha256>>();
+    needs_debug::<HmacCore<Sha256>>();
+    needs_debug::<SimpleHmac<Sha256>>();
+}
 
 // Test vectors from RFC 2104, plus wiki test
 test!(hmac_md5_rfc2104, "md5", Hmac<md5::Md5>);
