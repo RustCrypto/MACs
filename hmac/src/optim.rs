@@ -3,13 +3,13 @@ use core::{fmt, slice};
 #[cfg(feature = "reset")]
 use digest::Reset;
 use digest::{
+    array::typenum::{IsLess, Le, NonZero, U256},
     block_buffer::Eager,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper,
         FixedOutputCore, OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
-    generic_array::typenum::{IsLess, Le, NonZero, U256},
     HashMarker, InvalidLength, KeyInit, MacMarker, Output,
 };
 
