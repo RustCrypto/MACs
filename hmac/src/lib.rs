@@ -104,7 +104,7 @@ use digest::{
 mod optim;
 mod simple;
 
-pub use optim::{Hmac, HmacCore};
+pub use optim::{EagerHash, Hmac, HmacCore};
 pub use simple::SimpleHmac;
 
 const IPAD: u8 = 0x36;
