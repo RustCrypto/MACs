@@ -21,7 +21,7 @@
 //!
 //! ```rust
 //! use sha2::Sha256;
-//! use hmac::{Hmac, Mac};
+//! use hmac::{Hmac, KeyInit, Mac};
 //! use hex_literal::hex;
 //!
 //! // Create alias for HMAC-SHA256
@@ -49,7 +49,7 @@
 //!
 //! ```rust
 //! # use sha2::Sha256;
-//! # use hmac::{Hmac, Mac};
+//! # use hmac::{Hmac, KeyInit, Mac};
 //! # use hex_literal::hex;
 //! # type HmacSha256 = Hmac<Sha256>;
 //! let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
@@ -84,8 +84,7 @@
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/hmac/0.12.1"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![forbid(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -95,7 +94,7 @@
 extern crate std;
 
 pub use digest;
-pub use digest::Mac;
+pub use digest::{KeyInit, Mac};
 
 use digest::{
     core_api::{Block, BlockSizeUser},
