@@ -45,9 +45,9 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.0-pre.4"
+version = "0.11.0-pre.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b429fb535b92bad18c86f1d7ee7584a175c2810800c7ac5b75b9408b13981979"
+checksum = "957713a19ffdda287c63772e607f848512f67ba948f17d8e42cb8d50fd98a786"
 dependencies = [
  "blobby",
  "block-buffer",
@@ -101,9 +101,9 @@ checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
 
 [[package]]
 name = "md-5"
-version = "0.11.0-pre.1"
+version = "0.11.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d16de5e3b92a3ecc566508a82dde68e28e5a1a91b1db13e1d243f2dc560ac90a"
+checksum = "0f8abbac3acc78149aba64dd60d8c147995f5eaab3f8943c0a9d9c1fa52de5d1"
 dependencies = [
  "cfg-if",
  "digest",
@@ -120,9 +120,9 @@ dependencies = [
 
 [[package]]
 name = "sha1"
-version = "0.11.0-pre.1"
+version = "0.11.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "731912b869ff1fb4c6432ad4737a5951d5388fbdda0417163a29638206935fe6"
+checksum = "301ed48dd873557d86a1843ebcdd511b628f13ec5401a0efa7007dc5a595eb1f"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -131,9 +131,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.11.0-pre.1"
+version = "0.11.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9daa731ca112bb569b34b41775363a461422813d8ed1ea6dba352eb58ec4e684"
+checksum = "e18b939d4051b69874cbdb8f55de6a14ae44b357ccb94bdbd0a2122f8f875a46"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -142,9 +142,9 @@ dependencies = [
 
 [[package]]
 name = "streebog"
-version = "0.11.0-pre.1"
+version = "0.11.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9195128e99b61b19a1d847de3e60b8dc895e4a133ac1e3f94087f1f94ce434ba"
+checksum = "0849f719669df4f019cf2dc3fd219d9ea661662e68a6ee8726e2ad1164fc9843"
 dependencies = [
  "digest",
 ]

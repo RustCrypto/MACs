@@ -10,17 +10,17 @@ documentation = "https://docs.rs/hmac"
 repository = "https://github.com/RustCrypto/MACs"
 keywords = ["crypto", "mac", "hmac", "digest"]
 categories = ["cryptography", "no-std"]
-rust-version = "1.71"
+rust-version = "1.72"
 
 [dependencies]
-digest = { version = "=0.11.0-pre.4", features = ["mac"] }
+digest = { version = "=0.11.0-pre.7", features = ["mac"] }
 
 [dev-dependencies]
-digest = { version = "=0.11.0-pre.4", features = ["dev"] }
-md-5 = { version = "=0.11.0-pre.1", default-features = false }
-sha1 = { version = "=0.11.0-pre.1", default-features = false }
-sha2 = { version = "=0.11.0-pre.1", default-features = false }
-streebog = { version = "=0.11.0-pre.1", default-features = false }
+digest = { version = "=0.11.0-pre.7", features = ["dev"] }
+md-5 = { version = "=0.11.0-pre.2", default-features = false }
+sha1 = { version = "=0.11.0-pre.2", default-features = false }
+sha2 = { version = "=0.11.0-pre.2", default-features = false }
+streebog = { version = "=0.11.0-pre.2", default-features = false }
 hex-literal = "0.4"
 
 [features]
