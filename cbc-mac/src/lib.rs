@@ -7,7 +7,7 @@
 //! # Examples
 //!
 //! ```
-//! use cbc_mac::{CbcMac, Mac};
+//! use cbc_mac::{digest::KeyInit, CbcMac, Mac};
 //! use des::Des;
 //! use hex_literal::hex;
 //!
@@ -36,19 +36,19 @@
 
 pub use digest::{self, Mac};
 
-use cipher::{BlockBackend, BlockCipher, BlockClosure, BlockEncryptMut};
+use cipher::{BlockBackend, BlockCipher, BlockCipherEncrypt, BlockClosure};
 use core::fmt;
 use digest::{
+    array::{
+        typenum::{IsLess, Le, NonZero, U256},
+        Array, ArraySize,
+    },
     block_buffer::Eager,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
         UpdateCore,
     },
-    crypto_common::{InnerInit, InnerUser},
-    generic_array::{
-        typenum::{IsLess, Le, NonZero, U256},
-        ArrayLength, GenericArray,
-    },
+    crypto_common::{BlockSizes, InnerInit, InnerUser},
     MacMarker, Output, OutputSizeUser, Reset,
 };
 
@@ -62,7 +62,7 @@ pub type CbcMac<C> = CoreWrapper<CbcMacCore<C>>;
 #[derive(Clone)]
 pub struct CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     cipher: C,
     state: Block<C>,
@@ -70,30 +70,30 @@ where
 
 impl<C> BlockSizeUser for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type BlockSize = C::BlockSize;
 }
 
 impl<C> OutputSizeUser for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type OutputSize = C::BlockSize;
 }
 
 impl<C> InnerUser for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type Inner = C;
 }
 
-impl<C> MacMarker for CbcMacCore<C> where C: BlockCipher + BlockEncryptMut + Clone {}
+impl<C> MacMarker for CbcMacCore<C> where C: BlockCipher + BlockCipherEncrypt + Clone {}
 
 impl<C> InnerInit for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     #[inline]
     fn inner_init(cipher: C) -> Self {
@@ -104,27 +104,27 @@ where
 
 impl<C> BufferKindUser for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type BufferKind = Eager;
 }
 
 impl<C> UpdateCore for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
-        struct Ctx<'a, N: ArrayLength<u8>> {
+        struct Ctx<'a, N: BlockSizes> {
             state: &'a mut Block<Self>,
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, N: ArrayLength<u8>> BlockSizeUser for Ctx<'a, N> {
+        impl<'a, N: BlockSizes> BlockSizeUser for Ctx<'a, N> {
             type BlockSize = N;
         }
 
-        impl<'a, N: ArrayLength<u8>> BlockClosure for Ctx<'a, N> {
+        impl<'a, N: BlockSizes> BlockClosure for Ctx<'a, N> {
             #[inline(always)]
             fn call<B: BlockBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B) {
                 for block in self.blocks {
@@ -135,13 +135,13 @@ where
         }
 
         let Self { cipher, state } = self;
-        cipher.encrypt_with_backend_mut(Ctx { state, blocks })
+        cipher.encrypt_with_backend(Ctx { state, blocks })
     }
 }
 
 impl<C> Reset for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -151,7 +151,7 @@ where
 
 impl<C> FixedOutputCore for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
 {
@@ -160,8 +160,8 @@ where
         let Self { state, cipher } = self;
         let pos = buffer.get_pos();
         if pos != 0 {
-            xor(state, buffer.pad_with_zeros());
-            cipher.encrypt_block_mut(state);
+            xor(state, &buffer.pad_with_zeros());
+            cipher.encrypt_block(state);
         }
         out.copy_from_slice(state);
     }
@@ -169,7 +169,7 @@ where
 
 impl<C> AlgorithmName for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("CbcMac<")?;
@@ -180,7 +180,7 @@ where
 
 impl<C> fmt::Debug for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("CbcMacCore<")?;
@@ -193,7 +193,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> Drop for CbcMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -203,12 +203,12 @@ where
 #[cfg(feature = "zeroize")]
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> ZeroizeOnDrop for CbcMacCore<C> where
-    C: BlockCipher + BlockEncryptMut + Clone + ZeroizeOnDrop
+    C: BlockCipher + BlockCipherEncrypt + Clone + ZeroizeOnDrop
 {
 }
 
 #[inline(always)]
-fn xor<N: ArrayLength<u8>>(buf: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
+fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
     for i in 0..N::USIZE {
         buf[i] ^= data[i];
     }

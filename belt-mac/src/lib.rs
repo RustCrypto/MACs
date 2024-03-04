@@ -11,19 +11,19 @@
 pub use digest::{self, Mac};
 
 use belt_block::BeltBlock;
-use cipher::{BlockBackend, BlockCipher, BlockClosure, BlockEncryptMut};
+use cipher::{BlockBackend, BlockCipher, BlockCipherEncrypt, BlockClosure};
 use core::fmt;
 use digest::{
+    array::{
+        typenum::{IsLess, Le, NonZero, U256},
+        Array, ArraySize,
+    },
     block_buffer::Lazy,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
         UpdateCore,
     },
-    crypto_common::{InnerInit, InnerUser},
-    generic_array::{
-        typenum::{IsLess, Le, NonZero, U256},
-        ArrayLength, GenericArray,
-    },
+    crypto_common::{BlockSizes, InnerInit, InnerUser},
     MacMarker, Output, OutputSizeUser, Reset,
 };
 
@@ -37,7 +37,7 @@ pub type BeltMac<C = BeltBlock> = CoreWrapper<BeltMacCore<C>>;
 /// Generic core BeltMac instance, which operates over blocks.
 pub struct BeltMacCore<C = BeltBlock>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     cipher: C,
     state: Block<C>,
@@ -46,63 +46,63 @@ where
 
 impl<C> BlockSizeUser for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type BlockSize = C::BlockSize;
 }
 
 impl<C> OutputSizeUser for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type OutputSize = C::BlockSize;
 }
 
 impl<C> InnerUser for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type Inner = C;
 }
 
-impl<C> MacMarker for BeltMacCore<C> where C: BlockCipher + BlockEncryptMut + Clone {}
+impl<C> MacMarker for BeltMacCore<C> where C: BlockCipher + BlockCipherEncrypt + Clone {}
 
 impl<C> InnerInit for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     #[inline]
-    fn inner_init(mut cipher: C) -> Self {
+    fn inner_init(cipher: C) -> Self {
         let state = Default::default();
         let mut r = Default::default();
-        cipher.encrypt_block_mut(&mut r);
+        cipher.encrypt_block(&mut r);
         Self { cipher, state, r }
     }
 }
 
 impl<C> BufferKindUser for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     type BufferKind = Lazy;
 }
 
 impl<C> UpdateCore for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
-        struct Ctx<'a, N: ArrayLength<u8>> {
+        struct Ctx<'a, N: BlockSizes> {
             state: &'a mut Block<Self>,
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, N: ArrayLength<u8>> BlockSizeUser for Ctx<'a, N> {
+        impl<'a, N: BlockSizes> BlockSizeUser for Ctx<'a, N> {
             type BlockSize = N;
         }
 
-        impl<'a, N: ArrayLength<u8>> BlockClosure for Ctx<'a, N> {
+        impl<'a, N: BlockSizes> BlockClosure for Ctx<'a, N> {
             #[inline(always)]
             fn call<B: BlockBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B) {
                 for block in self.blocks {
@@ -113,13 +113,13 @@ where
         }
 
         let Self { cipher, state, .. } = self;
-        cipher.encrypt_with_backend_mut(Ctx { state, blocks })
+        cipher.encrypt_with_backend(Ctx { state, blocks })
     }
 }
 
 impl<C> Reset for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -129,14 +129,14 @@ where
 
 impl<C> FixedOutputCore for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
         let pos = buffer.get_pos();
-        let buf = buffer.pad_with_zeros();
+        let mut buf = buffer.pad_with_zeros();
 
         let cipher = &mut self.cipher;
         let r = &self.r;
@@ -160,15 +160,15 @@ where
         }
 
         let mut state = self.state.clone();
-        xor(&mut state, buf);
+        xor(&mut state, &buf);
         xor(&mut state, &new_r);
-        cipher.encrypt_block_b2b_mut(&state, out);
+        cipher.encrypt_block_b2b(&state, out);
     }
 }
 
 impl<C> AlgorithmName for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("BeltMac<")?;
@@ -179,7 +179,7 @@ where
 
 impl<C> fmt::Debug for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("BeltMacCore<")?;
@@ -192,7 +192,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> Drop for BeltMacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -202,12 +202,12 @@ where
 #[cfg(feature = "zeroize")]
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> ZeroizeOnDrop for BeltMacCore<C> where
-    C: BlockCipher + BlockEncryptMut + Clone + ZeroizeOnDrop
+    C: BlockCipher + BlockCipherEncrypt + Clone + ZeroizeOnDrop
 {
 }
 
 #[inline(always)]
-fn xor<N: ArrayLength<u8>>(buf: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
+fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
     for i in 0..N::USIZE {
         buf[i] ^= data[i];
     }

@@ -8,7 +8,7 @@
 //!
 //! ```rust
 //! use aes::Aes128;
-//! use cmac::{Cmac, Mac};
+//! use cmac::{digest::KeyInit, Cmac, Mac};
 //!
 //! // Create `Mac` trait implementation, namely CMAC-AES128
 //! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
@@ -27,7 +27,7 @@
 //!
 //! ```rust
 //! # use aes::Aes128;
-//! # use cmac::{Cmac, Mac};
+//! # use cmac::{digest::KeyInit, Cmac, Mac};
 //! let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //!
 //! mac.update(b"input message");
@@ -50,20 +50,20 @@
 
 pub use digest::{self, Mac};
 
-use cipher::{BlockBackend, BlockCipher, BlockClosure, BlockEncryptMut};
+use cipher::{BlockBackend, BlockCipher, BlockCipherEncrypt, BlockClosure};
 use core::fmt;
 use dbl::Dbl;
 use digest::{
+    array::{
+        typenum::{IsLess, Le, NonZero, U256},
+        Array, ArraySize,
+    },
     block_buffer::Lazy,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
         UpdateCore,
     },
-    crypto_common::{InnerInit, InnerUser},
-    generic_array::{
-        typenum::{IsLess, Le, NonZero, U256},
-        ArrayLength, GenericArray,
-    },
+    crypto_common::{BlockSizes, InnerInit, InnerUser},
     MacMarker, Output, OutputSizeUser, Reset,
 };
 
@@ -77,7 +77,7 @@ pub type Cmac<C> = CoreWrapper<CmacCore<C>>;
 #[derive(Clone)]
 pub struct CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     cipher: C,
@@ -86,7 +86,7 @@ where
 
 impl<C> BlockSizeUser for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + BlockSizeUser + Clone,
     Block<C>: Dbl,
 {
     type BlockSize = C::BlockSize;
@@ -94,7 +94,7 @@ where
 
 impl<C> OutputSizeUser for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type OutputSize = C::BlockSize;
@@ -102,7 +102,7 @@ where
 
 impl<C> InnerUser for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type Inner = C;
@@ -110,14 +110,14 @@ where
 
 impl<C> MacMarker for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
 }
 
 impl<C> InnerInit for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline]
@@ -129,7 +129,7 @@ where
 
 impl<C> BufferKindUser for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type BufferKind = Lazy;
@@ -137,21 +137,21 @@ where
 
 impl<C> UpdateCore for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
-        struct Ctx<'a, N: ArrayLength<u8>> {
+        struct Ctx<'a, N: BlockSizes> {
             state: &'a mut Block<Self>,
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, N: ArrayLength<u8>> BlockSizeUser for Ctx<'a, N> {
+        impl<'a, N: BlockSizes> BlockSizeUser for Ctx<'a, N> {
             type BlockSize = N;
         }
 
-        impl<'a, N: ArrayLength<u8>> BlockClosure for Ctx<'a, N> {
+        impl<'a, N: BlockSizes> BlockClosure for Ctx<'a, N> {
             #[inline(always)]
             fn call<B: BlockBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B) {
                 for block in self.blocks {
@@ -162,13 +162,13 @@ where
         }
 
         let Self { cipher, state } = self;
-        cipher.encrypt_with_backend_mut(Ctx { state, blocks })
+        cipher.encrypt_with_backend(Ctx { state, blocks })
     }
 }
 
 impl<C> Reset for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline(always)]
@@ -179,7 +179,7 @@ where
 
 impl<C> FixedOutputCore for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
@@ -191,10 +191,10 @@ where
         let buf = buffer.pad_with_zeros();
 
         let mut subkey = Default::default();
-        cipher.encrypt_block_mut(&mut subkey);
+        cipher.encrypt_block(&mut subkey);
         let key1 = subkey.dbl();
 
-        xor(state, buf);
+        xor(state, &buf);
         if pos == buf.len() {
             xor(state, &key1);
         } else {
@@ -202,14 +202,14 @@ where
             let key2 = key1.dbl();
             xor(state, &key2);
         }
-        cipher.encrypt_block_mut(state);
+        cipher.encrypt_block(state);
         out.copy_from_slice(state);
     }
 }
 
 impl<C> AlgorithmName for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
     Block<C>: Dbl,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -221,7 +221,7 @@ where
 
 impl<C> fmt::Debug for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
     Block<C>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -235,7 +235,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> Drop for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     fn drop(&mut self) {
@@ -247,13 +247,13 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> ZeroizeOnDrop for CmacCore<C>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + ZeroizeOnDrop,
+    C: BlockCipher + BlockCipherEncrypt + Clone + ZeroizeOnDrop,
     Block<C>: Dbl,
 {
 }
 
 #[inline(always)]
-fn xor<N: ArrayLength<u8>>(buf: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
+fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
     for i in 0..N::USIZE {
         buf[i] ^= data[i];
     }

@@ -1,11 +1,11 @@
 [package]
 name = "cmac"
-version = "0.7.2"
+version = "0.8.0-pre"
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.71"
 readme = "README.md"
 documentation = "https://docs.rs/cmac"
 repository = "https://github.com/RustCrypto/MACs"
@@ -14,17 +14,17 @@ categories = ["cryptography", "no-std"]
 exclude = ["tests/cavp_large.rs", "tests/data/cavp_aes128_large.blb"]
 
 [dependencies]
-digest = { version = "0.10.3", features = ["mac"] }
-cipher = "0.4.2"
-dbl = "0.3"
+digest = { version = "=0.11.0-pre.8", features = ["mac"] }
+cipher = "=0.5.0-pre.4"
+dbl = "0.4.0-pre.4"
 
 [dev-dependencies]
-digest = { version = "0.10.3", features = ["dev"] }
+digest = { version = "=0.11.0-pre.8", features = ["dev"] }
 hex-literal = "0.3"
-aes = "0.8"
-des = "0.8"
-kuznyechik = "0.8"
-magma = "0.9"
+aes = "0.9.0-pre"
+des = "0.9.0-pre"
+kuznyechik = "0.9.0-pre"
+magma = "0.10.0-pre"
 
 [features]
 std = ["digest/std"]
