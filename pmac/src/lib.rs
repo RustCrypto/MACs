@@ -8,7 +8,7 @@
 //!
 //! ```rust
 //! use aes::Aes128;
-//! use pmac::{Pmac, Mac};
+//! use pmac::{digest::KeyInit, Pmac, Mac};
 //!
 //! // Create `Mac` trait implementation, namely PMAC-AES128
 //! let mut mac = Pmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
@@ -27,7 +27,7 @@
 //!
 //! ```rust
 //! # use aes::Aes128;
-//! # use pmac::{Pmac, Mac};
+//! # use pmac::{digest::KeyInit, Pmac, Mac};
 //! let mut mac = Pmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
 //!
 //! mac.update(b"input message");
@@ -54,20 +54,20 @@ extern crate std;
 
 pub use digest::{self, Mac};
 
-use cipher::{BlockBackend, BlockCipher, BlockClosure, BlockEncryptMut, ParBlocks};
+use cipher::{BlockBackend, BlockCipher, BlockCipherEncrypt, BlockClosure, ParBlocks};
 use core::fmt;
 use dbl::Dbl;
 use digest::{
+    array::{
+        typenum::{IsLess, Le, NonZero, Unsigned, U256},
+        Array, ArraySize,
+    },
     block_buffer::Lazy,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
         UpdateCore,
     },
-    crypto_common::{InnerInit, InnerUser},
-    generic_array::{
-        typenum::{IsLess, Le, NonZero, Unsigned, U256},
-        ArrayLength, GenericArray,
-    },
+    crypto_common::{BlockSizes, InnerInit, InnerUser},
     MacMarker, Output, OutputSizeUser, Reset,
 };
 
@@ -89,7 +89,7 @@ pub type Pmac<C> = CoreWrapper<PmacCore<C, 20>>;
 #[derive(Clone)]
 pub struct PmacCore<C, const LC_SIZE: usize>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     state: PmacState<C::BlockSize, LC_SIZE>,
@@ -99,8 +99,8 @@ where
 #[derive(Clone)]
 struct PmacState<N, const LC_SIZE: usize>
 where
-    N: ArrayLength<u8>,
-    GenericArray<u8, N>: Dbl,
+    N: BlockSizes,
+    Array<u8, N>: Dbl,
 {
     counter: usize,
     l_inv: Block<Self>,
@@ -111,16 +111,16 @@ where
 
 impl<N, const LC_SIZE: usize> BlockSizeUser for PmacState<N, LC_SIZE>
 where
-    N: ArrayLength<u8>,
-    GenericArray<u8, N>: Dbl,
+    N: BlockSizes,
+    Array<u8, N>: Dbl,
 {
     type BlockSize = N;
 }
 
 impl<N, const LC_SIZE: usize> PmacState<N, LC_SIZE>
 where
-    N: ArrayLength<u8>,
-    GenericArray<u8, N>: Dbl,
+    N: BlockSizes,
+    Array<u8, N>: Dbl,
 {
     #[inline(always)]
     fn next_offset(&mut self) -> &Block<Self> {
@@ -143,8 +143,8 @@ where
 #[cfg(feature = "zeroize")]
 impl<N, const LC_SIZE: usize> Drop for PmacState<N, LC_SIZE>
 where
-    N: ArrayLength<u8>,
-    GenericArray<u8, N>: Dbl,
+    N: BlockSizes,
+    Array<u8, N>: Dbl,
 {
     fn drop(&mut self) {
         self.counter.zeroize();
@@ -157,7 +157,7 @@ where
 
 impl<C, const LC_SIZE: usize> BlockSizeUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type BlockSize = C::BlockSize;
@@ -165,7 +165,7 @@ where
 
 impl<C, const LC_SIZE: usize> OutputSizeUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type OutputSize = C::BlockSize;
@@ -173,7 +173,7 @@ where
 
 impl<C, const LC_SIZE: usize> InnerUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type Inner = C;
@@ -181,14 +181,14 @@ where
 
 impl<C, const LC_SIZE: usize> MacMarker for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
 }
 
 impl<C, const LC_SIZE: usize> Reset for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline(always)]
@@ -201,7 +201,7 @@ where
 
 impl<C, const LC_SIZE: usize> BufferKindUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type BufferKind = Lazy;
@@ -209,7 +209,7 @@ where
 
 impl<C, const LC_SIZE: usize> AlgorithmName for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
     Block<C>: Dbl,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -221,7 +221,7 @@ where
 
 impl<C, const LC_SIZE: usize> fmt::Debug for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + AlgorithmName,
+    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
     Block<C>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -233,13 +233,13 @@ where
 
 impl<C, const LC_SIZE: usize> InnerInit for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline]
-    fn inner_init(mut cipher: C) -> Self {
+    fn inner_init(cipher: C) -> Self {
         let mut l = Default::default();
-        cipher.encrypt_block_mut(&mut l);
+        cipher.encrypt_block(&mut l);
         let l_inv = l.clone().inv_dbl();
 
         let l_cache = [(); LC_SIZE].map(|_| {
@@ -260,15 +260,15 @@ where
 
 impl<C, const LC_SIZE: usize> UpdateCore for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
         struct Ctx<'a, N, const LC_SIZE: usize>
         where
-            N: ArrayLength<u8>,
-            GenericArray<u8, N>: Dbl,
+            N: BlockSizes,
+            Array<u8, N>: Dbl,
         {
             state: &'a mut PmacState<N, LC_SIZE>,
             blocks: &'a [Block<Self>],
@@ -276,16 +276,16 @@ where
 
         impl<'a, N, const LC_SIZE: usize> BlockSizeUser for Ctx<'a, N, LC_SIZE>
         where
-            N: ArrayLength<u8>,
-            GenericArray<u8, N>: Dbl,
+            N: BlockSizes,
+            Array<u8, N>: Dbl,
         {
             type BlockSize = N;
         }
 
         impl<'a, N, const LC_SIZE: usize> BlockClosure for Ctx<'a, N, LC_SIZE>
         where
-            N: ArrayLength<u8>,
-            GenericArray<u8, N>: Dbl,
+            N: BlockSizes,
+            Array<u8, N>: Dbl,
         {
             #[inline(always)]
             fn call<B: BlockBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B) {
@@ -317,13 +317,13 @@ where
         }
 
         let Self { cipher, state } = self;
-        cipher.encrypt_with_backend_mut(Ctx { blocks, state })
+        cipher.encrypt_with_backend(Ctx { blocks, state })
     }
 }
 
 impl<C, const LC_SIZE: usize> FixedOutputCore for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone,
+    C: BlockCipher + BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
@@ -337,20 +337,20 @@ where
         let pos = buffer.get_pos();
         let buf = buffer.pad_with_zeros();
         if pos == buf.len() {
-            xor(tag, buf);
+            xor(tag, &buf);
             xor(tag, l_inv);
         } else {
             tag[pos] ^= 0x80;
-            xor(tag, buf);
+            xor(tag, &buf);
         }
-        cipher.encrypt_block_b2b_mut(tag, out);
+        cipher.encrypt_block_b2b(tag, out);
     }
 }
 
 #[cfg(feature = "zeroize")]
 impl<C, const LC_SIZE: usize> ZeroizeOnDrop for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockEncryptMut + Clone + ZeroizeOnDrop,
+    C: BlockCipher + BlockCipherEncrypt + Clone + ZeroizeOnDrop,
     Block<C>: Dbl,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
@@ -358,7 +358,7 @@ where
 }
 
 #[inline(always)]
-fn xor<N: ArrayLength<u8>>(buf: &mut GenericArray<u8, N>, data: &GenericArray<u8, N>) {
+fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
     for i in 0..N::USIZE {
         buf[i] ^= data[i];
     }

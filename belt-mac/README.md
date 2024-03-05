@@ -11,7 +11,7 @@ Pure Rust implementation of [`belt-mac`].
 
 # Example
 ```rust
-use belt_mac::{BeltMac, Mac};
+use belt_mac::{digest::KeyInit, BeltMac, Mac};
 use hex_literal::hex;
 
 let key = [0x42; 32];
