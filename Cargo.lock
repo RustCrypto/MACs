@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "aes"
 version = "0.9.0-pre"
-source = "git+https://github.com/baloo/block-ciphers.git?branch=baloo/bump-cipher/0.5.0-pre.4#bb94e5e71f5320fcaab727ad0c503cca5190da4c"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#c577715951ed183b7980a3b7499797723909c1dc"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "belt-block"
 version = "0.2.0-pre"
-source = "git+https://github.com/baloo/block-ciphers.git?branch=baloo/bump-cipher/0.5.0-pre.4#bb94e5e71f5320fcaab727ad0c503cca5190da4c"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#c577715951ed183b7980a3b7499797723909c1dc"
 dependencies = [
  "cipher",
 ]
@@ -120,7 +120,7 @@ dependencies = [
 [[package]]
 name = "des"
 version = "0.9.0-pre"
-source = "git+https://github.com/baloo/block-ciphers.git?branch=baloo/bump-cipher/0.5.0-pre.4#bb94e5e71f5320fcaab727ad0c503cca5190da4c"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#c577715951ed183b7980a3b7499797723909c1dc"
 dependencies = [
  "cipher",
 ]
@@ -193,7 +193,7 @@ dependencies = [
 [[package]]
 name = "kuznyechik"
 version = "0.9.0-pre"
-source = "git+https://github.com/baloo/block-ciphers.git?branch=baloo/bump-cipher/0.5.0-pre.4#bb94e5e71f5320fcaab727ad0c503cca5190da4c"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#c577715951ed183b7980a3b7499797723909c1dc"
 dependencies = [
  "cipher",
 ]
@@ -207,7 +207,7 @@ checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 [[package]]
 name = "magma"
 version = "0.10.0-pre"
-source = "git+https://github.com/baloo/block-ciphers.git?branch=baloo/bump-cipher/0.5.0-pre.4#bb94e5e71f5320fcaab727ad0c503cca5190da4c"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#c577715951ed183b7980a3b7499797723909c1dc"
 dependencies = [
  "cipher",
 ]
