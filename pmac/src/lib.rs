@@ -295,11 +295,14 @@ where
                     // and migration to const generics
                     let mut iter = blocks.chunks_exact(B::ParBlocksSize::USIZE);
                     for chunk in &mut iter {
-                        let mut tmp = ParBlocks::<B>::clone_from_slice(chunk);
+                        let mut tmp = ParBlocks::<B>::try_from(chunk).expect("size mismatch");
+
                         for block in tmp.iter_mut() {
                             xor(block, state.next_offset());
                         }
+
                         backend.proc_par_blocks((&mut tmp).into());
+
                         for t in tmp.iter() {
                             xor(&mut state.tag, t);
                         }
