@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "belt-mac",
     "cbc-mac",
@@ -13,8 +14,4 @@ opt-level = 2
 [patch.crates-io]
 # please re-enable the minimal-versions when you remove those patches.
 # https://github.com/RustCrypto/block-ciphers/pull/413
-aes        = { git = "https://github.com/RustCrypto/block-ciphers.git" }
 belt-block = { git = "https://github.com/RustCrypto/block-ciphers.git" }
-des        = { git = "https://github.com/RustCrypto/block-ciphers.git" }
-kuznyechik = { git = "https://github.com/RustCrypto/block-ciphers.git" }
-magma      = { git = "https://github.com/RustCrypto/block-ciphers.git" }
