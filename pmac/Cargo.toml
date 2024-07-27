@@ -1,6 +1,6 @@
 [package]
 name = "pmac"
-version = "0.8.0-pre" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.0-pre.1"
 description = "Generic implementation of Parallelizable Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
