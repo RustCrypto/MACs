@@ -2,7 +2,7 @@
 extern crate test;
 
 use aes::{Aes128, Aes256};
-use pmac::{Mac, Pmac};
+use pmac::{KeyInit, Pmac};
 use test::Bencher;
 
 digest::bench_update!(

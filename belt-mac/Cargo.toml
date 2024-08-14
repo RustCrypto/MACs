@@ -13,12 +13,11 @@ keywords = ["crypto", "mac", "belt-mac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-belt-block = "0.2.0-pre.1"
-cipher = "=0.5.0-pre.6"
+belt-block = "0.2.0-pre.2"
+cipher = "=0.5.0-pre.7"
 digest = { version = "=0.11.0-pre.9", features = ["mac"] }
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.6", features = ["dev"] }
 digest = { version = "=0.11.0-pre.9", features = ["dev"] }
 hex-literal = "0.4"
 
