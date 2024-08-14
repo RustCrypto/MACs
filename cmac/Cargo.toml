@@ -14,17 +14,18 @@ categories = ["cryptography", "no-std"]
 exclude = ["tests/cavp_large.rs", "tests/data/cavp_aes128_large.blb"]
 
 [dependencies]
-cipher = "=0.5.0-pre.6"
+cipher = "=0.5.0-pre.7"
 digest = { version = "=0.11.0-pre.9", features = ["mac"] }
 dbl = "0.4.0-rc.0"
 
 [dev-dependencies]
-aes = "0.9.0-pre.1"
-des = "0.9.0-pre.1"
 digest = { version = "=0.11.0-pre.9", features = ["dev"] }
 hex-literal = "0.4"
-kuznyechik = "0.9.0-pre.1"
-magma = "0.10.0-pre.1"
+
+aes = "0.9.0-pre.2"
+des = "0.9.0-pre.2"
+kuznyechik = "0.9.0-pre.2"
+magma = "0.10.0-pre.2"
 
 [features]
 std = ["digest/std"]

@@ -51,9 +51,9 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use digest::{self, Mac};
+pub use digest::{self, KeyInit, Mac};
 
-use cipher::{BlockBackend, BlockCipher, BlockCipherEncrypt, BlockClosure, ParBlocks};
+use cipher::{BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, ParBlocks};
 use core::fmt;
 use dbl::Dbl;
 use digest::{
@@ -88,7 +88,7 @@ pub type Pmac<C> = CoreWrapper<PmacCore<C, 20>>;
 #[derive(Clone)]
 pub struct PmacCore<C, const LC_SIZE: usize>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     state: PmacState<C::BlockSize, LC_SIZE>,
@@ -156,7 +156,7 @@ where
 
 impl<C, const LC_SIZE: usize> BlockSizeUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type BlockSize = C::BlockSize;
@@ -164,7 +164,7 @@ where
 
 impl<C, const LC_SIZE: usize> OutputSizeUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type OutputSize = C::BlockSize;
@@ -172,7 +172,7 @@ where
 
 impl<C, const LC_SIZE: usize> InnerUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type Inner = C;
@@ -180,14 +180,14 @@ where
 
 impl<C, const LC_SIZE: usize> MacMarker for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
 }
 
 impl<C, const LC_SIZE: usize> Reset for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline(always)]
@@ -200,7 +200,7 @@ where
 
 impl<C, const LC_SIZE: usize> BufferKindUser for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     type BufferKind = Lazy;
@@ -208,7 +208,7 @@ where
 
 impl<C, const LC_SIZE: usize> AlgorithmName for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + Clone + AlgorithmName,
     Block<C>: Dbl,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -220,7 +220,7 @@ where
 
 impl<C, const LC_SIZE: usize> fmt::Debug for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + Clone + AlgorithmName,
     Block<C>: Dbl,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -232,7 +232,7 @@ where
 
 impl<C, const LC_SIZE: usize> InnerInit for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline]
@@ -259,12 +259,12 @@ where
 
 impl<C, const LC_SIZE: usize> UpdateCore for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
-        struct Ctx<'a, N, const LC_SIZE: usize>
+        struct Closure<'a, N, const LC_SIZE: usize>
         where
             N: BlockSizes,
             Array<u8, N>: Dbl,
@@ -273,7 +273,7 @@ where
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, N, const LC_SIZE: usize> BlockSizeUser for Ctx<'a, N, LC_SIZE>
+        impl<'a, N, const LC_SIZE: usize> BlockSizeUser for Closure<'a, N, LC_SIZE>
         where
             N: BlockSizes,
             Array<u8, N>: Dbl,
@@ -281,13 +281,13 @@ where
             type BlockSize = N;
         }
 
-        impl<'a, N, const LC_SIZE: usize> BlockClosure for Ctx<'a, N, LC_SIZE>
+        impl<'a, N, const LC_SIZE: usize> BlockCipherEncClosure for Closure<'a, N, LC_SIZE>
         where
             N: BlockSizes,
             Array<u8, N>: Dbl,
         {
             #[inline(always)]
-            fn call<B: BlockBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B) {
+            fn call<B: BlockCipherEncBackend<BlockSize = Self::BlockSize>>(self, backend: &B) {
                 let Self { mut blocks, state } = self;
                 if B::ParBlocksSize::USIZE > 1 {
                     // TODO: replace with `slice::as_chunks` on stabilization
@@ -300,7 +300,7 @@ where
                             xor(block, state.next_offset());
                         }
 
-                        backend.proc_par_blocks((&mut tmp).into());
+                        backend.encrypt_par_blocks((&mut tmp).into());
 
                         for t in tmp.iter() {
                             xor(&mut state.tag, t);
@@ -312,20 +312,20 @@ where
                 for block in blocks {
                     let mut block = block.clone();
                     xor(&mut block, state.next_offset());
-                    backend.proc_block((&mut block).into());
+                    backend.encrypt_block((&mut block).into());
                     xor(&mut state.tag, &block);
                 }
             }
         }
 
         let Self { cipher, state } = self;
-        cipher.encrypt_with_backend(Ctx { blocks, state })
+        cipher.encrypt_with_backend(Closure { blocks, state })
     }
 }
 
 impl<C, const LC_SIZE: usize> FixedOutputCore for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone,
+    C: BlockCipherEncrypt + Clone,
     Block<C>: Dbl,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,
@@ -352,7 +352,7 @@ where
 #[cfg(feature = "zeroize")]
 impl<C, const LC_SIZE: usize> ZeroizeOnDrop for PmacCore<C, LC_SIZE>
 where
-    C: BlockCipher + BlockCipherEncrypt + Clone + ZeroizeOnDrop,
+    C: BlockCipherEncrypt + Clone + ZeroizeOnDrop,
     Block<C>: Dbl,
     C::BlockSize: IsLess<U256>,
     Le<C::BlockSize, U256>: NonZero,

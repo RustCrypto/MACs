@@ -2,7 +2,7 @@
 extern crate test;
 
 use belt_block::BeltBlock;
-use belt_mac::{BeltMac, Mac};
+use belt_mac::{BeltMac, KeyInit};
 use test::Bencher;
 
 digest::bench_update!(

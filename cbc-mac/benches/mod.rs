@@ -2,7 +2,7 @@
 extern crate test;
 
 use aes::Aes128;
-use cbc_mac::{CbcMac, Mac};
+use cbc_mac::{CbcMac, KeyInit};
 use des::Des;
 use test::Bencher;
 

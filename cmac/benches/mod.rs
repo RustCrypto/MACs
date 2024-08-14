@@ -2,7 +2,7 @@
 extern crate test;
 
 use aes::{Aes128, Aes256};
-use cmac::{Cmac, Mac};
+use cmac::{Cmac, KeyInit};
 use kuznyechik::Kuznyechik;
 use test::Bencher;
 

@@ -93,8 +93,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use digest;
-pub use digest::{KeyInit, Mac};
+pub use digest::{self, KeyInit, Mac};
 
 use digest::{
     core_api::{Block, BlockSizeUser},
