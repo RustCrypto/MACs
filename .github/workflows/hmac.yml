@@ -3,6 +3,7 @@ name: hmac
 on:
   pull_request:
     paths:
+      - ".github/workflows/hmac.yml"
       - "hmac/**"
       - "Cargo.*"
   push:

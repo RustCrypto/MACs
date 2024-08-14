@@ -3,6 +3,7 @@ name: cbc-mac
 on:
   pull_request:
     paths:
+      - ".github/workflows/cbc-mac.yml"
       - "cbc-mac/**"
       - "Cargo.*"
   push:

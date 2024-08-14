@@ -3,6 +3,7 @@ name: cmac
 on:
   pull_request:
     paths:
+      - ".github/workflows/cmac.yml"
       - "cmac/**"
       - "Cargo.*"
   push:

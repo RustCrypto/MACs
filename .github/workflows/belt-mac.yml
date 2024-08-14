@@ -3,6 +3,7 @@ name: belt-mac
 on:
   pull_request:
     paths:
+      - ".github/workflows/belt-mac.yml"
       - "belt-mac/**"
       - "Cargo.*"
   push:

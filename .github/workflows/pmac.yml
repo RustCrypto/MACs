@@ -3,6 +3,7 @@ name: pmac
 on:
   pull_request:
     paths:
+      - ".github/workflows/pmac.yml"
       - "pmac/**"
       - "Cargo.*"
   push:
