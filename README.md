@@ -8,13 +8,14 @@ Collection of [Message Authentication Code][1] (MAC) algorithms written in pure 
 
 ## Supported Algorithms
 
-| Algorithm  | Crate        | Crates.io | Documentation | MSRV |
-|------------|--------------|:---------:|:-------------:|:----:|
-| [BelT MAC] | [`belt-mac`] | [![crates.io](https://img.shields.io/crates/v/belt-mac.svg)](https://crates.io/crates/belt-mac) | [![Documentation](https://docs.rs/belt-mac/badge.svg)](https://docs.rs/belt-mac) | ![MSRV 1.57][msrv-1.57] |
-| [CBC-MAC]  | [`cbc-mac`]  |  [![crates.io](https://img.shields.io/crates/v/cbc-mac.svg)](https://crates.io/crates/cbc-mac)  |  [![Documentation](https://docs.rs/cbc-mac/badge.svg)](https://docs.rs/cbc-mac)  | ![MSRV 1.56][msrv-1.56] |
-| [CMAC]     | [`cmac`]     |     [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac)     |     [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac)     | ![MSRV 1.56][msrv-1.56] |
-| [HMAC]     | [`hmac`]     |     [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac)     |     [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac)     | ![MSRV 1.41][msrv-1.41] |
-| [PMAC]     | [`pmac`]     |     [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac)     |     [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac)     | ![MSRV 1.56][msrv-1.56] |
+| Algorithm    | Crate          | Crates.io | Documentation | MSRV |
+|--------------|----------------|:---------:|:-------------:|:----:|
+| [BelT MAC]   | [`belt-mac`]   |   [![crates.io](https://img.shields.io/crates/v/belt-mac.svg)](https://crates.io/crates/belt-mac)   |   [![Documentation](https://docs.rs/belt-mac/badge.svg)](https://docs.rs/belt-mac)   | ![MSRV 1.57][msrv-1.57] |
+| [CBC-MAC]    | [`cbc-mac`]    |    [![crates.io](https://img.shields.io/crates/v/cbc-mac.svg)](https://crates.io/crates/cbc-mac)    |    [![Documentation](https://docs.rs/cbc-mac/badge.svg)](https://docs.rs/cbc-mac)    | ![MSRV 1.56][msrv-1.56] |
+| [CMAC]       | [`cmac`]       |       [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac)       |       [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac)       | ![MSRV 1.56][msrv-1.56] |
+| [HMAC]       | [`hmac`]       |       [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac)       |       [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac)       | ![MSRV 1.41][msrv-1.41] |
+| [PMAC]       | [`pmac`]       |       [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac)       |       [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac)       | ![MSRV 1.56][msrv-1.56] |
+| [Retail MAC] | [`retail-mac`] | [![crates.io](https://img.shields.io/crates/v/retail-mac.svg)](https://crates.io/crates/retail-mac) | [![Documentation](https://docs.rs/retail-mac/badge.svg)](https://docs.rs/retail-mac) | ![MSRV 1.56][msrv-1.56] |
 
 ### Minimum Supported Rust Version (MSRV) Policy
 
@@ -51,6 +52,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`cmac`]: ./cmac
 [`hmac`]: ./hmac
 [`pmac`]: ./pmac
+[`retail-mac`]: ./retail-mac
 
 [//]: # (footnotes)
 
@@ -63,3 +65,4 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [CMAC]: https://en.wikipedia.org/wiki/One-key_MAC
 [HMAC]: https://en.wikipedia.org/wiki/HMAC
 [PMAC]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
+[Retail MAC]: https://en.wikipedia.org/wiki/ISO/IEC_9797-1#MAC_algorithm_3
