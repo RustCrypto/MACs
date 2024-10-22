@@ -111,9 +111,9 @@ dependencies = [
 
 [[package]]
 name = "dbl"
-version = "0.4.0-rc.0"
+version = "0.4.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb19b576f7e885fac6667774f906b150c9e4df82ed8974d5a99a82bdbee946a8"
+checksum = "b317b5dd7fb52c79e017554049304992f65260689c5ddb55438ad52ba007f98d"
 dependencies = [
  "hybrid-array",
 ]
@@ -170,9 +170,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.0-rc.9"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d306b679262030ad8813a82d4915fc04efff97776e4db7f8eb5137039d56400"
+checksum = "45a9a965bb102c1c891fb017c09a05c965186b1265a207640f323ddd009f9deb"
 dependencies = [
  "typenum",
 ]
@@ -242,7 +242,7 @@ dependencies = [
 
 [[package]]
 name = "retail-mac"
-version = "0.2.0-pre.2"
+version = "0.1.0"
 dependencies = [
  "aes",
  "cipher",
