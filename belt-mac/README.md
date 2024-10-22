@@ -2,10 +2,10 @@
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
+[![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
-[![Build Status][build-image]][build-link]
 
 Pure Rust implementation of [`belt-mac`].
 
@@ -33,7 +33,7 @@ mac.verify(&tag_bytes).unwrap();
 
 ## Minimum Supported Rust Version
 
-Rust **1.57** or higher.
+Rust **1.81** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -60,12 +60,12 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/belt-mac.svg
+[crate-image]: https://img.shields.io/crates/v/belt-mac.svg?logo=rust
 [crate-link]: https://crates.io/crates/belt-mac
 [docs-image]: https://docs.rs/belt-mac/badge.svg
 [docs-link]: https://docs.rs/belt-mac/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 [build-image]: https://github.com/RustCrypto/MACs/workflows/belt-mac/badge.svg?branch=master&event=push
