@@ -2,10 +2,10 @@
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
+[![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
-[![Build Status][build-image]][build-link]
 
 Pure Rust implementation of the [Retail Message Authentication Code][Retail MAC],
 also known as ISO/IEC 9797-1 MAC algorithm 3.
@@ -14,7 +14,7 @@ also known as ISO/IEC 9797-1 MAC algorithm 3.
 
 ## Minimum Supported Rust Version
 
-Rust **1.56** or higher.
+Rust **1.81** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -41,16 +41,16 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/retail-mac.svg
+[crate-image]: https://img.shields.io/crates/v/retail-mac.svg?logo=rust
 [crate-link]: https://crates.io/crates/retail-mac
 [docs-image]: https://docs.rs/retail-mac/badge.svg
 [docs-link]: https://docs.rs/retail-mac/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
-[build-image]: https://github.com/RustCrypto/MACs/workflows/retail-mac/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/MACs/actions?query=workflow%3Aretail-mac
+[build-image]: https://github.com/RustCrypto/MACs/actions/workflows/retail-mac.yml/badge.svg
+[build-link]: https://github.com/RustCrypto/MACs/actions/workflows/retail-mac.yml
 
 [//]: # (general links)
 

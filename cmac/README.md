@@ -2,10 +2,10 @@
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
+[![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
-[![Build Status][build-image]][build-link]
 
 Pure Rust implementation of the [Cipher-based Message Authentication Code (CMAC)][1].
 
@@ -13,7 +13,7 @@ Pure Rust implementation of the [Cipher-based Message Authentication Code (CMAC)
 
 ## Minimum Supported Rust Version
 
-Rust **1.56** or higher.
+Rust **1.81** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -40,12 +40,12 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/cmac.svg
+[crate-image]: https://img.shields.io/crates/v/cmac.svg?logo=rust
 [crate-link]: https://crates.io/crates/cmac
 [docs-image]: https://docs.rs/cmac/badge.svg
 [docs-link]: https://docs.rs/cmac/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 [build-image]: https://github.com/RustCrypto/MACs/workflows/cmac/badge.svg?branch=master&event=push
