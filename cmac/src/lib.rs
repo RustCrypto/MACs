@@ -147,11 +147,11 @@ where
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, N: BlockSizes> BlockSizeUser for Closure<'a, N> {
+        impl<N: BlockSizes> BlockSizeUser for Closure<'_, N> {
             type BlockSize = N;
         }
 
-        impl<'a, N: BlockSizes> BlockCipherEncClosure for Closure<'a, N> {
+        impl<N: BlockSizes> BlockCipherEncClosure for Closure<'_, N> {
             #[inline(always)]
             fn call<B: BlockCipherEncBackend<BlockSize = Self::BlockSize>>(self, backend: &B) {
                 for block in self.blocks {
