@@ -1,6 +1,6 @@
 [package]
 name = "retail-mac"
-version = "0.1.0"
+version = "0.1.0-pre.0"
 description = "Implementation of Retail Message Authentication Code (Retail MAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
