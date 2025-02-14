@@ -273,7 +273,7 @@ where
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, N, const LC_SIZE: usize> BlockSizeUser for Closure<'a, N, LC_SIZE>
+        impl<N, const LC_SIZE: usize> BlockSizeUser for Closure<'_, N, LC_SIZE>
         where
             N: BlockSizes,
             Array<u8, N>: Dbl,
@@ -281,7 +281,7 @@ where
             type BlockSize = N;
         }
 
-        impl<'a, N, const LC_SIZE: usize> BlockCipherEncClosure for Closure<'a, N, LC_SIZE>
+        impl<N, const LC_SIZE: usize> BlockCipherEncClosure for Closure<'_, N, LC_SIZE>
         where
             N: BlockSizes,
             Array<u8, N>: Dbl,
