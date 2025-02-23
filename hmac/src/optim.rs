@@ -1,13 +1,13 @@
-use super::{get_der_key, IPAD, OPAD};
+use super::{IPAD, OPAD, get_der_key};
 use core::{fmt, slice};
 use digest::{
+    HashMarker, InvalidLength, KeyInit, MacMarker, Output,
     block_buffer::Eager,
     core_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
         OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
-    HashMarker, InvalidLength, KeyInit, MacMarker, Output,
 };
 
 /// Generic HMAC instance.

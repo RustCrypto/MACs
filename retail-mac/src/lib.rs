@@ -48,9 +48,10 @@ use cipher::{
 };
 use core::fmt;
 use digest::{
+    MacMarker, Output, OutputSizeUser, Reset,
     array::{
-        typenum::{IsLess, Le, NonZero, U2, U256},
         Array, ArraySize,
+        typenum::{IsLess, Le, NonZero, U2, U256},
     },
     block_buffer::Eager,
     core_api::{
@@ -58,7 +59,6 @@ use digest::{
         UpdateCore,
     },
     crypto_common::BlockSizes,
-    MacMarker, Output, OutputSizeUser, Reset,
 };
 
 #[cfg(feature = "zeroize")]

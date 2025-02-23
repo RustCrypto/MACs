@@ -96,8 +96,8 @@ extern crate std;
 pub use digest::{self, KeyInit, Mac};
 
 use digest::{
-    core_api::{Block, BlockSizeUser},
     Digest,
+    core_api::{Block, BlockSizeUser},
 };
 
 mod optim;
