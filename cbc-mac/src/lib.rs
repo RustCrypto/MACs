@@ -38,9 +38,10 @@ pub use digest::{self, KeyInit, Mac};
 use cipher::{BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt};
 use core::fmt;
 use digest::{
+    MacMarker, Output, OutputSizeUser, Reset,
     array::{
-        typenum::{IsLess, Le, NonZero, U256},
         Array, ArraySize,
+        typenum::{IsLess, Le, NonZero, U256},
     },
     block_buffer::Eager,
     core_api::{
@@ -48,7 +49,6 @@ use digest::{
         UpdateCore,
     },
     crypto_common::{BlockSizes, InnerInit, InnerUser},
-    MacMarker, Output, OutputSizeUser, Reset,
 };
 
 #[cfg(feature = "zeroize")]

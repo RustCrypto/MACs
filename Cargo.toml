@@ -4,3 +4,17 @@ members = ["belt-mac", "cbc-mac", "cmac", "hmac", "pmac", "retail-mac"]
 
 [profile.dev]
 opt-level = 2
+
+[patch.crates-io]
+# https://github.com/RustCrypto/hashes/pull/652
+md-5     = { git = "https://github.com/RustCrypto/hashes.git" }
+sha1     = { git = "https://github.com/RustCrypto/hashes.git" }
+sha2     = { git = "https://github.com/RustCrypto/hashes.git" }
+streebog = { git = "https://github.com/RustCrypto/hashes.git" }
+
+# https://github.com/RustCrypto/block-ciphers/pull/472
+aes        = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
+des        = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
+belt-block = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
+kuznyechik = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
+magma      = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }

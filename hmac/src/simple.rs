@@ -1,8 +1,8 @@
-use super::{get_der_key, IPAD, OPAD};
+use super::{IPAD, OPAD, get_der_key};
 use core::fmt;
 use digest::{
-    crypto_common::{Block, BlockSizeUser, InvalidLength, Key, KeySizeUser},
     Digest, FixedOutput, KeyInit, MacMarker, Output, OutputSizeUser, Update,
+    crypto_common::{Block, BlockSizeUser, InvalidLength, Key, KeySizeUser},
 };
 #[cfg(feature = "reset")]
 use digest::{FixedOutputReset, Reset};
