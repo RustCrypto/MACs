@@ -13,8 +13,8 @@ sha2     = { git = "https://github.com/RustCrypto/hashes.git" }
 streebog = { git = "https://github.com/RustCrypto/hashes.git" }
 
 # https://github.com/RustCrypto/block-ciphers/pull/472
-aes        = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
-des        = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
-belt-block = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
-kuznyechik = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
-magma      = { git = "https://github.com/baloo/block-ciphers.git", branch = "baloo/edition-2024" }
+aes        = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+des        = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+belt-block = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+kuznyechik = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+magma      = { git = "https://github.com/RustCrypto/block-ciphers.git" }
