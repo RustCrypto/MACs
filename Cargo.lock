@@ -196,8 +196,9 @@ dependencies = [
 
 [[package]]
 name = "md-5"
-version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes.git#0d0369ff7dab69e98acfb8a08f4724dbda285e04"
+version = "0.11.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f97ce75b16c61e8ffe9363ca30092ff9da9daed3c7312296eef978c4ecb2d28"
 dependencies = [
  "cfg-if",
  "digest",
@@ -226,8 +227,9 @@ dependencies = [
 
 [[package]]
 name = "sha1"
-version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes.git#0d0369ff7dab69e98acfb8a08f4724dbda285e04"
+version = "0.11.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55f44e40722caefdd99383c25d3ae52a1094a1951215ae76f68837ece4e7f566"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -236,8 +238,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes.git#0d0369ff7dab69e98acfb8a08f4724dbda285e04"
+version = "0.11.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19b4241d1a56954dce82cecda5c8e9c794eef6f53abe5e5216bac0a0ea71ffa7"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -246,8 +249,9 @@ dependencies = [
 
 [[package]]
 name = "streebog"
-version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes.git#0d0369ff7dab69e98acfb8a08f4724dbda285e04"
+version = "0.11.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3a275f3837c892b08e1e992cf3ef597aa2aecea6d985a6db2035b367673cfe1"
 dependencies = [
  "digest",
 ]
