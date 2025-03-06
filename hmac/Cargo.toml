@@ -17,10 +17,10 @@ digest = { version = "=0.11.0-pre.10", features = ["mac"] }
 
 [dev-dependencies]
 digest = { version = "=0.11.0-pre.10", features = ["dev"] }
-md-5 = { version = "=0.11.0-pre.4", default-features = false }
-sha1 = { version = "=0.11.0-pre.4", default-features = false }
-sha2 = { version = "=0.11.0-pre.4", default-features = false }
-streebog = { version = "=0.11.0-pre.4", default-features = false }
+md-5 = { version = "=0.11.0-pre.5", default-features = false }
+sha1 = { version = "=0.11.0-pre.5", default-features = false }
+sha2 = { version = "=0.11.0-pre.5", default-features = false }
+streebog = { version = "=0.11.0-pre.5", default-features = false }
 hex-literal = "1"
 
 [features]
