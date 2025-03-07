@@ -4,8 +4,9 @@ version = 4
 
 [[package]]
 name = "aes"
-version = "0.9.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
+version = "0.9.0-pre.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38e4da00d9978020ddaa556c1747cfcafc3f375cfadb109acfe8b752cfc373bf"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -14,8 +15,9 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.2.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
+version = "0.2.0-pre.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20cce8d102fb5accb008983fb54f0975834bc5f7789080e6564b0f7e13ffe37a"
 dependencies = [
  "cipher",
 ]
@@ -116,8 +118,9 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.9.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
+version = "0.9.0-pre.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fee752f2df22a55f0f703c8eabfeb36990559e1b836263e35580a4186e1cca0a"
 dependencies = [
  "cipher",
 ]
@@ -173,8 +176,9 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.9.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
+version = "0.9.0-pre.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33cc36039d169faa75cbcb6b968251a878ec8431472d1688eb336cd1b459c0aa"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -188,8 +192,9 @@ checksum = "875b3680cb2f8f71bdcf9a30f38d48282f5d3c95cbf9b3fa57269bb5d5c06828"
 
 [[package]]
 name = "magma"
-version = "0.10.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
+version = "0.10.0-pre.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cbf0a1d2178f9ed8ebf27ef13364749622d01abebc3a39937f622b020776465"
 dependencies = [
  "cipher",
 ]

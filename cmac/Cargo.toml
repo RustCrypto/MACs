@@ -22,10 +22,10 @@ dbl = "0.4.0-rc.0"
 digest = { version = "=0.11.0-pre.10", features = ["dev"] }
 hex-literal = "1"
 
-aes = "0.9.0-pre.2"
-des = "0.9.0-pre.2"
-kuznyechik = "0.9.0-pre.2"
-magma = "0.10.0-pre.2"
+aes = "0.9.0-pre.3"
+des = "0.9.0-pre.3"
+kuznyechik = "0.9.0-pre.3"
+magma = "0.10.0-pre.3"
 
 [features]
 std = ["digest/std"]
