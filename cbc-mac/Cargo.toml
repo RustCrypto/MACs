@@ -19,8 +19,8 @@ digest = { version = "=0.11.0-pre.10", features = ["mac"] }
 digest = { version = "=0.11.0-pre.10", features = ["dev"] }
 hex-literal = "1"
 
-aes = "0.9.0-pre.2"
-des = "0.9.0-pre.2"
+aes = "0.9.0-pre.3"
+des = "0.9.0-pre.3"
 
 [features]
 std = ["digest/std"]

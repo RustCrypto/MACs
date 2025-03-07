@@ -13,7 +13,7 @@ keywords = ["crypto", "mac", "belt-mac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-belt-block = "0.2.0-pre.2"
+belt-block = "0.2.0-pre.3"
 cipher = "=0.5.0-pre.8"
 digest = { version = "=0.11.0-pre.10", features = ["mac"] }
 
