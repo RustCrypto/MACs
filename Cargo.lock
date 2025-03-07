@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "aes"
 version = "0.9.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#0ab21fa42149e81ec34fefbc937ef8b2be8caa61"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "belt-block"
 version = "0.2.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#0ab21fa42149e81ec34fefbc937ef8b2be8caa61"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
 dependencies = [
  "cipher",
 ]
@@ -117,7 +117,7 @@ dependencies = [
 [[package]]
 name = "des"
 version = "0.9.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#0ab21fa42149e81ec34fefbc937ef8b2be8caa61"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
 dependencies = [
  "cipher",
 ]
@@ -142,7 +142,7 @@ checksum = "bcaaec4551594c969335c98c903c1397853d4198408ea609190f420500f6be71"
 
 [[package]]
 name = "hmac"
-version = "0.13.0-pre.4"
+version = "0.13.0-pre.5"
 dependencies = [
  "digest",
  "hex-literal",
@@ -174,7 +174,7 @@ dependencies = [
 [[package]]
 name = "kuznyechik"
 version = "0.9.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#0ab21fa42149e81ec34fefbc937ef8b2be8caa61"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -182,14 +182,14 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.169"
+version = "0.2.170"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+checksum = "875b3680cb2f8f71bdcf9a30f38d48282f5d3c95cbf9b3fa57269bb5d5c06828"
 
 [[package]]
 name = "magma"
 version = "0.10.0-pre.2"
-source = "git+https://github.com/RustCrypto/block-ciphers.git#0ab21fa42149e81ec34fefbc937ef8b2be8caa61"
+source = "git+https://github.com/RustCrypto/block-ciphers.git#bb7623cf85b416c8c61d89dd11573e6e7f961720"
 dependencies = [
  "cipher",
 ]
@@ -264,9 +264,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "typenum"
-version = "1.17.0"
+version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
+checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "zeroize"
