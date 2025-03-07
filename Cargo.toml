@@ -1,6 +1,13 @@
 [workspace]
-resolver = "2"
-members = ["belt-mac", "cbc-mac", "cmac", "hmac", "pmac", "retail-mac"]
+resolver = "3"
+members = [
+    "belt-mac",
+    "cbc-mac",
+    "cmac",
+    "hmac",
+    "pmac",
+    "retail-mac",
+]
 
 [profile.dev]
 opt-level = 2
