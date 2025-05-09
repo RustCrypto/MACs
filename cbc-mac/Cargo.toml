@@ -23,7 +23,6 @@ aes = "0.9.0-pre.3"
 des = "0.9.0-pre.3"
 
 [features]
-std = ["digest/std"]
 zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]

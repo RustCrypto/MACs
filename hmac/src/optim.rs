@@ -4,8 +4,8 @@ use digest::{
     HashMarker, InvalidLength, KeyInit, MacMarker, Output,
     block_buffer::Eager,
     core_api::{
-        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
-        OutputSizeUser, UpdateCore,
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper,
+        FixedOutputCore, OutputSizeUser, UpdateCore,
     },
     crypto_common::{Key, KeySizeUser},
 };
@@ -24,8 +24,9 @@ pub trait EagerHash {
         + Clone;
 }
 
-impl<C> EagerHash for CoreWrapper<C>
+impl<D, C> EagerHash for D
 where
+    D: CoreProxy<Core = C>,
     C: HashMarker
         + UpdateCore
         + FixedOutputCore

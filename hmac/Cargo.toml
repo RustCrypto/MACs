@@ -24,7 +24,7 @@ streebog = { version = "=0.11.0-pre.5", default-features = false }
 hex-literal = "1"
 
 [features]
-std = ["digest/std"]
+std = []
 reset = [] # Enable ability to reset HMAC instances
 
 [package.metadata.docs.rs]

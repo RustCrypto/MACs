@@ -28,7 +28,6 @@ kuznyechik = "0.9.0-pre.3"
 magma = "0.10.0-pre.3"
 
 [features]
-std = ["digest/std"]
 zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
