@@ -11,3 +11,13 @@ members = [
 
 [profile.dev]
 opt-level = 2
+
+[patch.crates-io]
+# https://github.com/RustCrypto/traits/pull/1787
+# https://github.com/RustCrypto/traits/pull/1799
+digest = { git = "https://github.com/RustCrypto/traits", branch = "digest/newtype" }
+crypto-common = { git = "https://github.com/RustCrypto/traits", branch = "digest/newtype" }
+
+# https://github.com/RustCrypto/hashes/pull/678
+streebog = { git = "https://github.com/RustCrypto/hashes", branch = "newtype" }
+sha2 = { git = "https://github.com/RustCrypto/hashes", branch = "newtype" }

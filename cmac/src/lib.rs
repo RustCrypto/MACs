@@ -44,217 +44,27 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(missing_docs)]
 
 pub use digest::{self, KeyInit, Mac};
 
-use cipher::{BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt};
+/// Block-level implementation.
+pub mod block_api;
+
+use block_api::CmacCipher;
 use core::fmt;
-use dbl::Dbl;
-use digest::{
-    MacMarker, Output, OutputSizeUser, Reset,
-    array::{
-        Array, ArraySize,
-        typenum::{IsLess, Le, NonZero, U256},
-    },
-    block_buffer::Lazy,
-    core_api::{
-        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
-        UpdateCore,
-    },
-    crypto_common::{BlockSizes, InnerInit, InnerUser},
-};
+use digest::core_api::{AlgorithmName, CoreProxy};
 
-#[cfg(feature = "zeroize")]
-use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
+digest::buffer_fixed!(
+    /// Generic CMAC instance.
+    pub struct Cmac<C: CmacCipher>(block_api::CmacCore<C>);
+    impl: ResetMacTraits InnerInit;
+);
 
-/// Generic CMAC instance.
-pub type Cmac<C> = CoreWrapper<CmacCore<C>>;
-
-/// Generic core CMAC instance, which operates over blocks.
-#[derive(Clone)]
-pub struct CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    cipher: C,
-    state: Block<C>,
-}
-
-impl<C> BlockSizeUser for CmacCore<C>
-where
-    C: BlockCipherEncrypt + BlockSizeUser + Clone,
-    Block<C>: Dbl,
-{
-    type BlockSize = C::BlockSize;
-}
-
-impl<C> OutputSizeUser for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    type OutputSize = C::BlockSize;
-}
-
-impl<C> InnerUser for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    type Inner = C;
-}
-
-impl<C> MacMarker for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-}
-
-impl<C> InnerInit for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    #[inline]
-    fn inner_init(cipher: C) -> Self {
-        let state = Default::default();
-        Self { cipher, state }
-    }
-}
-
-impl<C> BufferKindUser for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    type BufferKind = Lazy;
-}
-
-impl<C> UpdateCore for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    #[inline]
-    fn update_blocks(&mut self, blocks: &[Block<Self>]) {
-        struct Closure<'a, N: BlockSizes> {
-            state: &'a mut Block<Self>,
-            blocks: &'a [Block<Self>],
-        }
-
-        impl<N: BlockSizes> BlockSizeUser for Closure<'_, N> {
-            type BlockSize = N;
-        }
-
-        impl<N: BlockSizes> BlockCipherEncClosure for Closure<'_, N> {
-            #[inline(always)]
-            fn call<B: BlockCipherEncBackend<BlockSize = Self::BlockSize>>(self, backend: &B) {
-                for block in self.blocks {
-                    xor(self.state, block);
-                    backend.encrypt_block((self.state).into());
-                }
-            }
-        }
-
-        let Self { cipher, state } = self;
-        cipher.encrypt_with_backend(Closure { state, blocks })
-    }
-}
-
-impl<C> Reset for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    #[inline(always)]
-    fn reset(&mut self) {
-        self.state = Default::default();
-    }
-}
-
-impl<C> FixedOutputCore for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-    C::BlockSize: IsLess<U256>,
-    Le<C::BlockSize, U256>: NonZero,
-{
-    #[inline]
-    fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
-        let Self { state, cipher } = self;
-        let pos = buffer.get_pos();
-        let buf = buffer.pad_with_zeros();
-
-        let mut subkey = Default::default();
-        cipher.encrypt_block(&mut subkey);
-        let key1 = subkey.dbl();
-
-        xor(state, &buf);
-        if pos == buf.len() {
-            xor(state, &key1);
-        } else {
-            state[pos] ^= 0x80;
-            let key2 = key1.dbl();
-            xor(state, &key2);
-        }
-        cipher.encrypt_block(state);
-        out.copy_from_slice(state);
-    }
-}
-
-impl<C> AlgorithmName for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone + AlgorithmName,
-    Block<C>: Dbl,
-{
+impl<C: CmacCipher + AlgorithmName> AlgorithmName for Cmac<C> {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Cmac<")?;
-        <C as AlgorithmName>::write_alg_name(f)?;
-        f.write_str(">")
-    }
-}
-
-impl<C> fmt::Debug for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone + AlgorithmName,
-    Block<C>: Dbl,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("CmacCore<")?;
-        <C as AlgorithmName>::write_alg_name(f)?;
-        f.write_str("> { ... }")
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl<C> Drop for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone,
-    Block<C>: Dbl,
-{
-    fn drop(&mut self) {
-        self.state.zeroize();
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl<C> ZeroizeOnDrop for CmacCore<C>
-where
-    C: BlockCipherEncrypt + Clone + ZeroizeOnDrop,
-    Block<C>: Dbl,
-{
-}
-
-#[inline(always)]
-fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
-    for i in 0..N::USIZE {
-        buf[i] ^= data[i];
+        <Self as CoreProxy>::Core::write_alg_name(f)
     }
 }

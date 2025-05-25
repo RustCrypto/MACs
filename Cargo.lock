@@ -45,6 +45,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a229bfd78e4827c91b9b95784f69492c1b77c1ab75a45a8a037b139215086f94"
 dependencies = [
  "hybrid-array",
+ "zeroize",
 ]
 
 [[package]]
@@ -101,8 +102,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "170d71b5b14dec99db7739f6fc7d6ec2db80b78c3acb77db48392ccc3d8a9ea0"
+source = "git+https://github.com/RustCrypto/traits?branch=digest%2Fnewtype#844f04357ae1dfaa6b06c253bff441df40402d07"
 dependencies = [
  "hybrid-array",
 ]
@@ -128,13 +128,13 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.11.0-pre.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c478574b20020306f98d61c8ca3322d762e1ff08117422ac6106438605ea516"
+source = "git+https://github.com/RustCrypto/traits?branch=digest%2Fnewtype#844f04357ae1dfaa6b06c253bff441df40402d07"
 dependencies = [
  "blobby",
  "block-buffer",
  "crypto-common",
  "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -244,8 +244,7 @@ dependencies = [
 [[package]]
 name = "sha2"
 version = "0.11.0-pre.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19b4241d1a56954dce82cecda5c8e9c794eef6f53abe5e5216bac0a0ea71ffa7"
+source = "git+https://github.com/RustCrypto/hashes?branch=newtype#ada01159b7499ab6d99f11f7f90cfd18c6e157e5"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -255,8 +254,7 @@ dependencies = [
 [[package]]
 name = "streebog"
 version = "0.11.0-pre.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3a275f3837c892b08e1e992cf3ef597aa2aecea6d985a6db2035b367673cfe1"
+source = "git+https://github.com/RustCrypto/hashes?branch=newtype#ada01159b7499ab6d99f11f7f90cfd18c6e157e5"
 dependencies = [
  "digest",
 ]
