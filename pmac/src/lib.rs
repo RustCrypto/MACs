@@ -55,7 +55,7 @@ pub mod block_api;
 
 use block_api::PmacCipher;
 use core::fmt;
-use digest::core_api::{AlgorithmName, CoreProxy};
+use digest::block_api::{AlgorithmName, CoreProxy};
 
 digest::buffer_fixed!(
     /// Generic PMAC instance with `LC_SIZE` = 20.

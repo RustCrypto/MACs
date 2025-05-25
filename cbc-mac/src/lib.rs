@@ -39,7 +39,7 @@ mod block_api;
 
 use cipher::{AlgorithmName, BlockCipherEncrypt};
 use core::fmt;
-use digest::core_api::CoreProxy;
+use digest::block_api::CoreProxy;
 
 digest::buffer_fixed!(
     /// Generic CBC-MAC instance.

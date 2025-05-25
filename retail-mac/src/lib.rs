@@ -51,7 +51,7 @@ use core::{fmt, ops::Mul};
 use digest::{
     InvalidLength,
     array::ArraySize,
-    core_api::CoreProxy,
+    block_api::CoreProxy,
     typenum::{Prod, U2},
 };
 

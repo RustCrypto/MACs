@@ -20,4 +20,6 @@ crypto-common = { git = "https://github.com/RustCrypto/traits", branch = "digest
 
 # https://github.com/RustCrypto/hashes/pull/678
 streebog = { git = "https://github.com/RustCrypto/hashes", branch = "newtype" }
+sha1 = { git = "https://github.com/RustCrypto/hashes", branch = "newtype" }
 sha2 = { git = "https://github.com/RustCrypto/hashes", branch = "newtype" }
+md-5 = { git = "https://github.com/RustCrypto/hashes", branch = "newtype" }

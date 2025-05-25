@@ -1,21 +1,22 @@
 use crate::utils::{IPAD, OPAD, get_der_key};
 use core::{fmt, slice};
 use digest::{
-    HashMarker, InvalidLength, KeyInit, MacMarker, Output, Reset,
-    block_buffer::Eager,
-    core_api::{
-        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, CoreWrapper,
-        FixedOutputCore, OutputSizeUser, UpdateCore,
+    Digest, HashMarker, InvalidLength, KeyInit, MacMarker, Output, Reset,
+    block_api::{
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, FixedOutputCore,
+        OutputSizeUser, UpdateCore,
     },
+    block_buffer::Eager,
     crypto_common::{Key, KeySizeUser},
 };
 
 /// Trait implemented by eager hashes which expose their block-level core.
-pub trait EagerHash {
+pub trait EagerHash: BlockSizeUser + Digest {
     /// Block-level core type of the hash.
     type Core: HashMarker
         + UpdateCore
         + FixedOutputCore
+        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone;
@@ -23,10 +24,11 @@ pub trait EagerHash {
 
 impl<T> EagerHash for T
 where
-    T: CoreProxy,
+    T: CoreProxy + BlockSizeUser + Digest,
     <T as CoreProxy>::Core: HashMarker
         + UpdateCore
         + FixedOutputCore
+        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone,
@@ -75,7 +77,7 @@ impl<D: EagerHash> KeyInit for HmacCore<D> {
 
     #[inline(always)]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-        let mut buf = get_der_key::<CoreWrapper<D::Core>>(key);
+        let mut buf = get_der_key::<D>(key);
         buf.iter_mut().for_each(|b: &mut u8| *b ^= IPAD);
 
         let mut digest = D::Core::default();
@@ -174,7 +176,7 @@ impl<D: EagerHash> KeyInit for HmacResetCore<D> {
 
     #[inline(always)]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-        let mut buf = get_der_key::<CoreWrapper<D::Core>>(key);
+        let mut buf = get_der_key::<D>(key);
         buf.iter_mut().for_each(|b: &mut u8| *b ^= IPAD);
 
         let mut digest = D::Core::default();

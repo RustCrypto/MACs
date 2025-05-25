@@ -6,7 +6,7 @@ use core::{fmt, ops::Mul};
 use digest::{
     Key, KeyInit, MacMarker, Output, OutputSizeUser, Reset,
     array::{Array, ArraySize},
-    core_api::{
+    block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, Eager, FixedOutputCore,
         UpdateCore,
     },

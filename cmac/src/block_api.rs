@@ -4,7 +4,7 @@ use dbl::Dbl;
 use digest::{
     MacMarker, Output, OutputSizeUser, Reset,
     array::{Array, ArraySize},
-    core_api::{
+    block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore, Lazy,
         UpdateCore,
     },
