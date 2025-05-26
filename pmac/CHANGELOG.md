@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Relax MSRV policy and allow MSRV bumps in patch releases
 - Update to `digest` v0.11
 - Update to `cipher` v0.5
-- Replace type aliases with newtypes [#186]
+- Replace type aliases with newtypes  ([#186])
+
+### Removed
+- `std` crate feature ([#186])
 
 [#186]: https://github.com/RustCrypto/MACs/pull/186
 
