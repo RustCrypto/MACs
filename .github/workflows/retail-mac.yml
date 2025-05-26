@@ -35,7 +35,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
-      - run: cargo build --no-default-features --target ${{ matrix.target }}
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
     # disabled until belt-block gets published
@@ -57,6 +57,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo test --no-default-features
-      - run: cargo test
-      - run: cargo test --all-features
+      - run: cargo test --release --no-default-features
+      - run: cargo test --release
+      - run: cargo test --release --all-features
