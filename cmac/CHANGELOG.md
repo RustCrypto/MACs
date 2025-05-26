@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.0 (UNRELEASED)
+### Changed
+- Edition changed to 2024 and MSRV bumped to 1.85
+- Relax MSRV policy and allow MSRV bumps in patch releases
+- Update to `digest` v0.11
+- Update to `cipher` v0.5
+- Replace type aliases with newtypes ([#186])
+
+### Removed
+- `std` crate feature ([#186])
+
+[#186]: https://github.com/RustCrypto/MACs/pull/186
+
 ## 0.7.2 (2022-03-14)
 ### Changed
 - Do not include large CAVP test vectors in published packages ([#128])

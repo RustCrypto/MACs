@@ -4,13 +4,25 @@
 //! implements the [`digest`] crate traits. You can find compatible crates
 //! (e.g. [`sha2`]) in the [`RustCrypto/hashes`] repository.
 //!
-//! This crate provides two HMAC implementation [`Hmac`] and [`SimpleHmac`].
-//! The first one is a buffered wrapper around block-level [`HmacCore`].
-//! Internally it uses efficient state representation, but works only with
+//! This crate provides four HMAC implementations: [`Hmac`], [`HmacReset`],
+//! [`SimpleHmac`], and [`SimpleHmacReset`].
+//!
+//! The first two types are buffered wrappers around block-level
+//! [`block_api::HmacCore`] and [`block_api::HmacResetCore`] types respectively.
+//! Internally they uses efficient state representation, but work only with
 //! hash functions which expose block-level API and consume blocks eagerly
 //! (e.g. it will not work with the BLAKE2 family of  hash functions).
-//! On the other hand, [`SimpleHmac`] is a bit less efficient memory-wise,
-//! but works with all hash functions which implement the [`Digest`] trait.
+//!
+//! On the other hand, [`SimpleHmac`] and [`SimpleHmacReset`] are a bit less
+//! efficient, but work with all hash functions which implement
+//! the [`Digest`][digest::Digest] trait.
+//!
+//! [`Hmac`] and [`SimpleHmac`] do not support resetting MAC state (i.e. they
+//! do not implement the [`Reset`] and [`FixedOutputReset`] traits). Use
+//! [`HmacReset`] or [`SimpleHmacReset`] if you want to reuse MAC state.
+//!
+//! [`Reset`]: digest::Reset
+//! [`FixedOutputReset`]: digest::FixedOutputReset
 //!
 //! # Examples
 //! Let us demonstrate how to use HMAC using the SHA-256 hash function.
@@ -71,12 +83,6 @@
 //! to remove potential panic. This is done by truncating hash output to the hash
 //! block size if needed.
 //!
-//! # Crate features
-//! - `std`: enables functionality dependent on `std` (e.g. implementation of
-//!   the [`Error`][std::error::Error] trait for error types)
-//! - `reset`: enables implementation of the [`Reset`][digest::Reset] trait
-//!   (note that it makes HMAC states bigger)
-//!
 //! [`digest`]: https://docs.rs/digest
 //! [`sha2`]: https://docs.rs/sha2
 //! [`RustCrypto/hashes`]: https://github.com/RustCrypto/hashes
@@ -86,50 +92,45 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs, rust_2018_idioms)]
-
-#[cfg(feature = "std")]
-extern crate std;
+#![warn(missing_docs)]
 
 pub use digest::{self, KeyInit, Mac};
 
-use digest::{
-    Digest,
-    core_api::{Block, BlockSizeUser},
-};
-
-mod optim;
+/// Block-level implementation.
+pub mod block_api;
 mod simple;
+mod simple_reset;
+mod utils;
 
-pub use optim::{EagerHash, Hmac, HmacCore};
 pub use simple::SimpleHmac;
+pub use simple_reset::SimpleHmacReset;
 
-const IPAD: u8 = 0x36;
-const OPAD: u8 = 0x5C;
+use block_api::EagerHash;
+use core::fmt;
+use digest::block_api::{AlgorithmName, CoreProxy};
 
-fn get_der_key<D: Digest + BlockSizeUser>(key: &[u8]) -> Block<D> {
-    let mut der_key = Block::<D>::default();
-    // The key that HMAC processes must be the same as the block size of the
-    // underlying hash function. If the provided key is smaller than that,
-    // we just pad it with zeros. If its larger, we hash it and then pad it
-    // with zeros.
-    if key.len() <= der_key.len() {
-        der_key[..key.len()].copy_from_slice(key);
-    } else {
-        let hash = D::digest(key);
-        // All commonly used hash functions have block size bigger
-        // than output hash size, but to be extra rigorous we
-        // handle the potential uncommon cases as well.
-        // The condition is calculated at compile time, so this
-        // branch gets removed from the final binary.
-        if hash.len() <= der_key.len() {
-            der_key[..hash.len()].copy_from_slice(&hash);
-        } else {
-            let n = der_key.len();
-            der_key.copy_from_slice(&hash[..n]);
-        }
+digest::buffer_fixed!(
+    /// Generic HMAC instance.
+    pub struct Hmac<D: EagerHash>(block_api::HmacCore<D>);
+    impl: MacTraits KeyInit;
+);
+
+impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <Self as CoreProxy>::Core::write_alg_name(f)
     }
-    der_key
+}
+
+digest::buffer_fixed!(
+    /// Generic HMAC instance with reset support.
+    pub struct HmacReset<D: EagerHash>(block_api::HmacResetCore<D>);
+    impl: ResetMacTraits KeyInit;
+);
+
+impl<D: EagerHash + AlgorithmName> AlgorithmName for HmacReset<D> {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <Self as CoreProxy>::Core::write_alg_name(f)
+    }
 }

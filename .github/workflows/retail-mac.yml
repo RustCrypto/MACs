@@ -59,3 +59,4 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - run: cargo test --release --no-default-features
       - run: cargo test --release
+      - run: cargo test --release --all-features
