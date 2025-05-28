@@ -31,7 +31,8 @@ do not implement the [`Reset`] and [`FixedOutputReset`] traits). Use
 [`HmacReset`] or [`SimpleHmacReset`] if you want to reuse MAC state.
 
 ## Examples
-Let us demonstrate how to use HMAC using the SHA-256 hash function.
+Let us demonstrate how to use HMAC using the SHA-256 hash function
+implemented in the [`sha2`] crate.
 
 In the following examples [`Hmac`] is interchangeable with [`SimpleHmac`].
 
@@ -86,9 +87,10 @@ mac.verify_slice(&code_bytes[..]).unwrap();
 ```
 
 ## Block and input sizes
+
 Usually it is assumed that block size is larger than output size. Due to the
-generic nature of the implementation, this edge case must be handled as well
-to remove potential panic. This is done by truncating hash output to the hash
+generic nature of the implementation, we must handle cases when this assumption
+does not hold. This is done by truncating hash output to the hash
 block size if needed.
 
 ## License
