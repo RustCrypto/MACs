@@ -45,7 +45,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/cbc-mac/badge.svg
 [docs-link]: https://docs.rs/cbc-mac/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 [build-image]: https://github.com/RustCrypto/MACs/workflows/cbc-mac/badge.svg?branch=master&event=push
