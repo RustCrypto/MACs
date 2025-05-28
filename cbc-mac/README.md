@@ -7,21 +7,28 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Pure Rust implementation of the [Cipher Block Chaining Message Authentication Code (CBC-MAC)][CBC-MAC].
+Generic implementation of [Cipher Block Chaining Message Authentication Code (CBC-MAC)][CBC-MAC].
 
-[Documentation][docs-link]
+**WARNING!** The algorithm has known weaknesses in case of variable-length
+messages. See the linked Wikipedia article for more information.
 
-## Minimum Supported Rust Version
+## Examples
 
-Rust **1.81** or higher.
+```rust
+use cbc_mac::{digest::KeyInit, CbcMac, Mac};
+use des::Des;
+use hex_literal::hex;
 
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
+// CBC-MAC with the DES block cipher is equivalent to DAA
+type Daa = CbcMac<Des>;
 
-## SemVer Policy
-
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
+// test from FIPS 113
+let key = hex!("0123456789ABCDEF");
+let mut mac = Daa::new_from_slice(&key).unwrap();
+mac.update(b"7654321 Now is the time for ");
+let correct = hex!("F1D30F6849312CA4");
+mac.verify_slice(&correct).unwrap();
+```
 
 ## License
 
