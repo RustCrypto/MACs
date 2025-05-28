@@ -1,6 +1,8 @@
 use digest::{
-    Digest,
-    block_api::{Block, BlockSizeUser},
+    Digest, HashMarker,
+    block_api::{
+        Block, BlockSizeUser, BufferKindUser, CoreProxy, Eager, FixedOutputCore, UpdateCore,
+    },
 };
 
 pub(crate) const IPAD: u8 = 0x36;
@@ -29,4 +31,30 @@ pub(crate) fn get_der_key<D: Digest + BlockSizeUser>(key: &[u8]) -> Block<D> {
         }
     }
     der_key
+}
+
+/// Trait implemented by eager hashes which expose their block-level core.
+pub trait EagerHash: BlockSizeUser + Digest {
+    /// Block-level core type of the hash.
+    type Core: HashMarker
+        + UpdateCore
+        + FixedOutputCore
+        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone;
+}
+
+impl<T> EagerHash for T
+where
+    T: CoreProxy + BlockSizeUser + Digest,
+    <T as CoreProxy>::Core: HashMarker
+        + UpdateCore
+        + FixedOutputCore
+        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone,
+{
+    type Core = T::Core;
 }

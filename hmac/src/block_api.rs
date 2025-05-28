@@ -1,40 +1,14 @@
-use crate::utils::{IPAD, OPAD, get_der_key};
+use crate::utils::{EagerHash, IPAD, OPAD, get_der_key};
 use core::{fmt, slice};
 use digest::{
-    Digest, HashMarker, InvalidLength, KeyInit, MacMarker, Output, Reset,
+    InvalidLength, KeyInit, MacMarker, Output, Reset,
     block_api::{
-        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreProxy, FixedOutputCore,
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore,
         OutputSizeUser, UpdateCore,
     },
     block_buffer::Eager,
     crypto_common::{Key, KeySizeUser},
 };
-
-/// Trait implemented by eager hashes which expose their block-level core.
-pub trait EagerHash: BlockSizeUser + Digest {
-    /// Block-level core type of the hash.
-    type Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone;
-}
-
-impl<T> EagerHash for T
-where
-    T: CoreProxy + BlockSizeUser + Digest,
-    <T as CoreProxy>::Core: HashMarker
-        + UpdateCore
-        + FixedOutputCore
-        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
-        + BufferKindUser<BufferKind = Eager>
-        + Default
-        + Clone,
-{
-    type Core = T::Core;
-}
 
 /// Generic core HMAC instance, which operates over blocks.
 pub struct HmacCore<D: EagerHash> {
