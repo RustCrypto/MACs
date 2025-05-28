@@ -1,5 +1,6 @@
 // Overwrite intra-crate links
 //! [`Reset`]: digest::Reset
+//! [`Digest`]: digest::Digest
 //! [`FixedOutputReset`]: digest::FixedOutputReset
 //! [`Hmac`]: Hmac
 //! [`HmacReset`]: HmacReset

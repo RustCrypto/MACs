@@ -24,7 +24,7 @@ hash functions which expose block-level API and consume blocks eagerly
 
 On the other hand, [`SimpleHmac`] and [`SimpleHmacReset`] are a bit less
 efficient, but work with all hash functions which implement
-the [`Digest`][digest::Digest] trait.
+the [`Digest`] trait.
 
 [`Hmac`] and [`SimpleHmac`] do not support resetting MAC state (i.e. they
 do not implement the [`Reset`] and [`FixedOutputReset`] traits). Use
@@ -128,6 +128,7 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (intra-crate links)
 [`Reset`]: https://docs.rs/digest/latest/digest/trait.Reset.html
+[`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
 [`FixedOutputReset`]: https://docs.rs/digest/latest/digest/trait.FixedOutputReset.html
 [`Hmac`]: https://docs.rs/hmac/latest/hmac/struct.Hmac.html
 [`HmacReset`]: https://docs.rs/hmac/latest/hmac/struct.HmacReset.html
