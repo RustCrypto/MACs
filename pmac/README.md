@@ -10,7 +10,7 @@
 Generic implementation of [Parallelizable Message Authentication Code (PMAC)][1].
 
 ## Examples
-We will use AES-128 block cipher from the [`aes`](https://docs.rs/aes) crate.
+We will use AES-128 block cipher from the [`aes`] crate.
 
 To get authentication code:
 
@@ -76,4 +76,4 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [1]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
-`aes`: https://docs.rs/aes
+[`aes`]: https://docs.rs/aes

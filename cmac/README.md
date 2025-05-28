@@ -11,7 +11,7 @@ Generic implementation of [Cipher-based Message Authentication Code (CMAC)][1],
 otherwise known as OMAC1.
 
 ## Examples
-We will use AES-128 block cipher from [`aes`] crate.
+We will use AES-128 block cipher from the [`aes`] crate.
 
 To get the authentication code:
 
