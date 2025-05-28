@@ -106,8 +106,8 @@ mod utils;
 
 pub use simple::SimpleHmac;
 pub use simple_reset::SimpleHmacReset;
+pub use utils::EagerHash;
 
-use block_api::EagerHash;
 use core::fmt;
 use digest::block_api::{AlgorithmName, CoreProxy};
 
