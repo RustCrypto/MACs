@@ -20,7 +20,7 @@ The first two types are buffered wrappers around block-level
 [`block_api::HmacCore`] and [`block_api::HmacResetCore`] types respectively.
 Internally they uses efficient state representation, but work only with
 hash functions which expose block-level API and consume blocks eagerly
-(e.g. it will not work with the BLAKE2 family of  hash functions).
+(e.g. they will not work with the BLAKE2 family of hash functions).
 
 On the other hand, [`SimpleHmac`] and [`SimpleHmacReset`] are a bit less
 efficient, but work with all hash functions which implement
@@ -31,6 +31,7 @@ do not implement the [`Reset`] and [`FixedOutputReset`] traits). Use
 [`HmacReset`] or [`SimpleHmacReset`] if you want to reuse MAC state.
 
 ## Examples
+
 Let us demonstrate how to use HMAC using the SHA-256 hash function
 implemented in the [`sha2`] crate.
 
