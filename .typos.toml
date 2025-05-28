@@ -1,0 +1,9 @@
+[files]
+extend-exclude = [
+    ".git/"
+]
+
+[default.extend-words]
+"GOST" = "GOST"
+"DAA" = "DAA"
+"Ede" = "Ede"
