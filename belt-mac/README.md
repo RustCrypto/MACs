@@ -7,7 +7,7 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Pure Rust implementation of [`belt-mac`].
+Pure Rust implementation of [`belt-mac`][1].
 
 # Example
 ```rust
@@ -61,4 +61,4 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[belt-mac]: https://apmi.bsu.by/assets/files/std/belt-spec371.pdf
+[1]: https://apmi.bsu.by/assets/files/std/belt-spec371.pdf
