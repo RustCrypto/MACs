@@ -6,4 +6,4 @@ extend-exclude = [
 [default.extend-words]
 "GOST" = "GOST"
 "DAA" = "DAA"
-"Ede" = "Ede"
+"EDE" = "EDE"
