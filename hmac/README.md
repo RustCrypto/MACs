@@ -127,5 +127,11 @@ dual licensed as above, without any additional terms or conditions.
 [`RustCrypto/hashes`]: https://github.com/RustCrypto/hashes
 
 [//]: # (intra-crate links)
-[`Reset`]: digest::Reset
-[`FixedOutputReset`]: digest::FixedOutputReset
+[`Reset`]: https://docs.rs/digest/latest/digest/trait.Reset.html
+[`FixedOutputReset`]: https://docs.rs/digest/latest/digest/trait.FixedOutputReset.html
+[`Hmac`]: https://docs.rs/hmac/latest/hmac/struct.Hmac.html
+[`HmacReset`]: https://docs.rs/hmac/latest/hmac/struct.HmacReset.html
+[`SimpleHmac`]: https://docs.rs/hmac/latest/hmac/struct.SimpleHmac.html
+[`SimpleHmacReset`]: https://docs.rs/hmac/latest/hmac/struct.SimpleHmacReset.html
+[`block_api::HmacCore`]: https://docs.rs/hmac/latest/hmac/block_api/struct.HmacCore.html
+[`block_api::HmacResetCore`]: https://docs.rs/hmac/latest/hmac/block_api/struct.HmacResetCore.html

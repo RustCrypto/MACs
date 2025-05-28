@@ -1,3 +1,13 @@
+// Overwrite intra-crate links
+//! [`Reset`]: digest::Reset
+//! [`FixedOutputReset`]: digest::FixedOutputReset
+//! [`Hmac`]: Hmac
+//! [`HmacReset`]: HmacReset
+//! [`SimpleHmac`]: SimpleHmac
+//! [`SimpleHmacReset`]: SimpleHmacReset
+//! [`block_api::HmacCore`]: block_api::HmacCore
+//! [`block_api::HmacResetCore`]: block_api::HmacResetCore
+
 #![no_std]
 #![doc = include_str!("../README.md")]
 #![doc(
