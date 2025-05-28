@@ -7,21 +7,45 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Pure Rust implementation of the [Cipher-based Message Authentication Code (CMAC)][1].
+Generic implementation of [Cipher-based Message Authentication Code (CMAC)][1],
+otherwise known as OMAC1.
 
-[Documentation][docs-link]
+## Examples
+We will use AES-128 block cipher from the [`aes`] crate.
 
-## Minimum Supported Rust Version
+To get the authentication code:
 
-Rust **1.81** or higher.
+```rust
+use aes::Aes128;
+use cmac::{digest::KeyInit, Cmac, Mac};
 
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
+// Create `Mac` trait implementation, namely CMAC-AES128
+let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
+mac.update(b"input message");
 
-## SemVer Policy
+// `result` has type `Output` which is a thin wrapper around array of
+// bytes for providing constant time equality check
+let result = mac.finalize();
+// To get underlying array use the `into_bytes` method, but be careful,
+// since incorrect use of the tag value may permit timing attacks which
+// defeat the security provided by the `Output` wrapper
+let tag_bytes = result.into_bytes();
+```
 
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
+To verify the message:
+
+```rust
+use aes::Aes128;
+use cmac::{digest::KeyInit, Cmac, Mac};
+
+let mut mac = Cmac::<Aes128>::new_from_slice(b"very secret key.").unwrap();
+
+mac.update(b"input message");
+
+# let tag_bytes = mac.clone().finalize().into_bytes();
+// `verify` will return `Ok(())` if tag is correct, `Err(MacError)` otherwise
+mac.verify(&tag_bytes).unwrap();
+```
 
 ## License
 
@@ -45,7 +69,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/cmac/badge.svg
 [docs-link]: https://docs.rs/cmac/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 [build-image]: https://github.com/RustCrypto/MACs/workflows/cmac/badge.svg?branch=master&event=push
@@ -54,3 +78,4 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [1]: https://en.wikipedia.org/wiki/One-key_MAC
+[`aes`]: https://docs.rs/aes
