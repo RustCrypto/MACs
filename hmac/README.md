@@ -7,21 +7,89 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Pure Rust implementation of the [Hash-based Message Authentication Code (HMAC)][1].
+Generic implementation of [Hash-based Message Authentication Code (HMAC)][1].
 
-[Documentation][docs-link]
+To use it you will need a cryptographic hash function implementation which
+implements the [`digest`] crate traits. You can find compatible crates
+(e.g. [`sha2`]) in the [`RustCrypto/hashes`] repository.
 
-## Minimum Supported Rust Version
+This crate provides four HMAC implementations: [`Hmac`], [`HmacReset`],
+[`SimpleHmac`], and [`SimpleHmacReset`].
 
-Rust **1.81** or higher.
+The first two types are buffered wrappers around block-level
+[`block_api::HmacCore`] and [`block_api::HmacResetCore`] types respectively.
+Internally they uses efficient state representation, but work only with
+hash functions which expose block-level API and consume blocks eagerly
+(e.g. it will not work with the BLAKE2 family of  hash functions).
 
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
+On the other hand, [`SimpleHmac`] and [`SimpleHmacReset`] are a bit less
+efficient, but work with all hash functions which implement
+the [`Digest`][digest::Digest] trait.
 
-## SemVer Policy
+[`Hmac`] and [`SimpleHmac`] do not support resetting MAC state (i.e. they
+do not implement the [`Reset`] and [`FixedOutputReset`] traits). Use
+[`HmacReset`] or [`SimpleHmacReset`] if you want to reuse MAC state.
 
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
+## Examples
+Let us demonstrate how to use HMAC using the SHA-256 hash function.
+
+In the following examples [`Hmac`] is interchangeable with [`SimpleHmac`].
+
+To get authentication code:
+
+```rust
+use sha2::Sha256;
+use hmac::{Hmac, KeyInit, Mac};
+use hex_literal::hex;
+
+// Create alias for HMAC-SHA256
+type HmacSha256 = Hmac<Sha256>;
+
+let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
+    .expect("HMAC can take key of any size");
+mac.update(b"input message");
+
+// `result` has type `CtOutput` which is a thin wrapper around array of
+// bytes for providing constant time equality check
+let result = mac.finalize();
+// To get underlying array use `into_bytes`, but be careful, since
+// incorrect use of the code value may permit timing attacks which defeats
+// the security provided by the `CtOutput`
+let code_bytes = result.into_bytes();
+let expected = hex!("
+    97d2a569059bbcd8ead4444ff99071f4
+    c01d005bcefe0d3567e1be628e5fdcd9
+");
+assert_eq!(code_bytes[..], expected[..]);
+```
+
+To verify the message:
+
+```rust
+use sha2::Sha256;
+use hmac::{Hmac, KeyInit, Mac};
+use hex_literal::hex;
+
+type HmacSha256 = Hmac<Sha256>;
+
+let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
+    .expect("HMAC can take key of any size");
+
+mac.update(b"input message");
+
+let code_bytes = hex!("
+    97d2a569059bbcd8ead4444ff99071f4
+    c01d005bcefe0d3567e1be628e5fdcd9
+");
+// `verify_slice` will return `Ok(())` if code is correct, `Err(MacError)` otherwise
+mac.verify_slice(&code_bytes[..]).unwrap();
+```
+
+## Block and input sizes
+Usually it is assumed that block size is larger than output size. Due to the
+generic nature of the implementation, this edge case must be handled as well
+to remove potential panic. This is done by truncating hash output to the hash
+block size if needed.
 
 ## License
 
@@ -47,10 +115,17 @@ dual licensed as above, without any additional terms or conditions.
 [build-image]: https://github.com/RustCrypto/MACs/actions/workflows/hmac.yml/badge.svg
 [build-link]: https://github.com/RustCrypto/MACs/actions/workflows/hmac.yml
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 
 [//]: # (general links)
 
 [1]: https://en.wikipedia.org/wiki/HMAC
+[`digest`]: https://docs.rs/digest
+[`sha2`]: https://docs.rs/sha2
+[`RustCrypto/hashes`]: https://github.com/RustCrypto/hashes
+
+[//]: # (intra-crate links)
+[`Reset`]: digest::Reset
+[`FixedOutputReset`]: digest::FixedOutputReset

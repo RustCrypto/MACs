@@ -10,19 +10,32 @@
 Pure Rust implementation of the [Retail Message Authentication Code][Retail MAC],
 also known as ISO/IEC 9797-1 MAC algorithm 3.
 
-[Documentation][docs-link]
+**WARNING!** The algorithm has known weaknesses in case of variable-length
+messages. See the Wikipedia article for [CBC-MAC] for more information.
 
-## Minimum Supported Rust Version
+## Examples
 
-Rust **1.81** or higher.
+```rust
+use retail_mac::{digest::KeyInit, RetailMac, Mac};
+use des::Des;
+use hex_literal::hex;
 
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
+type RetailMacDes = RetailMac<Des>;
 
-## SemVer Policy
+// test from ISO/IEC 9797-1:2011 section B.4
+// K and K' are concatenated:
+let key = hex!("0123456789ABCDEFFEDCBA9876543210");
 
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
+let mut mac = RetailMacDes::new_from_slice(&key).unwrap();
+mac.update(b"Now is the time for all ");
+let correct = hex!("A1C72E74EA3FA9B6");
+mac.verify_slice(&correct).unwrap();
+
+let mut mac2 = RetailMacDes::new_from_slice(&key).unwrap();
+mac2.update(b"Now is the time for it");
+let correct2 = hex!("2E2B1428CC78254F");
+mac2.verify_slice(&correct2).unwrap();
+```
 
 ## License
 
@@ -46,7 +59,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/retail-mac/badge.svg
 [docs-link]: https://docs.rs/retail-mac/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
 [build-image]: https://github.com/RustCrypto/MACs/actions/workflows/retail-mac.yml/badge.svg
@@ -55,3 +68,4 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [Retail MAC]: https://en.wikipedia.org/wiki/ISO/IEC_9797-1#MAC_algorithm_3
+[CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC#Security_with_fixed_and_variable-length_messages
