@@ -147,7 +147,7 @@ checksum = "bcaaec4551594c969335c98c903c1397853d4198408ea609190f420500f6be71"
 
 [[package]]
 name = "hmac"
-version = "0.13.0-pre.5"
+version = "0.13.0-rc.0"
 dependencies = [
  "digest",
  "hex-literal",
