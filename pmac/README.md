@@ -70,8 +70,8 @@ dual licensed as above, without any additional terms or conditions.
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260044-MACs
-[build-image]: https://github.com/RustCrypto/MACs/workflows/pmac/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/MACs/actions?query=workflow%3Apmac
+[build-image]: https://github.com/RustCrypto/MACs/actions/workflows/pmac.yml/badge.svg
+[build-link]: https://github.com/RustCrypto/MACs/actions/workflows/pmac.yml
 
 [//]: # (general links)
 
