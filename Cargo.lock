@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "aes"
-version = "0.9.0-pre.3"
+version = "0.9.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38e4da00d9978020ddaa556c1747cfcafc3f375cfadb109acfe8b752cfc373bf"
+checksum = "cd4838e4ad37bb032dea137f441d5f71c16c26c068af512e64c5bc13a88cdfc7"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -15,9 +15,9 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.2.0-pre.3"
+version = "0.2.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20cce8d102fb5accb008983fb54f0975834bc5f7789080e6564b0f7e13ffe37a"
+checksum = "b9aa0cd4ec3b89021a53caa73cefc5a458cf33b338498e1191916153877bd794"
 dependencies = [
  "cipher",
 ]
@@ -50,7 +50,7 @@ dependencies = [
 
 [[package]]
 name = "cbc-mac"
-version = "0.2.0-pre.2"
+version = "0.2.0-rc.0"
 dependencies = [
  "aes",
  "cipher",
@@ -67,9 +67,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
-version = "0.5.0-pre.8"
+version = "0.5.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "276974d2acb7cf592603150941fc1ff6442acdeb1dc653ac2825928f4703c131"
+checksum = "bd4ef774202f1749465fc7cf88d70fc30620e8cacd5429268f4bff7d003bd976"
 dependencies = [
  "crypto-common",
  "inout",
@@ -78,7 +78,7 @@ dependencies = [
 
 [[package]]
 name = "cmac"
-version = "0.8.0-pre.4"
+version = "0.8.0-rc.0"
 dependencies = [
  "aes",
  "cipher",
@@ -119,9 +119,9 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.9.0-pre.3"
+version = "0.9.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fee752f2df22a55f0f703c8eabfeb36990559e1b836263e35580a4186e1cca0a"
+checksum = "8025983b9f9f242e94d459a57b81c571e92e4e1717ca57d092d8a69fc539efa1"
 dependencies = [
  "cipher",
 ]
@@ -178,9 +178,9 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.9.0-pre.3"
+version = "0.9.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33cc36039d169faa75cbcb6b968251a878ec8431472d1688eb336cd1b459c0aa"
+checksum = "074a7089016bcddb3b8da42f663296a885f8a31ec57a7b795a92b711999ff5aa"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -194,9 +194,9 @@ checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
 
 [[package]]
 name = "magma"
-version = "0.10.0-pre.3"
+version = "0.10.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cbf0a1d2178f9ed8ebf27ef13364749622d01abebc3a39937f622b020776465"
+checksum = "9d6704a51253dc03b397da9121342836759922371190e5755ccfb21c4db9cef4"
 dependencies = [
  "cipher",
 ]
@@ -213,7 +213,7 @@ dependencies = [
 
 [[package]]
 name = "pmac"
-version = "0.8.0-pre.2"
+version = "0.8.0-rc.0"
 dependencies = [
  "aes",
  "cipher",
