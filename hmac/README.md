@@ -41,7 +41,7 @@ To get authentication code:
 
 ```rust
 use sha2::Sha256;
-use hmac::{Hmac, KeyInit, Mac};
+use hmac::{Hmac, Mac};
 use hex_literal::hex;
 
 // Create alias for HMAC-SHA256
@@ -69,7 +69,7 @@ To verify the message:
 
 ```rust
 use sha2::Sha256;
-use hmac::{Hmac, KeyInit, Mac};
+use hmac::{Hmac, Mac};
 use hex_literal::hex;
 
 type HmacSha256 = Hmac<Sha256>;
