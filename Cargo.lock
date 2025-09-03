@@ -50,7 +50,7 @@ dependencies = [
 
 [[package]]
 name = "cbc-mac"
-version = "0.2.0-rc.0"
+version = "0.2.0-rc.1"
 dependencies = [
  "aes",
  "cipher",
@@ -79,7 +79,7 @@ dependencies = [
 
 [[package]]
 name = "cmac"
-version = "0.8.0-rc.0"
+version = "0.8.0-rc.1"
 dependencies = [
  "aes",
  "cipher",
@@ -148,7 +148,7 @@ checksum = "bcaaec4551594c969335c98c903c1397853d4198408ea609190f420500f6be71"
 
 [[package]]
 name = "hmac"
-version = "0.13.0-rc.0"
+version = "0.13.0-rc.1"
 dependencies = [
  "digest",
  "hex-literal",
@@ -214,7 +214,7 @@ dependencies = [
 
 [[package]]
 name = "pmac"
-version = "0.8.0-rc.0"
+version = "0.8.0-rc.1"
 dependencies = [
  "aes",
  "cipher",
