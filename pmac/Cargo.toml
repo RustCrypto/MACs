@@ -1,6 +1,6 @@
 [package]
 name = "pmac"
-version = "0.8.0-rc.0"
+version = "0.8.0-rc.1"
 description = "Generic implementation of Parallelizable Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
