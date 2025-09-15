@@ -15,9 +15,9 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.2.0-rc.0"
+version = "0.2.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9aa0cd4ec3b89021a53caa73cefc5a458cf33b338498e1191916153877bd794"
+checksum = "c4bbddee901eea0f5448cfcc94ea6390d0ee0f3ca8d0308fe34e37553f856640"
 dependencies = [
  "cipher",
 ]
@@ -160,9 +160,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fe39a812f039072707ce38020acbab2f769087952eddd9e2b890f37654b2349"
+checksum = "c7116c472cf19838450b1d421b4e842569f52b519d640aee9ace1ebcf5b21051"
 dependencies = [
  "typenum",
  "zeroize",
