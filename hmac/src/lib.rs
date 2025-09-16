@@ -19,7 +19,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub use digest::{self, KeyInit, Mac};
+pub use digest::{self, KeyInit, Mac, block_api::EagerHash};
 
 /// Block-level implementation.
 pub mod block_api;
@@ -29,7 +29,6 @@ mod utils;
 
 pub use simple::SimpleHmac;
 pub use simple_reset::SimpleHmacReset;
-pub use utils::EagerHash;
 
 use core::fmt;
 use digest::block_api::{AlgorithmName, CoreProxy};
