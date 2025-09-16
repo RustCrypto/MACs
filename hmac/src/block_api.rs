@@ -1,9 +1,9 @@
-use crate::utils::{EagerHash, IPAD, OPAD, get_der_key};
+use crate::utils::{IPAD, OPAD, get_der_key};
 use core::{fmt, slice};
 use digest::{
     InvalidLength, KeyInit, MacMarker, Output, Reset,
     block_api::{
-        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore,
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, EagerHash, FixedOutputCore,
         OutputSizeUser, UpdateCore,
     },
     block_buffer::Eager,
