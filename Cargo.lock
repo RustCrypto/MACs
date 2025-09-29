@@ -160,9 +160,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.2"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a09fa0190457fce307a699c050054974f81b6975b7a017f1e784eb7d9c2d4bc"
+checksum = "2bad028b20a90afcdb5e28a53392562f1db2bdfa238aa1a978b911461bfffb92"
 dependencies = [
  "typenum",
  "zeroize",
@@ -189,9 +189,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.175"
+version = "0.2.176"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
+checksum = "58f929b4d672ea937a23a1ab494143d968337a5f47e56d0815df1e0890ddf174"
 
 [[package]]
 name = "magma"
