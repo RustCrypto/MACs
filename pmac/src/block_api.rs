@@ -213,7 +213,10 @@ fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
     }
 }
 
-/// Helper trait implemented for cipher supported by CMAC
+/// Helper trait implemented for block ciphers supported by PMAC.
+///
+/// Currently this trait is implemented for all block cipher encryptors
+/// with block size equal to 64 and 128 bits.
 pub trait PmacCipher: BlockSizeUser + BlockCipherEncrypt + Clone {
     /// Double block. See the [`Dbl`] trait docs for more information.
     fn dbl(block: Block<Self>) -> Block<Self>;
