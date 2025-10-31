@@ -5,6 +5,7 @@ members = [
     "cbc-mac",
     "cmac",
     "hmac",
+    "kmac",
     "pmac",
     "retail-mac",
 ]
