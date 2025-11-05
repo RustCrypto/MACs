@@ -1,6 +1,6 @@
 [package]
 name = "cmac"
-version = "0.8.0-rc.1"
+version = "0.8.0-rc.3"
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -22,10 +22,10 @@ dbl = "0.5"
 digest = { version = "0.11.0-rc.4", features = ["dev"] }
 hex-literal = "1"
 
-aes = "0.9.0-rc.1"
-des = "0.9.0-rc.1"
-kuznyechik = "0.9.0-rc.1"
-magma = "0.10.0-rc.1"
+aes = "0.9.0-rc.2"
+des = "0.9.0-rc.2"
+kuznyechik = "0.9.0-rc.2"
+magma = "0.10.0-rc.2"
 
 [features]
 zeroize = ["cipher/zeroize", "digest/zeroize"]

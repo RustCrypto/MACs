@@ -1,6 +1,6 @@
 [package]
 name = "cbc-mac"
-version = "0.2.0-rc.1"
+version = "0.2.0-rc.3"
 description = "Implementation of Cipher Block Chaining Message Authentication Code (CBC-MAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -19,8 +19,8 @@ digest = { version = "0.11.0-rc.4", features = ["mac"] }
 digest = { version = "0.11.0-rc.4", features = ["dev"] }
 hex-literal = "1"
 
-aes = "0.9.0-rc.1"
-des = "0.9.0-rc.1"
+aes = "0.9.0-rc.2"
+des = "0.9.0-rc.2"
 
 [features]
 zeroize = ["cipher/zeroize", "digest/zeroize"]
