@@ -13,7 +13,7 @@ keywords = ["crypto", "mac", "pmac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.5.0-rc.1"
+cipher = "0.5.0-rc.2"
 digest = { version = "0.11.0-rc.4", features = ["mac"] }
 dbl = "0.5"
 
