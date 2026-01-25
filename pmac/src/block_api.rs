@@ -8,7 +8,7 @@ use digest::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore, Lazy,
         UpdateCore,
     },
-    crypto_common::{InnerInit, InnerUser},
+    common::{InnerInit, InnerUser},
     typenum::Unsigned,
 };
 

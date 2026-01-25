@@ -2,7 +2,7 @@ use crate::utils::{IPAD, OPAD, get_der_key};
 use core::fmt;
 use digest::{
     Digest, FixedOutput, KeyInit, MacMarker, Output, OutputSizeUser, Update,
-    crypto_common::{Block, BlockSizeUser, InvalidLength, Key, KeySizeUser},
+    common::{Block, BlockSizeUser, InvalidLength, Key, KeySizeUser},
 };
 
 /// Simplified HMAC instance able to operate over hash functions

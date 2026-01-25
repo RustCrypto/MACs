@@ -10,7 +10,7 @@ use digest::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, Eager, FixedOutputCore,
         UpdateCore,
     },
-    crypto_common::BlockSizes,
+    common::BlockSizes,
     typenum::{Prod, U2},
 };
 
