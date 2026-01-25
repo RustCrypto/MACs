@@ -92,6 +92,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "const-oid"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6ef517f0926dd24a1582492c791b6a4818a4d94e789a334894aa15b0d12f55c"
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -135,10 +141,17 @@ checksum = "bff8de092798697546237a3a701e4174fe021579faec9b854379af9bf1e31962"
 dependencies = [
  "blobby",
  "block-buffer",
+ "const-oid",
  "crypto-common",
  "subtle",
  "zeroize",
 ]
+
+[[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hex-literal"
@@ -175,6 +188,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4250ce6452e92010fdf7268ccc5d14faa80bb12fc741938534c58f16804e03c7"
 dependencies = [
  "hybrid-array",
+]
+
+[[package]]
+name = "keccak"
+version = "0.2.0-rc.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d546793a04a1d3049bd192856f804cfe96356e2cf36b54b4e575155babe9f41"
+dependencies = [
+ "cpufeatures",
+]
+
+[[package]]
+name = "kmac"
+version = "0.1.0"
+dependencies = [
+ "digest",
+ "hex",
+ "hex-literal",
+ "sha3",
 ]
 
 [[package]]
@@ -253,6 +285,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "sha3"
+version = "0.11.0-rc.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2103ca0e6f4e9505eae906de5e5883e06fc3b2232fb5d6914890c7bbcb62f478"
+dependencies = [
+ "digest",
+ "keccak",
 ]
 
 [[package]]
