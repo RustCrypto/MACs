@@ -7,7 +7,7 @@ use digest::{
         OutputSizeUser, UpdateCore,
     },
     block_buffer::Eager,
-    crypto_common::{Key, KeySizeUser},
+    common::{Key, KeySizeUser},
 };
 
 /// Generic core HMAC instance, which operates over blocks.

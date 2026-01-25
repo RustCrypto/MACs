@@ -7,7 +7,7 @@ use digest::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, Eager, FixedOutputCore,
         UpdateCore,
     },
-    crypto_common::{BlockSizes, InnerInit, InnerUser},
+    common::{BlockSizes, InnerInit, InnerUser},
 };
 
 #[cfg(feature = "zeroize")]
