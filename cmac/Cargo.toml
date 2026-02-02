@@ -1,6 +1,6 @@
 [package]
 name = "cmac"
-version = "0.8.0-rc.3"
+version = "0.8.0-rc.4"
 description = "Generic implementation of Cipher-based Message Authentication Code"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -14,18 +14,18 @@ categories = ["cryptography", "no-std"]
 exclude = ["tests/cavp_large.rs", "tests/data/cavp_aes128_large.blb"]
 
 [dependencies]
-cipher = "0.5.0-rc.6"
-digest = { version = "0.11.0-rc.9", features = ["mac"] }
+cipher = "0.5.0-rc.8"
+digest = { version = "0.11.0-rc.11", features = ["mac"] }
 dbl = "0.5"
 
 [dev-dependencies]
-digest = { version = "0.11.0-rc.9", features = ["dev"] }
+digest = { version = "0.11.0-rc.11", features = ["dev"] }
 hex-literal = "1"
 
-aes = "0.9.0-rc.2"
-des = "0.9.0-rc.2"
-kuznyechik = "0.9.0-rc.2"
-magma = "0.10.0-rc.2"
+aes = "0.9.0-rc.4"
+des = "0.9.0-rc.3"
+kuznyechik = "0.9.0-rc.3"
+magma = "0.10.0-rc.3"
 
 [features]
 zeroize = ["cipher/zeroize", "digest/zeroize"]

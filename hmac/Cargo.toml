@@ -1,6 +1,6 @@
 [package]
 name = "hmac"
-version = "0.13.0-rc.4"
+version = "0.13.0-rc.5"
 description = "Generic implementation of Hash-based Message Authentication Code (HMAC)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,14 +13,14 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.85"
 
 [dependencies]
-digest = { version = "0.11.0-rc.9", features = ["mac"] }
+digest = { version = "0.11.0-rc.11", features = ["mac"] }
 
 [dev-dependencies]
-digest = { version = "0.11.0-rc.9", features = ["dev"] }
-md-5 = { version = "0.11.0-rc.4", default-features = false }
-sha1 = { version = "0.11.0-rc.4", default-features = false }
-sha2 = { version = "0.11.0-rc.4", default-features = false }
-streebog = { version = "0.11.0-rc.4", default-features = false }
+digest = { version = "0.11.0-rc.11", features = ["dev"] }
+md-5 = { version = "0.11.0-rc.5", default-features = false }
+sha1 = { version = "0.11.0-rc.5", default-features = false }
+sha2 = { version = "0.11.0-rc.5", default-features = false }
+streebog = { version = "0.11.0-rc.5", default-features = false }
 hex-literal = "1"
 
 [features]
