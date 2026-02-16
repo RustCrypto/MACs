@@ -6,8 +6,6 @@ on:
       - README.md
   push:
     branches: master
-    paths-ignore:
-      - README.md
 
 jobs:
   clippy:
@@ -17,27 +15,41 @@ jobs:
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.85.0
+          toolchain: 1.93.0
           components: clippy
-      - run: cargo clippy --all -- -D warnings
+      - run: cargo clippy --workspace --all-features --lib --bins --tests -- -D warnings
+
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - env:
+          RUSTDOCFLAGS: "-Dwarnings"
+        run: cargo doc --workspace --all-features
 
   rustfmt:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v6
-
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           components: rustfmt
-
-      - name: Run cargo fmt
-        run: cargo fmt --all -- --check
+      - run: cargo fmt --all -- --check
 
   typos:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: crate-ci/typos@v1
+
+  lock:
+    name: Check Cargo.lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --workspace --locked
