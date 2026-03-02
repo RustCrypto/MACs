@@ -217,7 +217,7 @@ fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
 ///
 /// Currently this trait is implemented for all block cipher encryptors
 /// with block size equal to 64 and 128 bits.
-pub trait PmacCipher: SmallBlockSizeUser + BlockCipherEncrypt + Clone {
+pub trait PmacCipher: SmallBlockSizeUser + BlockCipherEncrypt {
     /// Double block. See the [`Dbl`] trait docs for more information.
     fn dbl(block: Block<Self>) -> Block<Self>;
     /// Reverse double block.. See the [`Dbl`] trait docs for more information.
@@ -226,7 +226,7 @@ pub trait PmacCipher: SmallBlockSizeUser + BlockCipherEncrypt + Clone {
 
 impl<C> PmacCipher for C
 where
-    Self: SmallBlockSizeUser + BlockCipherEncrypt + Clone,
+    Self: SmallBlockSizeUser + BlockCipherEncrypt,
     Block<Self>: Dbl,
 {
     fn dbl(block: Block<Self>) -> Block<Self> {

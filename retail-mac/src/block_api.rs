@@ -21,7 +21,7 @@ use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 #[derive(Clone)]
 pub struct RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     cipher: C,
     cipher_prime: C,
@@ -30,21 +30,21 @@ where
 
 impl<C> BlockSizeUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     type BlockSize = C::BlockSize;
 }
 
 impl<C> OutputSizeUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     type OutputSize = C::BlockSize;
 }
 
 impl<C> KeySizeUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
     <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
     Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
@@ -52,20 +52,20 @@ where
 }
 
 impl<C> MacMarker for RetailMacCore<C> where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt
 {
 }
 
 impl<C> BufferKindUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     type BufferKind = Eager;
 }
 
 impl<C> KeyInit for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + KeyInit,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + KeyInit,
     <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
     Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
@@ -88,7 +88,7 @@ where
 
 impl<C> UpdateCore for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -118,7 +118,7 @@ where
 
 impl<C> Reset for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -128,7 +128,7 @@ where
 
 impl<C> FixedOutputCore for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     #[inline]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
@@ -150,7 +150,7 @@ where
 
 impl<C> AlgorithmName for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RetailMac<")?;
@@ -161,7 +161,7 @@ where
 
 impl<C> fmt::Debug for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + AlgorithmName,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RetailMacCore<")?;
@@ -173,7 +173,7 @@ where
 #[cfg(feature = "zeroize")]
 impl<C> Drop for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -182,7 +182,7 @@ where
 
 #[cfg(feature = "zeroize")]
 impl<C> ZeroizeOnDrop for RetailMacCore<C> where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + ZeroizeOnDrop
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + ZeroizeOnDrop
 {
 }
 

@@ -1,4 +1,3 @@
-use belt_block::BeltBlock;
 use cipher::{BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt};
 use core::fmt;
 use digest::{
@@ -17,9 +16,9 @@ use digest::zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Generic core BeltMac instance, which operates over blocks.
 #[derive(Clone)]
-pub struct BeltMacCore<C = BeltBlock>
+pub struct BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     cipher: C,
     state: Block<C>,
@@ -28,30 +27,30 @@ where
 
 impl<C> BlockSizeUser for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type BlockSize = C::BlockSize;
 }
 
 impl<C> OutputSizeUser for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type OutputSize = C::BlockSize;
 }
 
 impl<C> InnerUser for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type Inner = C;
 }
 
-impl<C> MacMarker for BeltMacCore<C> where C: BlockCipherEncrypt + SmallBlockSizeUser + Clone {}
+impl<C> MacMarker for BeltMacCore<C> where C: BlockCipherEncrypt + SmallBlockSizeUser {}
 
 impl<C> InnerInit for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline]
     fn inner_init(cipher: C) -> Self {
@@ -64,14 +63,14 @@ where
 
 impl<C> BufferKindUser for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type BufferKind = Lazy;
 }
 
 impl<C> UpdateCore for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -101,7 +100,7 @@ where
 
 impl<C> Reset for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -111,7 +110,7 @@ where
 
 impl<C> FixedOutputCore for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
@@ -148,7 +147,7 @@ where
 
 impl<C> AlgorithmName for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("BeltMac")
@@ -157,7 +156,7 @@ where
 
 impl<C> fmt::Debug for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("BeltMacCore { ... }")
@@ -167,7 +166,7 @@ where
 #[cfg(feature = "zeroize")]
 impl<C> Drop for BeltMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -176,7 +175,7 @@ where
 
 #[cfg(feature = "zeroize")]
 impl<C> ZeroizeOnDrop for BeltMacCore<C> where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone + ZeroizeOnDrop
+    C: BlockCipherEncrypt + SmallBlockSizeUser + ZeroizeOnDrop
 {
 }
 

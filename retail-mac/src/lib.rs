@@ -26,13 +26,13 @@ use digest::{
 
 digest::buffer_fixed!(
     /// Generic Retail MAC instance.
-    pub struct RetailMac<C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser + Clone>(RetailMacCore<C>);
-    impl: ResetMacTraits;
+    pub struct RetailMac<C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser >(RetailMacCore<C>);
+    impl: BaseFixedTraits MacMarker Reset FixedOutputReset;
 );
 
 impl<C> KeySizeUser for RetailMac<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser,
     <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
     Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
@@ -41,7 +41,7 @@ where
 
 impl<C> KeyInit for RetailMac<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser + Clone + KeyInit,
+    C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser + KeyInit,
     <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
     Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
@@ -64,7 +64,7 @@ where
 
 impl<C> AlgorithmName for RetailMac<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <Self as CoreProxy>::Core::write_alg_name(f)

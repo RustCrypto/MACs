@@ -18,13 +18,14 @@ use digest::block_api::CoreProxy;
 
 digest::buffer_fixed!(
     /// Generic CBC-MAC instance.
-    pub struct CbcMac<C: BlockCipherEncrypt + SmallBlockSizeUser + Clone>(block_api::CbcMacCore<C>);
-    impl: ResetMacTraits InnerInit;
+    #[derive(Clone)]
+    pub struct CbcMac<C: BlockCipherEncrypt + SmallBlockSizeUser>(block_api::CbcMacCore<C>);
+    impl: BaseFixedTraits MacMarker Reset FixedOutputReset InnerInit;
 );
 
 impl<C> AlgorithmName for CbcMac<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <Self as CoreProxy>::Core::write_alg_name(f)

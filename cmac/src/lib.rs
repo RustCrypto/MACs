@@ -19,8 +19,9 @@ use digest::block_api::{AlgorithmName, CoreProxy};
 
 digest::buffer_fixed!(
     /// Generic CMAC instance.
+    #[derive(Clone)]
     pub struct Cmac<C: CmacCipher>(block_api::CmacCore<C>);
-    impl: ResetMacTraits InnerInit;
+    impl: BaseFixedTraits MacMarker Reset FixedOutputReset InnerInit;
 );
 
 impl<C: CmacCipher + AlgorithmName> AlgorithmName for Cmac<C> {
