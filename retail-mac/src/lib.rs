@@ -14,35 +14,36 @@ pub use digest::{self, Key, KeyInit, Mac};
 pub mod block_api;
 
 use block_api::RetailMacCore;
-use cipher::{AlgorithmName, BlockCipherDecrypt, BlockCipherEncrypt, BlockSizeUser, KeySizeUser};
+use cipher::{AlgorithmName, BlockCipherDecrypt, BlockCipherEncrypt, KeySizeUser};
 use core::{fmt, ops::Mul};
 use digest::{
     InvalidLength,
     array::ArraySize,
     block_api::CoreProxy,
+    block_api::SmallBlockSizeUser,
     typenum::{Prod, U2},
 };
 
 digest::buffer_fixed!(
     /// Generic Retail MAC instance.
-    pub struct RetailMac<C: BlockCipherEncrypt + BlockCipherDecrypt + Clone>(RetailMacCore<C>);
+    pub struct RetailMac<C: BlockCipherEncrypt +SmallBlockSizeUser + BlockCipherDecrypt + Clone>(RetailMacCore<C>);
     impl: ResetMacTraits;
 );
 
 impl<C> KeySizeUser for RetailMac<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
-    <C as BlockSizeUser>::BlockSize: Mul<U2>,
-    Prod<<C as BlockSizeUser>::BlockSize, U2>: ArraySize,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
+    Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
-    type KeySize = Prod<<C as BlockSizeUser>::BlockSize, U2>;
+    type KeySize = Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>;
 }
 
 impl<C> KeyInit for RetailMac<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone + KeyInit,
-    <C as BlockSizeUser>::BlockSize: Mul<U2>,
-    Prod<<C as BlockSizeUser>::BlockSize, U2>: ArraySize,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + KeyInit,
+    <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
+    Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
@@ -63,7 +64,7 @@ where
 
 impl<C> AlgorithmName for RetailMac<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <Self as CoreProxy>::Core::write_alg_name(f)

@@ -8,9 +8,9 @@ use digest::{
     array::{Array, ArraySize},
     block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, Eager, FixedOutputCore,
-        UpdateCore,
+        SmallBlockSizeUser, UpdateCore,
     },
-    common::BlockSizes,
+    block_buffer::BlockSizes,
     typenum::{Prod, U2},
 };
 
@@ -21,7 +21,7 @@ use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 #[derive(Clone)]
 pub struct RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     cipher: C,
     cipher_prime: C,
@@ -30,41 +30,44 @@ where
 
 impl<C> BlockSizeUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     type BlockSize = C::BlockSize;
 }
 
 impl<C> OutputSizeUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     type OutputSize = C::BlockSize;
 }
 
 impl<C> KeySizeUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
-    <C as BlockSizeUser>::BlockSize: Mul<U2>,
-    Prod<<C as BlockSizeUser>::BlockSize, U2>: ArraySize,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
+    <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
+    Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
-    type KeySize = Prod<<C as BlockSizeUser>::BlockSize, U2>;
+    type KeySize = Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>;
 }
 
-impl<C> MacMarker for RetailMacCore<C> where C: BlockCipherEncrypt + BlockCipherDecrypt + Clone {}
+impl<C> MacMarker for RetailMacCore<C> where
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone
+{
+}
 
 impl<C> BufferKindUser for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     type BufferKind = Eager;
 }
 
 impl<C> KeyInit for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone + KeyInit,
-    <C as BlockSizeUser>::BlockSize: Mul<U2>,
-    Prod<<C as BlockSizeUser>::BlockSize, U2>: ArraySize,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + KeyInit,
+    <C as SmallBlockSizeUser>::_BlockSize: Mul<U2>,
+    Prod<<C as SmallBlockSizeUser>::_BlockSize, U2>: ArraySize,
 {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
@@ -85,7 +88,7 @@ where
 
 impl<C> UpdateCore for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -115,7 +118,7 @@ where
 
 impl<C> Reset for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -125,7 +128,7 @@ where
 
 impl<C> FixedOutputCore for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     #[inline]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
@@ -147,7 +150,7 @@ where
 
 impl<C> AlgorithmName for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RetailMac<")?;
@@ -158,7 +161,7 @@ where
 
 impl<C> fmt::Debug for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + AlgorithmName,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RetailMacCore<")?;
@@ -170,7 +173,7 @@ where
 #[cfg(feature = "zeroize")]
 impl<C> Drop for RetailMacCore<C>
 where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -179,7 +182,7 @@ where
 
 #[cfg(feature = "zeroize")]
 impl<C> ZeroizeOnDrop for RetailMacCore<C> where
-    C: BlockCipherEncrypt + BlockCipherDecrypt + Clone + ZeroizeOnDrop
+    C: BlockCipherEncrypt + SmallBlockSizeUser + BlockCipherDecrypt + Clone + ZeroizeOnDrop
 {
 }
 
