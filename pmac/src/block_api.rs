@@ -6,7 +6,7 @@ use digest::{
     array::{Array, ArraySize},
     block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore, Lazy,
-        UpdateCore,
+        SmallBlockSizeUser, UpdateCore,
     },
     common::{InnerInit, InnerUser},
     typenum::Unsigned,
@@ -217,7 +217,7 @@ fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
 ///
 /// Currently this trait is implemented for all block cipher encryptors
 /// with block size equal to 64 and 128 bits.
-pub trait PmacCipher: BlockSizeUser + BlockCipherEncrypt + Clone {
+pub trait PmacCipher: SmallBlockSizeUser + BlockCipherEncrypt + Clone {
     /// Double block. See the [`Dbl`] trait docs for more information.
     fn dbl(block: Block<Self>) -> Block<Self>;
     /// Reverse double block.. See the [`Dbl`] trait docs for more information.
@@ -226,7 +226,7 @@ pub trait PmacCipher: BlockSizeUser + BlockCipherEncrypt + Clone {
 
 impl<C> PmacCipher for C
 where
-    Self: BlockSizeUser + BlockCipherEncrypt + Clone,
+    Self: SmallBlockSizeUser + BlockCipherEncrypt + Clone,
     Block<Self>: Dbl,
 {
     fn dbl(block: Block<Self>) -> Block<Self> {

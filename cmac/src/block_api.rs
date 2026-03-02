@@ -6,9 +6,10 @@ use digest::{
     array::{Array, ArraySize},
     block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore, Lazy,
-        UpdateCore,
+        SmallBlockSizeUser, UpdateCore,
     },
-    common::{BlockSizes, InnerInit, InnerUser},
+    block_buffer::BlockSizes,
+    common::{InnerInit, InnerUser},
 };
 
 #[cfg(feature = "zeroize")]
@@ -139,14 +140,14 @@ fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
 }
 
 /// Helper trait implemented for cipher supported by CMAC
-pub trait CmacCipher: BlockSizeUser + BlockCipherEncrypt + Clone {
+pub trait CmacCipher: SmallBlockSizeUser + BlockCipherEncrypt + Clone {
     /// Double block. See the [`Dbl`] trait docs for more information.
     fn dbl(block: Block<Self>) -> Block<Self>;
 }
 
 impl<C> CmacCipher for C
 where
-    Self: BlockSizeUser + BlockCipherEncrypt + Clone,
+    Self: SmallBlockSizeUser + BlockCipherEncrypt + Clone,
     Block<Self>: Dbl,
 {
     fn dbl(block: Block<Self>) -> Block<Self> {

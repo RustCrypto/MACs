@@ -14,10 +14,11 @@ pub use digest::{self, KeyInit, Mac};
 pub mod block_api;
 
 use cipher::BlockCipherEncrypt;
+use digest::block_api::SmallBlockSizeUser;
 
 digest::buffer_fixed!(
     /// BeltMac instance generic over block cipher.
-    pub struct GenericBeltMac<C: BlockCipherEncrypt + Clone>(block_api::BeltMacCore<C>);
+    pub struct GenericBeltMac<C: BlockCipherEncrypt + SmallBlockSizeUser + Clone>(block_api::BeltMacCore<C>);
     impl: ResetMacTraits AlgorithmName InnerInit;
 );
 
