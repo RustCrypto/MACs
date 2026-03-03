@@ -18,7 +18,7 @@ use digest::zeroize::{Zeroize, ZeroizeOnDrop};
 #[derive(Clone)]
 pub struct CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     cipher: C,
     state: Block<C>,
@@ -26,30 +26,30 @@ where
 
 impl<C> BlockSizeUser for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type BlockSize = C::BlockSize;
 }
 
 impl<C> OutputSizeUser for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type OutputSize = C::BlockSize;
 }
 
 impl<C> InnerUser for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type Inner = C;
 }
 
-impl<C> MacMarker for CbcMacCore<C> where C: BlockCipherEncrypt + SmallBlockSizeUser + Clone {}
+impl<C> MacMarker for CbcMacCore<C> where C: BlockCipherEncrypt + SmallBlockSizeUser {}
 
 impl<C> InnerInit for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline]
     fn inner_init(cipher: C) -> Self {
@@ -60,14 +60,14 @@ where
 
 impl<C> BufferKindUser for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     type BufferKind = Eager;
 }
 
 impl<C> UpdateCore for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -97,7 +97,7 @@ where
 
 impl<C> Reset for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline(always)]
     fn reset(&mut self) {
@@ -107,7 +107,7 @@ where
 
 impl<C> FixedOutputCore for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     #[inline]
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>) {
@@ -123,7 +123,7 @@ where
 
 impl<C> AlgorithmName for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + AlgorithmName,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("CbcMac<")?;
@@ -134,7 +134,7 @@ where
 
 impl<C> fmt::Debug for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone + AlgorithmName,
+    C: BlockCipherEncrypt + SmallBlockSizeUser + AlgorithmName,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("CbcMacCore<")?;
@@ -146,7 +146,7 @@ where
 #[cfg(feature = "zeroize")]
 impl<C> Drop for CbcMacCore<C>
 where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone,
+    C: BlockCipherEncrypt + SmallBlockSizeUser,
 {
     fn drop(&mut self) {
         self.state.zeroize();
@@ -155,7 +155,7 @@ where
 
 #[cfg(feature = "zeroize")]
 impl<C> ZeroizeOnDrop for CbcMacCore<C> where
-    C: BlockCipherEncrypt + SmallBlockSizeUser + Clone + ZeroizeOnDrop
+    C: BlockCipherEncrypt + SmallBlockSizeUser + ZeroizeOnDrop
 {
 }
 

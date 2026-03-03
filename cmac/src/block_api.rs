@@ -140,14 +140,14 @@ fn xor<N: ArraySize>(buf: &mut Array<u8, N>, data: &Array<u8, N>) {
 }
 
 /// Helper trait implemented for cipher supported by CMAC
-pub trait CmacCipher: SmallBlockSizeUser + BlockCipherEncrypt + Clone {
+pub trait CmacCipher: SmallBlockSizeUser + BlockCipherEncrypt {
     /// Double block. See the [`Dbl`] trait docs for more information.
     fn dbl(block: Block<Self>) -> Block<Self>;
 }
 
 impl<C> CmacCipher for C
 where
-    Self: SmallBlockSizeUser + BlockCipherEncrypt + Clone,
+    Self: SmallBlockSizeUser + BlockCipherEncrypt,
     Block<Self>: Dbl,
 {
     fn dbl(block: Block<Self>) -> Block<Self> {

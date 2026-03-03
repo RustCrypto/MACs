@@ -19,8 +19,9 @@ use digest::block_api::{AlgorithmName, CoreProxy};
 
 digest::buffer_fixed!(
     /// Generic PMAC instance with `LC_SIZE` = 20.
+    #[derive(Clone)]
     pub struct Pmac<C: PmacCipher>(block_api::PmacCore<C, 20>);
-    impl: ResetMacTraits InnerInit;
+    impl: BaseFixedTraits MacMarker Reset FixedOutputReset InnerInit;
 );
 
 impl<C: PmacCipher + AlgorithmName> AlgorithmName for Pmac<C> {
