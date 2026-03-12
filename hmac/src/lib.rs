@@ -35,8 +35,9 @@ use digest::block_api::{AlgorithmName, CoreProxy};
 
 digest::buffer_fixed!(
     /// Generic HMAC instance.
+    #[derive(Clone)]
     pub struct Hmac<D: EagerHash>(block_api::HmacCore<D>);
-    impl: MacTraits KeyInit;
+    impl: BaseFixedTraits MacMarker KeyInit;
 );
 
 impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
@@ -47,8 +48,9 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
 
 digest::buffer_fixed!(
     /// Generic HMAC instance with reset support.
+    #[derive(Clone)]
     pub struct HmacReset<D: EagerHash>(block_api::HmacResetCore<D>);
-    impl: ResetMacTraits KeyInit;
+    impl: BaseFixedTraits MacMarker Reset FixedOutputReset KeyInit;
 );
 
 impl<D: EagerHash + AlgorithmName> AlgorithmName for HmacReset<D> {
