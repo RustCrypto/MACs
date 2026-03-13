@@ -150,8 +150,9 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.1"
-source = "git+https://github.com/RustCrypto/traits#84476d3c0d005820b39be4780c52b864ca43335f"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4850db49bf08e663084f7fb5c87d202ef91a3907271aff24a94eb97ff039153c"
 dependencies = [
  "blobby",
  "block-buffer",
