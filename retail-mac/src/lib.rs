@@ -26,8 +26,9 @@ use digest::{
 
 digest::buffer_fixed!(
     /// Generic Retail MAC instance.
-    pub struct RetailMac<C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser >(RetailMacCore<C>);
-    impl: BaseFixedTraits MacMarker Reset FixedOutputReset;
+    #[derive(Clone)]
+    pub struct RetailMac<C: BlockCipherEncrypt + BlockCipherDecrypt + SmallBlockSizeUser>(RetailMacCore<C>);
+    impl: ResetMacTraits;
 );
 
 impl<C> KeySizeUser for RetailMac<C>

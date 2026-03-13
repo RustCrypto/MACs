@@ -20,7 +20,7 @@ digest::buffer_fixed!(
     /// Generic CBC-MAC instance.
     #[derive(Clone)]
     pub struct CbcMac<C: BlockCipherEncrypt + SmallBlockSizeUser>(block_api::CbcMacCore<C>);
-    impl: BaseFixedTraits MacMarker Reset FixedOutputReset InnerInit;
+    impl: ResetMacTraits InnerInit;
 );
 
 impl<C> AlgorithmName for CbcMac<C>

@@ -37,7 +37,7 @@ digest::buffer_fixed!(
     /// Generic HMAC instance.
     #[derive(Clone)]
     pub struct Hmac<D: EagerHash>(block_api::HmacCore<D>);
-    impl: BaseFixedTraits MacMarker KeyInit;
+    impl: MacTraits KeyInit;
 );
 
 impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
@@ -50,7 +50,7 @@ digest::buffer_fixed!(
     /// Generic HMAC instance with reset support.
     #[derive(Clone)]
     pub struct HmacReset<D: EagerHash>(block_api::HmacResetCore<D>);
-    impl: BaseFixedTraits MacMarker Reset FixedOutputReset KeyInit;
+    impl: ResetMacTraits KeyInit;
 );
 
 impl<D: EagerHash + AlgorithmName> AlgorithmName for HmacReset<D> {
