@@ -21,7 +21,7 @@ digest::buffer_fixed!(
     /// Generic CMAC instance.
     #[derive(Clone)]
     pub struct Cmac<C: CmacCipher>(block_api::CmacCore<C>);
-    impl: BaseFixedTraits MacMarker Reset FixedOutputReset InnerInit;
+    impl: ResetMacTraits InnerInit;
 );
 
 impl<C: CmacCipher + AlgorithmName> AlgorithmName for Cmac<C> {

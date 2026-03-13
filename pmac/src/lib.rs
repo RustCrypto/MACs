@@ -21,7 +21,7 @@ digest::buffer_fixed!(
     /// Generic PMAC instance with `LC_SIZE` = 20.
     #[derive(Clone)]
     pub struct Pmac<C: PmacCipher>(block_api::PmacCore<C, 20>);
-    impl: BaseFixedTraits MacMarker Reset FixedOutputReset InnerInit;
+    impl: ResetMacTraits InnerInit;
 );
 
 impl<C: PmacCipher + AlgorithmName> AlgorithmName for Pmac<C> {

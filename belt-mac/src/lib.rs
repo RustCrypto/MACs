@@ -20,7 +20,7 @@ digest::buffer_fixed!(
     /// BeltMac instance generic over block cipher.
     #[derive(Clone)]
     pub struct GenericBeltMac<C: BlockCipherEncrypt + SmallBlockSizeUser>(block_api::BeltMacCore<C>);
-    impl: BaseFixedTraits MacMarker Reset FixedOutputReset AlgorithmName InnerInit;
+    impl: ResetMacTraits AlgorithmName InnerInit;
 );
 
 /// BeltMac instance.
