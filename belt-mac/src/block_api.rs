@@ -14,7 +14,7 @@ use digest::{
 #[cfg(feature = "zeroize")]
 use digest::zeroize::{Zeroize, ZeroizeOnDrop};
 
-/// Generic core BeltMac instance, which operates over blocks.
+/// Generic core Belt MAC instance, which operates over blocks.
 #[derive(Clone)]
 pub struct BeltMacCore<C>
 where
@@ -94,7 +94,7 @@ where
         }
 
         let Self { cipher, state, .. } = self;
-        cipher.encrypt_with_backend(Closure { state, blocks })
+        cipher.encrypt_with_backend(Closure { state, blocks });
     }
 }
 

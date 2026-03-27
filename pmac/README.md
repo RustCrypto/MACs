@@ -1,4 +1,4 @@
-# RustCrypto: PMAC
+# [RustCrypto]: PMAC
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -7,7 +7,7 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Generic implementation of [Parallelizable Message Authentication Code (PMAC)][1].
+Generic implementation of [Parallelizable Message Authentication Code (PMAC)][PMAC].
 
 ## Examples
 We will use AES-128 block cipher from the [`aes`] crate.
@@ -75,5 +75,6 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[1]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
+[RustCrypto]: https://github.com/RustCrypto/
+[PMAC]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
 [`aes`]: https://docs.rs/aes

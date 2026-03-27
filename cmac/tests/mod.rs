@@ -1,3 +1,5 @@
+//! Test vectors.
+
 // use aes::{Aes128, Aes192, Aes256};
 // use cmac::Cmac;
 // use des::{TdesEde2, TdesEde3};

@@ -1,4 +1,4 @@
-# RustCrypto: HMAC
+# [RustCrypto]: HMAC
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -7,7 +7,7 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Generic implementation of [Hash-based Message Authentication Code (HMAC)][1].
+Generic implementation of [Hash-based Message Authentication Code (HMAC)][HMAC].
 
 To use it you will need a cryptographic hash function implementation which
 implements the [`digest`] crate traits. You can find compatible crates
@@ -124,7 +124,8 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[1]: https://en.wikipedia.org/wiki/HMAC
+[RustCrypto]: https://github.com/RustCrypto/
+[HMAC]: https://en.wikipedia.org/wiki/HMAC
 [`digest`]: https://docs.rs/digest
 [`sha2`]: https://docs.rs/sha2
 [`RustCrypto/hashes`]: https://github.com/RustCrypto/hashes

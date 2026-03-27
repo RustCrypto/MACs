@@ -1,3 +1,5 @@
+//! Test vectors.
+
 // use aes::{Aes128, Aes192, Aes256};
 // use digest::new_resettable_mac_test;
 // use pmac::Pmac;

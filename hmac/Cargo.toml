@@ -26,5 +26,8 @@ hex-literal = "1"
 [features]
 zeroize = ["digest/zeroize"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true

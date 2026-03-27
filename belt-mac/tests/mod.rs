@@ -1,3 +1,5 @@
+//! Test vectors.
+
 //use belt_mac::BeltMac;
 
 // TODO(tarcieri): update tests to support RustCrypto/traits#1916

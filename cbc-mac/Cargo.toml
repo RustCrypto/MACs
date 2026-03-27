@@ -25,5 +25,8 @@ des = "0.9.0-rc.3"
 [features]
 zeroize = ["cipher/zeroize", "digest/zeroize"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true
