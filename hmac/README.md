@@ -124,7 +124,7 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[RustCrypto]: https://github.com/RustCrypto/
+[RustCrypto]: https://github.com/RustCrypto
 [HMAC]: https://en.wikipedia.org/wiki/HMAC
 [`digest`]: https://docs.rs/digest
 [`sha2`]: https://docs.rs/sha2

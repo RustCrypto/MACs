@@ -61,5 +61,5 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[RustCrypto]: https://github.com/RustCrypto/
+[RustCrypto]: https://github.com/RustCrypto
 [1]: https://apmi.bsu.by/assets/files/std/belt-spec371.pdf

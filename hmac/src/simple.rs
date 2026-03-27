@@ -22,7 +22,7 @@ impl<D: Digest + BlockSizeUser> MacMarker for SimpleHmac<D> {}
 
 impl<D: Digest + BlockSizeUser> KeyInit for SimpleHmac<D> {
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(key.as_slice()).expect("length should be valid")
+        Self::new_from_slice(key.as_slice()).expect("HMAC accepts keys of any length")
     }
 
     #[inline]

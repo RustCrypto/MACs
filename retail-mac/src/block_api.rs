@@ -71,7 +71,7 @@ where
 {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(key.as_slice()).expect("length should be valid")
+        Self::new_from_slice(key.as_slice()).expect("HMAC accepts keys of any length")
     }
 
     #[inline(always)]

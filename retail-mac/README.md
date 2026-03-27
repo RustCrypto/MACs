@@ -67,6 +67,6 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[RustCrypto]: https://github.com/RustCrypto/
+[RustCrypto]: https://github.com/RustCrypto
 [Retail MAC]: https://en.wikipedia.org/wiki/ISO/IEC_9797-1#MAC_algorithm_3
 [CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC#Security_with_fixed_and_variable-length_messages

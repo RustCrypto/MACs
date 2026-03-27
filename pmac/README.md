@@ -75,6 +75,6 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[RustCrypto]: https://github.com/RustCrypto/
+[RustCrypto]: https://github.com/RustCrypto
 [PMAC]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
 [`aes`]: https://docs.rs/aes

@@ -77,6 +77,6 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[RustCrypto]: https://github.com/RustCrypto/
+[RustCrypto]: https://github.com/RustCrypto
 [CMAC]: https://en.wikipedia.org/wiki/One-key_MAC
 [`aes`]: https://docs.rs/aes

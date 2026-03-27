@@ -60,5 +60,5 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[RustCrypto]: https://github.com/RustCrypto/
+[RustCrypto]: https://github.com/RustCrypto
 [CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC
