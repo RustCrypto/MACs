@@ -71,7 +71,7 @@ impl<C: CmacCipher> UpdateCore for CmacCore<C> {
         }
 
         let Self { cipher, state } = self;
-        cipher.encrypt_with_backend(Closure { state, blocks })
+        cipher.encrypt_with_backend(Closure { state, blocks });
     }
 }
 

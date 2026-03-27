@@ -62,7 +62,7 @@ impl<C: PmacCipher, const LC_SIZE: usize> Drop for PmacState<C, LC_SIZE> {
         {
             self.counter.zeroize();
             self.l_inv.zeroize();
-            self.l_cache.iter_mut().for_each(|c| c.zeroize());
+            self.l_cache.iter_mut().for_each(Zeroize::zeroize);
             self.tag.zeroize();
             self.offset.zeroize();
         }
@@ -179,7 +179,7 @@ impl<C: PmacCipher, const LC_SIZE: usize> UpdateCore for PmacCore<C, LC_SIZE> {
         }
 
         let Self { cipher, state } = self;
-        cipher.encrypt_with_backend(Closure { blocks, state })
+        cipher.encrypt_with_backend(Closure { blocks, state });
     }
 }
 

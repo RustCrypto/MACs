@@ -1,3 +1,5 @@
+//! Test vectors.
+
 macro_rules! test {
     ($mod_name:ident, $test_name:expr, $hash:ty $(, $t:ident)?) => {
         mod $mod_name {

@@ -1,4 +1,4 @@
-# RustCrypto: CMAC
+# [RustCrypto]: CMAC
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -7,7 +7,7 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-Generic implementation of [Cipher-based Message Authentication Code (CMAC)][1],
+Generic implementation of [Cipher-based Message Authentication Code (CMAC)][CMAC],
 otherwise known as OMAC1.
 
 ## Examples
@@ -77,5 +77,6 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[1]: https://en.wikipedia.org/wiki/One-key_MAC
+[RustCrypto]: https://github.com/RustCrypto
+[CMAC]: https://en.wikipedia.org/wiki/One-key_MAC
 [`aes`]: https://docs.rs/aes

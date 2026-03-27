@@ -46,7 +46,7 @@ impl<D: EagerHash> OutputSizeUser for HmacCore<D> {
 impl<D: EagerHash> KeyInit for HmacCore<D> {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(key.as_slice()).unwrap()
+        Self::new_from_slice(key.as_slice()).expect("HMAC accepts keys of any length")
     }
 
     #[inline(always)]
@@ -145,7 +145,7 @@ impl<D: EagerHash> OutputSizeUser for HmacResetCore<D> {
 impl<D: EagerHash> KeyInit for HmacResetCore<D> {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(key.as_slice()).unwrap()
+        Self::new_from_slice(key.as_slice()).expect("HMAC accepts keys of any length")
     }
 
     #[inline(always)]

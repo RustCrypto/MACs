@@ -5,8 +5,6 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![forbid(unsafe_code)]
-#![warn(missing_docs)]
 
 pub use digest::{self, KeyInit, Mac};
 
@@ -17,11 +15,11 @@ use cipher::BlockCipherEncrypt;
 use digest::block_api::SmallBlockSizeUser;
 
 digest::buffer_fixed!(
-    /// BeltMac instance generic over block cipher.
+    /// Belt MAC instance generic over block cipher.
     #[derive(Clone)]
     pub struct GenericBeltMac<C: BlockCipherEncrypt + SmallBlockSizeUser>(block_api::BeltMacCore<C>);
     impl: ResetMacTraits AlgorithmName InnerInit;
 );
 
-/// BeltMac instance.
+/// Belt MAC instance.
 pub type BeltMac = GenericBeltMac<belt_block::BeltBlock>;

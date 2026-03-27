@@ -1,4 +1,4 @@
-# RustCrypto: CBC-MAC
+# [RustCrypto]: CBC-MAC
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -60,4 +60,5 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
+[RustCrypto]: https://github.com/RustCrypto
 [CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC

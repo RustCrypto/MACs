@@ -71,7 +71,7 @@ where
 {
     #[inline(always)]
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(key.as_slice()).unwrap()
+        Self::new_from_slice(key.as_slice()).expect("HMAC accepts keys of any length")
     }
 
     #[inline(always)]
@@ -112,7 +112,7 @@ where
         }
 
         let Self { cipher, state, .. } = self;
-        cipher.encrypt_with_backend(Closure { state, blocks })
+        cipher.encrypt_with_backend(Closure { state, blocks });
     }
 }
 
