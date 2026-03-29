@@ -1,11 +1,9 @@
-//! Test vectors.
+//! Test vectors from: http://web.cs.ucdavis.edu/~rogaway/ocb/pmac-test.htm
 
-// use aes::{Aes128, Aes192, Aes256};
-// use digest::new_resettable_mac_test;
-// use pmac::Pmac;
+use aes::{Aes128, Aes192, Aes256};
+use digest::{dev::reset_mac_test, new_mac_test};
+use pmac::Pmac;
 
-// Test vectors from: http://web.cs.ucdavis.edu/~rogaway/ocb/pmac-test.htm
-// TODO(tarcieri): update tests to support RustCrypto/traits#1916
-// new_resettable_mac_test!(pmac_aes128, "aes128", Pmac<Aes128>);
-// new_resettable_mac_test!(pmac_aes192, "aes192", Pmac<Aes192>);
-// new_resettable_mac_test!(pmac_aes256, "aes256", Pmac<Aes256>);
+new_mac_test!(pmac_aes128, Pmac<Aes128>, reset_mac_test);
+new_mac_test!(pmac_aes192, Pmac<Aes192>, reset_mac_test);
+new_mac_test!(pmac_aes256, Pmac<Aes256>, reset_mac_test);
