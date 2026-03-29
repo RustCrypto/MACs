@@ -5,20 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.13.0 (UNRELEASED)
+## 0.13.0 (2026-03-29)
 ### Added
-- `HmacReset` and `SimpleHmacReset` types [#186]
+- `HmacReset` and `SimpleHmacReset` types ([#186])
 
 ### Changed
-- Edition changed to 2024 and MSRV bumped to 1.85
+- Use `EagerHash` trait for bounds ([#151], [#212])
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#178])
 - Relax MSRV policy and allow MSRV bumps in patch releases
-- Update to `digest` v0.11
+- Update to `digest` v0.11 ([#243])
 - Replace type aliases with newtypes ([#186])
 
 ### Removed
 - `std` and `reset` crate features ([#186])
 
+[#151]: https://github.com/RustCrypto/MACs/pull/151
+[#178]: https://github.com/RustCrypto/MACs/pull/178
 [#186]: https://github.com/RustCrypto/MACs/pull/186
+[#212]: https://github.com/RustCrypto/MACs/pull/212
+[#243]: https://github.com/RustCrypto/MACs/pull/243
 
 ## 0.12.1 (2022-02-17)
 ### Fixed
