@@ -34,6 +34,12 @@ dependencies = [
 
 [[package]]
 name = "blobby"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "847495c209977a90e8aad588b959d0ca9f5dc228096d29a6bd3defd53f35eaec"
+
+[[package]]
+name = "blobby"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89af0b093cc13baa4e51e64e65ec2422f7e73aea0e612e5ad3872986671622f1"
@@ -163,7 +169,7 @@ version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4850db49bf08e663084f7fb5c87d202ef91a3907271aff24a94eb97ff039153c"
 dependencies = [
- "blobby",
+ "blobby 0.4.0",
  "block-buffer",
  "crypto-common",
  "ctutils",
@@ -180,6 +186,7 @@ checksum = "e712f64ec3850b98572bffac52e2c6f282b29fe6c5fa6d42334b30be438d95c1"
 name = "hmac"
 version = "0.13.0-rc.6"
 dependencies = [
+ "blobby 0.3.1",
  "digest",
  "hex-literal",
  "md-5",
