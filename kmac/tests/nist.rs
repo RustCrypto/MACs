@@ -2,6 +2,8 @@
 //! - https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMAC_samples.pdf
 //! - https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMACXOF_samples.pdf
 
+#![allow(clippy::type_complexity)]
+
 use kmac::{ExtendableOutput, Kmac128, Kmac256, Mac, XofReader};
 
 #[test]

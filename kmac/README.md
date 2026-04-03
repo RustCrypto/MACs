@@ -78,7 +78,7 @@ use hex_literal::hex;
 let mut mac = Kmac256::new_customization(b"key material", b"customization").unwrap();
 mac.update(b"input message");
 let mut output = [0u8; 32];
-mac.finalize_into(&mut output);
+mac.finalize_into_buf(&mut output);
 
 let expected = hex!("
     85fb77da3a35e4c4b0057c3151e6cc54

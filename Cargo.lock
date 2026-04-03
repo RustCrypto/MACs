@@ -128,6 +128,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cshake"
+version = "0.1.0"
+source = "git+https://github.com/RustCrypto/hashes?branch=master#6c69ea988cac53319564ed90cd87671ed50d3579"
+dependencies = [
+ "digest",
+ "keccak",
+]
+
+[[package]]
 name = "ctutils"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -156,9 +165,9 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.3"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
+checksum = "4850db49bf08e663084f7fb5c87d202ef91a3907271aff24a94eb97ff039153c"
 dependencies = [
  "blobby",
  "block-buffer",
@@ -194,9 +203,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.7"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1b229d73f5803b562cc26e4da0396c8610a4ee209f4fac8fa4f8d709166dc45"
+checksum = "1a79f2aff40c18ab8615ddc5caa9eb5b96314aef18fe5823090f204ad988e813"
 dependencies = [
  "typenum",
  "zeroize",
@@ -213,10 +222,11 @@ dependencies = [
 
 [[package]]
 name = "keccak"
-version = "0.2.0-rc.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "882b69cb15b1f78b51342322a97ccd16f5123d1dc8a3da981a95244f488e8692"
+checksum = "9e24a010dd405bd7ed803e5253182815b41bf2e6a80cc3bfc066658e03a198aa"
 dependencies = [
+ "cfg-if",
  "cpufeatures",
 ]
 
@@ -224,10 +234,10 @@ dependencies = [
 name = "kmac"
 version = "0.1.0"
 dependencies = [
+ "cshake",
  "digest",
  "hex",
  "hex-literal",
- "sha3",
 ]
 
 [[package]]
@@ -242,9 +252,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.182"
+version = "0.2.183"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6800badb6cb2082ffd7b6a67e6125bb39f18782f793520caee8cb8846be06112"
+checksum = "b5b646652bf6661599e1da8901b3b9522896f01e736bad5f723fe7a3a27f899d"
 
 [[package]]
 name = "magma"
@@ -306,16 +316,6 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
-]
-
-[[package]]
-name = "sha3"
-version = "0.11.0-rc.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95f78cd62cc39ece5aefbeb6caaa2ea44f70b4815d4b85f7e150ac685ada2bb5"
-dependencies = [
- "digest",
- "keccak",
 ]
 
 [[package]]

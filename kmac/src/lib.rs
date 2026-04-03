@@ -12,28 +12,60 @@
 
 mod encoding;
 mod kmac;
-mod traits;
 
-use crate::kmac::KmacCore;
-use digest::block_api::{Block, BlockSizeUser, Buffer, ExtendableOutputCore, XofReaderCore};
-use digest::block_buffer::ReadBuffer;
+use crate::kmac::KmacInner;
+use cshake::{CShake128, CShake256, CShakeReader};
 use digest::consts::{U32, U64, U136, U168};
-pub use digest::{self, ExtendableOutput, KeyInit, Mac, XofReader};
-use digest::{InvalidLength, OutputSizeUser};
-use sha3::block_api::Sha3ReaderCore;
-use sha3::{CShake128, CShake256};
+pub use digest::{self, ExtendableOutput, FixedOutput, KeyInit, Mac, XofReader};
+use digest::{InvalidLength, MacMarker, Output, OutputSizeUser, Update};
 
 /// Manually implement the extra KMAC methods and XOF traits.
 macro_rules! impl_kmac {
-    ($kmac:ident, $cshake:ident, $reader:ident, $block_size:ident, $output_size:ident) => {
-        digest::buffer_fixed!(
-            /// KMAC implementation as per Section 4 of [NIST SP 800-185].
-            pub struct $kmac(KmacCore<$cshake>);
-            impl: MacTraits KeyInit;
-        );
+    ($kmac:ident, $cshake:ty, $reader:ident, $rate:ident, $output_size:ident) => {
+        /// KMAC implementation as per Section 4 of [NIST SP 800-185].
+        #[derive(Clone)]
+        pub struct $kmac {
+            inner: KmacInner<$cshake>,
+        }
 
-        impl OutputSizeUser for KmacCore<$cshake> {
+        impl MacMarker for $kmac {}
+
+        impl OutputSizeUser for $kmac {
             type OutputSize = $output_size;
+        }
+
+        impl digest::common::KeySizeUser for $kmac {
+            type KeySize = <KmacInner<$cshake> as digest::common::KeySizeUser>::KeySize;
+        }
+
+        impl KeyInit for $kmac {
+            #[inline]
+            fn new(key: &digest::Key<Self>) -> Self {
+                Self {
+                    inner: KmacInner::<$cshake>::new_customization(key.as_slice(), &[]),
+                }
+            }
+
+            #[inline(always)]
+            fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+                Ok(Self {
+                    inner: KmacInner::<$cshake>::new_customization(key, &[]),
+                })
+            }
+        }
+
+        impl Update for $kmac {
+            #[inline(always)]
+            fn update(&mut self, data: &[u8]) {
+                self.inner.update(data);
+            }
+        }
+
+        impl FixedOutput for $kmac {
+            #[inline(always)]
+            fn finalize_into(self, out: &mut Output<Self>) {
+                self.inner.finalize_fixed_inner(out.as_mut_slice());
+            }
         }
 
         impl $kmac {
@@ -42,13 +74,16 @@ macro_rules! impl_kmac {
             /// Section 4.2 of [NIST SP 800-185] specifies that KMAC takes both a key (K) and an
             /// optional customisation string (S).
             #[inline]
-            pub fn new_customization(key: &[u8], customisation: &[u8]) -> Result<Self, InvalidLength> {
+            pub fn new_customization(
+                key: &[u8],
+                customisation: &[u8],
+            ) -> Result<Self, InvalidLength> {
                 // TODO: KeyInitWithCustomization trait, following KeyInit as new_with_customization and new_from_slice_with_customization.
                 // TODO: review the Result, as this implementation is infallible. Currently matching KeyInit::new_from_slice.
                 // FUTURE: support key+customisation initialisation via traits.
-                let core = KmacCore::<$cshake>::new_customization(key, customisation);
-                let buffer = Buffer::<KmacCore<$cshake>>::default();
-                Ok(Self { core, buffer })
+                Ok(Self {
+                    inner: KmacInner::<$cshake>::new_customization(key, customisation),
+                })
             }
 
             /// Finalize this KMAC into a fixed-length output buffer, as defined in Section 4.3
@@ -57,43 +92,27 @@ macro_rules! impl_kmac {
             /// This method finalizes the KMAC and *mixes the requested output length into the
             /// KMAC domain separation*. That means the resulting bytes are dependent on the
             /// exact length of `out`. Use this when the output length is part of the MAC/derivation
-            /// semantics (for example when the length itself must influence the MAC result).
+            /// semantics (for example, when the length itself must influence the MAC result).
             ///
             /// This is *not* equivalent to calling `finalize_xof()` and then reading `out.len()`
             /// bytes from the returned reader; the two approaches produce different outputs.
             #[inline]
-            pub fn finalize_into(&mut self, out: &mut [u8]) {
+            pub fn finalize_into_buf(self, out: &mut [u8]) {
                 // TODO: review method naming.
                 // FUTURE: support custom output sizes via traits.
-                let buffer = &mut self.buffer;
-                self.core.finalize_core(buffer, out);
+                self.inner.finalize_fixed_inner(out);
             }
         }
 
         /// Reader for KMAC that implements the XOF interface.
         pub struct $reader {
-            core: Sha3ReaderCore<$block_size>,
-            buffer: ReadBuffer<<Sha3ReaderCore<$block_size> as BlockSizeUser>::BlockSize>,
-        }
-
-        impl BlockSizeUser for $reader {
-            type BlockSize = <Sha3ReaderCore<$block_size> as BlockSizeUser>::BlockSize;
-        }
-
-        impl XofReaderCore for $reader {
-            #[inline(always)]
-            fn read_block(&mut self) -> Block<Self> {
-                self.core.read_block()
-            }
+            inner: CShakeReader<$rate>,
         }
 
         impl XofReader for $reader {
             #[inline(always)]
             fn read(&mut self, buf: &mut [u8]) -> () {
-                let Self { core, buffer } = self;
-                buffer.read(buf, |block| {
-                    *block = XofReaderCore::read_block(core);
-                });
+                self.inner.read(buf);
             }
         }
 
@@ -113,12 +132,11 @@ macro_rules! impl_kmac {
             /// KDFs or streaming output). Use `finalize_into()` when the requested output
             /// length must influence the MAC result itself.
             #[inline(always)]
-            fn finalize_xof(mut self) -> Self::Reader {
+            fn finalize_xof(self) -> Self::Reader {
                 // FUTURE: support extendable output via a MAC trait?
-                let Self { core, buffer } = &mut self;
-                let core = <KmacCore<$cshake> as ExtendableOutputCore>::finalize_xof_core(core, buffer);
-                let buffer = Default::default();
-                Self::Reader { core, buffer }
+                $reader {
+                    inner: self.inner.finalize_xof_inner(),
+                }
             }
         }
     };
@@ -130,7 +148,7 @@ impl_kmac!(Kmac256, CShake256, Kmac256Reader, U136, U64);
 #[cfg(test)]
 mod tests {
     extern crate std;
-    use super::*;
+    use super::{ExtendableOutput, KeyInit, Kmac128, Kmac256, Mac, XofReader};
     use hex_literal::hex;
 
     fn run_kmac128() -> Kmac128 {
@@ -153,14 +171,14 @@ mod tests {
         let out_default = run_kmac128().finalize();
         assert_eq!(out_default.as_bytes().as_slice(), &[248, 117, 251, 104, 105, 74, 192, 171, 41, 119, 90, 145, 137, 1, 243, 168, 28, 139, 94, 23, 113, 176, 36, 194, 10, 9, 40, 209, 193, 167, 181, 254]);
 
-        // confirm finalize_into works the same way
+        // confirm finalize_into_buf works the same way
         let mut out_into = [0u8; 32];
-        run_kmac128().finalize_into(&mut out_into);
+        run_kmac128().finalize_into_buf(&mut out_into);
         assert_eq!(out_default.as_bytes().as_slice(), &out_into);
 
-        // confirm finalize_into does not compute subsets
+        // confirm finalize_into_buf does not compute subsets
         let mut out_into_subset = [0u8; 16];
-        run_kmac128().finalize_into(&mut out_into_subset);
+        run_kmac128().finalize_into_buf(&mut out_into_subset);
         assert_ne!(&out_into_subset, &out_into[..16]);
 
         // confirm xof is different
@@ -183,14 +201,14 @@ mod tests {
         let out_default = run_kmac256().finalize();
         assert_eq!(out_default.as_bytes().as_slice(), &[158, 175, 254, 101, 124, 16, 93, 198, 176, 54, 249, 78, 167, 112, 206, 159, 229, 55, 225, 168, 71, 228, 28, 222, 195, 148, 255, 241, 196, 172, 37, 60, 135, 67, 155, 134, 43, 61, 215, 243, 128, 55, 227, 169, 175, 22, 14, 132, 174, 63, 69, 60, 50, 41, 88, 148, 11, 41, 9, 90, 0, 87, 143, 131]);
 
-        // confirm finalize_into works the same way
+        // confirm finalize_into_buf works the same way
         let mut out_into = [0u8; 64];
-        run_kmac256().finalize_into(&mut out_into);
+        run_kmac256().finalize_into_buf(&mut out_into);
         assert_eq!(out_default.as_bytes().as_slice(), &out_into);
 
-        // confirm finalize_into does not compute subsets
+        // confirm finalize_into_buf does not compute subsets
         let mut out_into_subset = [0u8; 32];
-        run_kmac256().finalize_into(&mut out_into_subset);
+        run_kmac256().finalize_into_buf(&mut out_into_subset);
         assert_ne!(&out_into_subset, &out_into[..32]);
 
         // confirm xof is different
@@ -223,7 +241,7 @@ mod tests {
             code_bytes[..],
             expected[..],
             "Expected hex output is {}",
-            hex::encode(&code_bytes)
+            hex::encode(code_bytes)
         );
 
         let mut mac = Kmac128::new_from_slice(b"key material").unwrap();
@@ -236,7 +254,7 @@ mod tests {
         let mut mac = Kmac256::new_customization(b"key material", b"customization").unwrap();
         mac.update(b"input message");
         let mut output = [0u8; 32];
-        mac.finalize_into(&mut output);
+        mac.finalize_into_buf(&mut output);
 
         let expected = hex!(
             "
@@ -248,7 +266,7 @@ mod tests {
             output[..],
             expected[..],
             "Expected hex output is {}",
-            hex::encode(&output)
+            hex::encode(output)
         );
     }
 
@@ -271,7 +289,7 @@ mod tests {
             output[..],
             expected[..],
             "Expected hex output is {}",
-            hex::encode(&output)
+            hex::encode(output)
         );
     }
 }
