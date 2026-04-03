@@ -25,11 +25,9 @@ pub(crate) fn right_encode(num: u64, buffer: &mut [u8; 9]) -> &[u8] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate std;
 
     #[test]
     fn test_num_encoding_size() {
-        // sha3::block_api::Sha3ReaderCore::<sha3::Sha3_256>::new(&[0; 200]);
         let test_cases = [
             (0, 1),
             (1, 1),
@@ -75,10 +73,17 @@ mod tests {
 
         for i in 0..usize::BITS {
             let x: usize = 1 << i;
-            let mut want = std::vec![0; 1];
-            want.extend(x.to_be_bytes().iter().skip_while(|&&v| v == 0));
-            want[0] = (want.len() - 1) as u8;
-            assert_eq!(left_encode(x as u64, &mut buf), want, "#{x}");
+            let be_bytes = x.to_be_bytes();
+            let skip = be_bytes
+                .iter()
+                .position(|&v| v != 0)
+                .unwrap_or(be_bytes.len() - 1);
+            let len = be_bytes.len() - skip;
+            let mut want = [0u8; 9];
+            want[0] = len as u8;
+            want[1..=len].copy_from_slice(&be_bytes[skip..]);
+            let total_len = len + 1;
+            assert_eq!(left_encode(x as u64, &mut buf), &want[..total_len], "#{x}");
         }
     }
 
@@ -93,10 +98,17 @@ mod tests {
 
         for i in 0..usize::BITS {
             let x: usize = 1 << i;
-            let mut want =
-                std::vec::Vec::from_iter(x.to_be_bytes().iter().copied().skip_while(|&v| v == 0));
-            want.push(want.len() as u8);
-            assert_eq!(right_encode(x as u64, &mut buf), want, "#{x}");
+            let be_bytes = x.to_be_bytes();
+            let skip = be_bytes
+                .iter()
+                .position(|&v| v != 0)
+                .unwrap_or(be_bytes.len() - 1);
+            let len = be_bytes.len() - skip;
+            let mut want = [0u8; 9];
+            want[..len].copy_from_slice(&be_bytes[skip..]);
+            want[len] = len as u8;
+            let total_len = len + 1;
+            assert_eq!(right_encode(x as u64, &mut buf), &want[..total_len], "#{x}");
         }
     }
 }

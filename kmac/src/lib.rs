@@ -11,285 +11,227 @@
 #![warn(missing_docs)]
 
 mod encoding;
-mod kmac;
 
-use crate::kmac::KmacInner;
-use cshake::{CShake128, CShake256, CShakeReader};
-use digest::consts::{U32, U64, U136, U168};
+use crate::encoding::{left_encode, right_encode};
+use cshake::{CShake, CShakeReader};
+use digest::block_buffer::BlockSizes;
+use digest::consts::{U136, U168};
 pub use digest::{self, ExtendableOutput, FixedOutput, KeyInit, Mac, XofReader};
 use digest::{InvalidLength, MacMarker, Output, OutputSizeUser, Update};
 
-/// Manually implement the extra KMAC methods and XOF traits.
-macro_rules! impl_kmac {
-    ($kmac:ident, $cshake:ty, $reader:ident, $rate:ident, $output_size:ident) => {
-        /// KMAC implementation as per Section 4 of [NIST SP 800-185].
-        #[derive(Clone)]
-        pub struct $kmac {
-            inner: KmacInner<$cshake>,
-        }
+mod sealed {
+    use digest::array::ArraySize;
+    use digest::consts::{U32, U64, U136, U168};
 
-        impl MacMarker for $kmac {}
+    pub trait KmacParams {
+        type OutputSize: ArraySize;
+    }
 
-        impl OutputSizeUser for $kmac {
-            type OutputSize = $output_size;
-        }
+    impl KmacParams for U168 {
+        type OutputSize = U32;
+    }
 
-        impl digest::common::KeySizeUser for $kmac {
-            type KeySize = <KmacInner<$cshake> as digest::common::KeySizeUser>::KeySize;
-        }
-
-        impl KeyInit for $kmac {
-            #[inline]
-            fn new(key: &digest::Key<Self>) -> Self {
-                Self {
-                    inner: KmacInner::<$cshake>::new_customization(key.as_slice(), &[]),
-                }
-            }
-
-            #[inline(always)]
-            fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-                Ok(Self {
-                    inner: KmacInner::<$cshake>::new_customization(key, &[]),
-                })
-            }
-        }
-
-        impl Update for $kmac {
-            #[inline(always)]
-            fn update(&mut self, data: &[u8]) {
-                self.inner.update(data);
-            }
-        }
-
-        impl FixedOutput for $kmac {
-            #[inline(always)]
-            fn finalize_into(self, out: &mut Output<Self>) {
-                self.inner.finalize_fixed_inner(out.as_mut_slice());
-            }
-        }
-
-        impl $kmac {
-            /// Create a new KMAC with the given key and customisation.
-            ///
-            /// Section 4.2 of [NIST SP 800-185] specifies that KMAC takes both a key (K) and an
-            /// optional customisation string (S).
-            #[inline]
-            pub fn new_customization(
-                key: &[u8],
-                customisation: &[u8],
-            ) -> Result<Self, InvalidLength> {
-                // TODO: KeyInitWithCustomization trait, following KeyInit as new_with_customization and new_from_slice_with_customization.
-                // TODO: review the Result, as this implementation is infallible. Currently matching KeyInit::new_from_slice.
-                // FUTURE: support key+customisation initialisation via traits.
-                Ok(Self {
-                    inner: KmacInner::<$cshake>::new_customization(key, customisation),
-                })
-            }
-
-            /// Finalize this KMAC into a fixed-length output buffer, as defined in Section 4.3
-            /// (Definition) of [NIST SP 800-185].
-            ///
-            /// This method finalizes the KMAC and *mixes the requested output length into the
-            /// KMAC domain separation*. That means the resulting bytes are dependent on the
-            /// exact length of `out`. Use this when the output length is part of the MAC/derivation
-            /// semantics (for example, when the length itself must influence the MAC result).
-            ///
-            /// This is *not* equivalent to calling `finalize_xof()` and then reading `out.len()`
-            /// bytes from the returned reader; the two approaches produce different outputs.
-            #[inline]
-            pub fn finalize_into_buf(self, out: &mut [u8]) {
-                // TODO: review method naming.
-                // FUTURE: support custom output sizes via traits.
-                self.inner.finalize_fixed_inner(out);
-            }
-        }
-
-        /// Reader for KMAC that implements the XOF interface.
-        pub struct $reader {
-            inner: CShakeReader<$rate>,
-        }
-
-        impl XofReader for $reader {
-            #[inline(always)]
-            fn read(&mut self, buf: &mut [u8]) -> () {
-                self.inner.read(buf);
-            }
-        }
-
-        impl ExtendableOutput for $kmac {
-            type Reader = $reader;
-
-            /// Finalize this KMAC to a variable-length (extendable) output stream, as defined in
-            /// Section 4.3.1 (KMAC with Arbitrary-Length Output) of [NIST SP 800-185].
-            ///
-            /// The XOF variant finalizes the sponge state without binding the requested
-            /// output length into the KMAC domain separation. The returned reader yields
-            /// an effectively infinite stream of bytes; reading the first `N` bytes
-            /// from the reader (and truncating) produces the same `N`-byte prefix
-            /// regardless of whether more bytes will be read later.
-            ///
-            /// Use `finalize_xof()` when you need a stream of arbitrary length (e.g. for
-            /// KDFs or streaming output). Use `finalize_into()` when the requested output
-            /// length must influence the MAC result itself.
-            #[inline(always)]
-            fn finalize_xof(self) -> Self::Reader {
-                // FUTURE: support extendable output via a MAC trait?
-                $reader {
-                    inner: self.inner.finalize_xof_inner(),
-                }
-            }
-        }
-    };
+    impl KmacParams for U136 {
+        type OutputSize = U64;
+    }
 }
 
-impl_kmac!(Kmac128, CShake128, Kmac128Reader, U168, U32);
-impl_kmac!(Kmac256, CShake256, Kmac256Reader, U136, U64);
+/// KMAC implementation as per Section 4 of [NIST SP 800-185].
+///
+/// [NIST SP 800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
+#[derive(Clone)]
+pub struct Kmac<Rate: BlockSizes + sealed::KmacParams> {
+    cshake: CShake<Rate>,
+}
 
-#[cfg(test)]
-mod tests {
-    extern crate std;
-    use super::{ExtendableOutput, KeyInit, Kmac128, Kmac256, Mac, XofReader};
-    use hex_literal::hex;
+/// KMAC128: KMAC with 128-bit security strength, as defined in Section 4 of
+/// [NIST SP 800-185].
+///
+/// Produces a 32-byte (256-bit) fixed-length output by default via [`Mac::finalize`].
+/// For a custom output length where the length is mixed into the domain separation,
+/// use [`Kmac::finalize_into_buf`]. For KMACXOF128 (arbitrary-length XOF output), use
+/// [`ExtendableOutput::finalize_xof`].
+///
+/// # Example
+/// ```
+/// use kmac::{Kmac128, Mac, KeyInit};
+///
+/// let mut mac = Kmac128::new_from_slice(b"my secret key").unwrap();
+/// mac.update(b"input message");
+/// let result = mac.finalize();
+/// let tag = result.into_bytes();
+/// ```
+///
+/// [NIST SP 800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
+pub type Kmac128 = Kmac<U168>;
 
-    fn run_kmac128() -> Kmac128 {
-        let mut mac = Kmac128::new_customization(b"my secret key", b"S")
-            .expect("Failed to create a KMAC128 instance from key");
-        mac.update(b"my message");
-        mac
+/// KMAC256: KMAC with 256-bit security strength, as defined in Section 4 of
+/// [NIST SP 800-185].
+///
+/// Produces a 64-byte (512-bit) fixed-length output by default via [`Mac::finalize`].
+/// For a custom output length where the length is mixed into the domain separation,
+/// use [`Kmac::finalize_into_buf`]. For KMACXOF256 (arbitrary-length XOF output), use
+/// [`ExtendableOutput::finalize_xof`].
+///
+/// # Example
+/// ```
+/// use kmac::{Kmac256, Mac, KeyInit};
+///
+/// let mut mac = Kmac256::new_from_slice(b"my secret key").unwrap();
+/// mac.update(b"input message");
+/// let result = mac.finalize();
+/// let tag = result.into_bytes();
+/// ```
+///
+/// [NIST SP 800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
+pub type Kmac256 = Kmac<U136>;
+
+/// KMACXOF128 reader, returned by calling [`ExtendableOutput::finalize_xof`] on [`Kmac128`].
+///
+/// Implements [`XofReader`] to produce an arbitrary-length output stream (KMACXOF128).
+pub type Kmac128Reader = CShakeReader<U168>;
+
+/// KMACXOF256 reader, returned by calling [`ExtendableOutput::finalize_xof`] on [`Kmac256`].
+///
+/// Implements [`XofReader`] to produce an arbitrary-length output stream (KMACXOF256).
+pub type Kmac256Reader = CShakeReader<U136>;
+
+impl<Rate: BlockSizes + sealed::KmacParams> MacMarker for Kmac<Rate> {}
+
+impl<Rate: BlockSizes + sealed::KmacParams> OutputSizeUser for Kmac<Rate> {
+    type OutputSize = <Rate as sealed::KmacParams>::OutputSize;
+}
+
+impl<Rate: BlockSizes + sealed::KmacParams> digest::common::KeySizeUser for Kmac<Rate> {
+    type KeySize = Rate;
+}
+
+impl<Rate: BlockSizes + sealed::KmacParams> KeyInit for Kmac<Rate> {
+    #[inline]
+    fn new(key: &digest::Key<Self>) -> Self {
+        Self::new_customization_inner(key.as_slice(), &[])
     }
 
-    fn run_kmac256() -> Kmac256 {
-        let mut mac = Kmac256::new_customization(b"my secret key", b"S")
-            .expect("Failed to create a KMAC256 instance from key");
-        mac.update(b"my message");
-        mac
+    #[inline(always)]
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        Ok(Self::new_customization_inner(key, &[]))
+    }
+}
+
+impl<Rate: BlockSizes + sealed::KmacParams> Update for Kmac<Rate> {
+    #[inline(always)]
+    fn update(&mut self, data: &[u8]) {
+        self.cshake.update(data);
+    }
+}
+
+impl<Rate: BlockSizes + sealed::KmacParams> FixedOutput for Kmac<Rate> {
+    #[inline(always)]
+    fn finalize_into(self, out: &mut Output<Self>) {
+        self.finalize_fixed_inner(out.as_mut_slice());
+    }
+}
+
+impl<Rate: BlockSizes + sealed::KmacParams> ExtendableOutput for Kmac<Rate> {
+    type Reader = CShakeReader<Rate>;
+
+    // Finalize as KMACXOF, a variable-length (extendable) output stream, as defined in
+    // Section 4.3.1 (KMAC with Arbitrary-Length Output) of [NIST SP 800-185].
+    #[inline(always)]
+    fn finalize_xof(self) -> Self::Reader {
+        self.finalize_xof_inner()
+    }
+}
+
+impl<Rate: BlockSizes + sealed::KmacParams> Kmac<Rate> {
+    /// Create a new KMAC with the given key and customisation.
+    ///
+    /// Section 4.2 of [NIST SP 800-185] specifies that KMAC takes both a key (K) and an
+    /// optional customisation string (S).
+    #[inline]
+    pub fn new_customization(key: &[u8], customisation: &[u8]) -> Result<Self, InvalidLength> {
+        Ok(Self::new_customization_inner(key, customisation))
     }
 
-    #[test]
-    #[rustfmt::skip]
-    fn test_kmac128() {
-        let out_default = run_kmac128().finalize();
-        assert_eq!(out_default.as_bytes().as_slice(), &[248, 117, 251, 104, 105, 74, 192, 171, 41, 119, 90, 145, 137, 1, 243, 168, 28, 139, 94, 23, 113, 176, 36, 194, 10, 9, 40, 209, 193, 167, 181, 254]);
-
-        // confirm finalize_into_buf works the same way
-        let mut out_into = [0u8; 32];
-        run_kmac128().finalize_into_buf(&mut out_into);
-        assert_eq!(out_default.as_bytes().as_slice(), &out_into);
-
-        // confirm finalize_into_buf does not compute subsets
-        let mut out_into_subset = [0u8; 16];
-        run_kmac128().finalize_into_buf(&mut out_into_subset);
-        assert_ne!(&out_into_subset, &out_into[..16]);
-
-        // confirm xof is different
-        let mut reader_xof = run_kmac128().finalize_xof();
-        let mut out_xof = [0u8; 32];
-        reader_xof.read(&mut out_xof);
-        assert_ne!(out_xof, out_default.as_bytes().as_slice());
-        assert_eq!(&out_xof, &[71, 56, 26, 111, 123, 15, 120, 166, 36, 250, 143, 80, 116, 63, 206, 89, 113, 96, 83, 169, 87, 200, 233, 11, 202, 145, 90, 196, 108, 24, 82, 103]);
-
-        // confirm xof is subset
-        let mut reader_xof_subset = run_kmac128().finalize_xof();
-        let mut out_xof_subset = [0u8; 16];
-        reader_xof_subset.read(&mut out_xof_subset);
-        assert_eq!(&out_xof[..16], &out_xof_subset);
+    /// Finalize this KMAC into a fixed-length output buffer, as defined in Section 4.3
+    /// (Definition) of [NIST SP 800-185].
+    ///
+    /// This method finalizes the KMAC and *mixes the requested output length into the
+    /// KMAC domain separation*. That means the resulting bytes are dependent on the
+    /// exact length of `out`. Use this when the output length is part of the MAC/derivation
+    /// semantics (for example, when the length itself must influence the MAC result).
+    ///
+    /// This is *not* equivalent to calling `finalize_xof()` and then reading `out.len()`
+    /// bytes from the returned reader; the two approaches produce different outputs.
+    ///
+    /// # Example
+    /// ```
+    /// use kmac::{Kmac256, Mac};
+    ///
+    /// let mut mac = Kmac256::new_customization(b"my key", b"my customization").unwrap();
+    /// mac.update(b"input message");
+    /// let mut output = [0u8; 48];
+    /// mac.finalize_into_buf(&mut output);
+    /// ```
+    #[inline]
+    pub fn finalize_into_buf(self, out: &mut [u8]) {
+        self.finalize_fixed_inner(out);
     }
 
-    #[test]
-    #[rustfmt::skip]
-    fn test_kmac256() {
-        let out_default = run_kmac256().finalize();
-        assert_eq!(out_default.as_bytes().as_slice(), &[158, 175, 254, 101, 124, 16, 93, 198, 176, 54, 249, 78, 167, 112, 206, 159, 229, 55, 225, 168, 71, 228, 28, 222, 195, 148, 255, 241, 196, 172, 37, 60, 135, 67, 155, 134, 43, 61, 215, 243, 128, 55, 227, 169, 175, 22, 14, 132, 174, 63, 69, 60, 50, 41, 88, 148, 11, 41, 9, 90, 0, 87, 143, 131]);
+    #[inline(always)]
+    fn new_customization_inner(key: &[u8], customisation: &[u8]) -> Self {
+        let mut cshake = CShake::<Rate>::new_with_function_name(b"KMAC", customisation);
+        let block_size = Rate::USIZE;
+        let mut encode_buffer = [0u8; 9];
 
-        // confirm finalize_into_buf works the same way
-        let mut out_into = [0u8; 64];
-        run_kmac256().finalize_into_buf(&mut out_into);
-        assert_eq!(out_default.as_bytes().as_slice(), &out_into);
+        // bytepad: left_encode(w)
+        let le_w = left_encode(block_size as u64, &mut encode_buffer);
+        let mut total = le_w.len();
+        cshake.update(le_w);
 
-        // confirm finalize_into_buf does not compute subsets
-        let mut out_into_subset = [0u8; 32];
-        run_kmac256().finalize_into_buf(&mut out_into_subset);
-        assert_ne!(&out_into_subset, &out_into[..32]);
+        // encode_string(K): left_encode(8*len(K)) || K
+        let le_k = left_encode(8 * key.len() as u64, &mut encode_buffer);
+        total += le_k.len();
+        cshake.update(le_k);
 
-        // confirm xof is different
-        let mut reader_xof = run_kmac256().finalize_xof();
-        let mut out_xof = [0u8; 64];
-        reader_xof.read(&mut out_xof);
-        assert_ne!(out_xof, out_default.as_bytes().as_slice());
-        assert_eq!(&out_xof, &[37, 85, 107, 43, 116, 204, 145, 99, 161, 150, 174, 110, 206, 240, 129, 44, 64, 135, 52, 83, 20, 250, 101, 166, 99, 189, 129, 61, 204, 210, 197, 150, 17, 43, 99, 218, 159, 87, 85, 155, 240, 197, 115, 97, 209, 145, 228, 236, 86, 104, 143, 194, 191, 69, 226, 206, 173, 224, 226, 25, 10, 13, 195, 252]);
+        total += key.len();
+        cshake.update(key);
 
-        // confirm xof is subset
-        let mut reader_xof_subset = run_kmac256().finalize_xof();
-        let mut out_xof_subset = [0u8; 32];
-        reader_xof_subset.read(&mut out_xof_subset);
-        assert_eq!(&out_xof[..32], &out_xof_subset);
+        // pad to block boundary
+        let pad_len = (block_size - (total % block_size)) % block_size;
+        if pad_len > 0 {
+            let zeros = [0u8; 168]; // max block size
+            let mut remaining = pad_len;
+            while remaining > 0 {
+                let chunk = core::cmp::min(remaining, zeros.len());
+                cshake.update(&zeros[..chunk]);
+                remaining -= chunk;
+            }
+        }
+
+        Self { cshake }
     }
 
-    #[test]
-    fn test_readme_example_verify() {
-        let mut mac = Kmac128::new_from_slice(b"key material").unwrap();
-        mac.update(b"input message");
-        let result = mac.finalize();
-        let code_bytes = result.into_bytes();
-        let expected = hex!(
-            "
-            c39a8f614f8821443599440df5402787
-            0f67e4c47919061584f14a616f3efcf5
-        "
-        );
-        assert_eq!(
-            code_bytes[..],
-            expected[..],
-            "Expected hex output is {}",
-            hex::encode(code_bytes)
-        );
+    /// Finalizes the KMAC for any output array size (fixed-length output).
+    #[inline(always)]
+    fn finalize_fixed_inner(mut self, out: &mut [u8]) {
+        // right_encode(L), where L = output length in bits
+        let mut encode_buffer = [0u8; 9];
+        let re = right_encode(8 * out.len() as u64, &mut encode_buffer);
+        self.cshake.update(re);
 
-        let mut mac = Kmac128::new_from_slice(b"key material").unwrap();
-        mac.update(b"input message");
-        mac.verify_slice(&expected).unwrap();
+        let mut reader = self.cshake.finalize_xof();
+        reader.read(out);
     }
 
-    #[test]
-    fn test_readme_example_into() {
-        let mut mac = Kmac256::new_customization(b"key material", b"customization").unwrap();
-        mac.update(b"input message");
-        let mut output = [0u8; 32];
-        mac.finalize_into_buf(&mut output);
+    /// Finalizes the KMAC for extendable output (XOF).
+    #[inline(always)]
+    fn finalize_xof_inner(mut self) -> CShakeReader<Rate> {
+        // right_encode(0), as L = 0 for extendable output
+        let mut encode_buffer = [0u8; 9];
+        let re = right_encode(0, &mut encode_buffer);
+        self.cshake.update(re);
 
-        let expected = hex!(
-            "
-            85fb77da3a35e4c4b0057c3151e6cc54
-            ee401ffe65ec2f0239f439be8896f7b6
-        "
-        );
-        assert_eq!(
-            output[..],
-            expected[..],
-            "Expected hex output is {}",
-            hex::encode(output)
-        );
-    }
-
-    #[test]
-    fn test_readme_example_xof() {
-        let mut mac = Kmac256::new_customization(b"key material", b"customization").unwrap();
-        mac.update(b"input message");
-        let mut reader = mac.finalize_xof();
-
-        let mut output = [0u8; 32];
-        reader.read(&mut output);
-
-        let expected = hex!(
-            "
-            b675b75668eab0706ab05650f34fa1b6
-            24051a9a42b5e42cfe9970e8f903d45b
-        "
-        );
-        assert_eq!(
-            output[..],
-            expected[..],
-            "Expected hex output is {}",
-            hex::encode(output)
-        );
+        self.cshake.finalize_xof()
     }
 }

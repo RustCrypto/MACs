@@ -16,7 +16,7 @@ The below table summarises the equivalence with other MAC algorithms, where `K` 
 
 | Existing MAC Algorithm | KMAC Equivalent              |
 |------------------------|------------------------------|
-| `AES-KMAC(K, text)`    | `KMAC128(K, text, L=128, S)` |
+| `AES-CMAC(K, text)`    | `KMAC128(K, text, L=128, S)` |
 | `HMAC-SHA256(K, text)` | `KMAC256(K, text, L=256, S)` |
 | `HMAC-SHA512(K, text)` | `KMAC256(K, text, L=512, S)` |
 
@@ -63,13 +63,13 @@ let mac_bytes = hex!("
 kmac.verify_slice(&mac_bytes).unwrap();
 ```
 
-### Producing a fixed-length output
+### Producing a custom-length output
 
-KMAC can also be used to produce an output of any length, which is particularly useful when KMAC is being used as a [key-derivation function (KDF)](https://en.wikipedia.org/wiki/Key_derivation_function).
+KMAC can produce an output of any length via `finalize_into_buf`, which is particularly useful when KMAC is being used as a [key-derivation function (KDF)](https://en.wikipedia.org/wiki/Key_derivation_function).
 
-This method finalizes the KMAC and mixes the requested output length into the KMAC domain separation. The resulting bytes are dependent on the exact length of `out`. Use this when the output length is part of the MAC/derivation semantics (for example when the length itself must influence the MAC result).
+This method mixes the requested output length into the KMAC domain separation, so the resulting bytes depend on the exact length of `out`. This is distinct from both `finalize()` (which uses the type's default output length) and `finalize_xof()` (KMACXOF, which does not bind output length at all).
 
-A customisation string can also be provided to further domain-separate different uses of KMAC with the same key when initialising the KMAC instance with `new_customization`.
+A customisation string can also be provided via `new_customization` to further domain-separate different uses of KMAC with the same key.
 
 ```rust
 use kmac::{Kmac256, Mac};
@@ -87,11 +87,9 @@ let expected = hex!("
 assert_eq!(output[..], expected[..]);
 ```
 
-### Producing a variable-length output
+### KMACXOF: variable-length output
 
-Variable length KMAC output uses the `ExtendableOutput` trait. This is useful when the desired output length is not immediately known, and will append data to a buffer until the desired length is reached. 
-
-The XOF variant finalizes the sponge state without binding the requested output length into the KMAC domain separation. The returned reader yields an effectively infinite stream of bytes; reading the first `N` bytes  from the reader (and truncating) produces the same `N`-byte prefix regardless of whether more bytes will be read later.
+KMACXOF (defined in Section 4.3.1 of [NIST SP 800-185]) produces an arbitrary-length output via the `ExtendableOutput` trait. Unlike `finalize()` and `finalize_into_buf()`, KMACXOF does not bind the output length into the domain separation — the returned reader yields an effectively infinite stream of bytes, and reading the first `N` bytes produces the same `N`-byte prefix regardless of how many bytes are read in total.
 
 ```rust
 use kmac::{Kmac256, Mac, ExtendableOutput, XofReader};
