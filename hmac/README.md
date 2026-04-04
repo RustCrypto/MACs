@@ -47,7 +47,7 @@ use hex_literal::hex;
 // Create alias for HMAC-SHA256
 type HmacSha256 = Hmac<Sha256>;
 
-let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
+let mut mac: HmacSha256 = KeyInit::new_from_slice(b"my secret and secure key")
     .expect("HMAC can take key of any size");
 mac.update(b"input message");
 
@@ -74,7 +74,7 @@ use hex_literal::hex;
 
 type HmacSha256 = Hmac<Sha256>;
 
-let mut mac = HmacSha256::new_from_slice(b"my secret and secure key")
+let mut mac: HmacSha256 = KeyInit::new_from_slice(b"my secret and secure key")
     .expect("HMAC can take key of any size");
 
 mac.update(b"input message");
