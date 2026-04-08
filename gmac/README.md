@@ -9,6 +9,10 @@
 
 Generic implementation of the [Galois Message Authentication Code (GMAC)][GMAC].
 
+GMAC is defined by NIST [SP 800-38D] as an authentication-only specialization of
+GCM (Galois Counter Mode). It is equivalent to GCM encryption with an empty plaintext
+and data only provided in the AAD.
+
 **WARNING!** This is a nonce-based MAC and must have a unique nonce for each generation.
 This is identical to the issues with nonce-reuse and AES-GCM (which uses GMAC internally).
 This also means that it is dangerous to clone an instance of GMAC when generating a MAC.
@@ -94,3 +98,4 @@ dual licensed as above, without any additional terms or conditions.
 [RustCrypto]: https://github.com/RustCrypto
 [GMAC]: https://en.wikipedia.org/wiki/Galois/Counter_Mode
 [`aes`]: https://docs.rs/aes
+[SP 800-38D]: https://doi.org/10.6028/NIST.SP.800-38D

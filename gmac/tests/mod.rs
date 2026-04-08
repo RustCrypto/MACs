@@ -18,15 +18,20 @@ struct GmacTestVector {
     pub tag: &'static [u8],
 }
 
+// Source for CAVP test vectors: https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/CAVP-TESTING-BLOCK-CIPHER-MODES
+
 blobby::parse_into_structs!(
+    // All CAVP SP 800-38D test vectors for 128 bit keys and empty plaintexts
     include_bytes!("data/gmac_aes128.blb");
     static GMAC_128_KATS: &[GmacTestVector { key, iv, data, tag}];
 );
 blobby::parse_into_structs!(
+    // All CAVP SP 800-38D test vectors for 192 bit keys and empty plaintexts
     include_bytes!("data/gmac_aes192.blb");
     static GMAC_192_KATS: &[GmacTestVector { key, iv, data, tag}];
 );
 blobby::parse_into_structs!(
+    // All CAVP SP 800-38D test vectors for 256 bit keys and empty plaintexts
     include_bytes!("data/gmac_aes256.blb");
     static GMAC_256_KATS: &[GmacTestVector { key, iv, data, tag}];
 );
@@ -56,8 +61,8 @@ fn nonce_generation() {
 #[cfg(feature = "rand_core")]
 #[test]
 fn nonce_generation_16() {
-    use rand::rngs::SysRng;
     use cipher::consts::U16;
+    use rand::rngs::SysRng;
 
     let fake_key = [0u8; 16];
     let nonce = Gmac::<Aes128Enc, U16>::generate_nonce(SysRng).expect("SysRng failed");
@@ -140,7 +145,9 @@ where
                 )
             }
         }
-        if let Err(reason) = initialized_mac_test(mac, tv.data, tv.tag, digest::dev::MacTruncSide::Left) {
+        if let Err(reason) =
+            initialized_mac_test(mac, tv.data, tv.tag, digest::dev::MacTruncSide::Left)
+        {
             panic!(
                 "\n\
                         Failed test (truncated) {name}#{idx}\n\

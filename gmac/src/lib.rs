@@ -6,8 +6,8 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-pub use digest::{self, Mac};
 pub use aes::cipher::KeyIvInit;
+pub use digest::{self, Mac};
 
 use aes::{
     Aes128Enc, Aes192Enc, Aes256Enc,
@@ -64,7 +64,6 @@ where
     buffer_len: usize,
 }
 
-
 impl<Aes, NonceSize> Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
@@ -115,26 +114,30 @@ where
     }
 
     /// Generate a random nonce for use with GMAC.
-    /// 
+    ///
     /// GMAC accepts a parameter to encryption/decryption called a "nonce"
     /// which must be unique every time a MAC is generated and never repeated for the same key.
     /// The nonce is often prepended to the tag. The nonce used to produce a given tag must be
     /// passed to the verification MAC calculation.
-    /// 
+    ///
     /// Nonces don’t necessarily have to be random, but it is one strategy which is implemented by this function.
-    /// 
+    ///
     /// # ⚠️Security Warning
-    /// 
+    ///
     /// GMAC fails catastrophically if the nonce is ever repeated.
-    /// 
+    ///
     /// Using random nonces runs the risk of repeating them. The best case for GMAC is with a 12 byte nonce.
     /// With a 12-byte (96-bit) nonce, you can safely generate 2^32 (4,294,967,296) random nonces before the risk
     /// of repeating one becomes too high.
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    pub fn generate_nonce<Rng>(mut rng: Rng) -> Result<GenericArray<u8, NonceSize>, <Rng as TryRng>::Error>
-    where Rng: TryCryptoRng {
+    pub fn generate_nonce<Rng>(
+        mut rng: Rng,
+    ) -> Result<GenericArray<u8, NonceSize>, <Rng as TryRng>::Error>
+    where
+        Rng: TryCryptoRng,
+    {
         let mut nonce = GenericArray::<u8, NonceSize>::default();
         rng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
