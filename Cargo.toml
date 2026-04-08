@@ -53,7 +53,3 @@ trivial_numeric_casts = "warn"
 unsafe_code = "forbid"
 unused_lifetimes = "warn"
 unused_qualifications = "warn"
-
-# DO NOT MERGE!
-[patch.crates-io]
-digest = { path = "/Users/rubin/Documents/gh/rustcrypto_traits/digest"}
