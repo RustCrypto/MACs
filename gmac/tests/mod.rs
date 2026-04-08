@@ -6,7 +6,7 @@ use aes::{
 };
 use cipher::consts::{U1, U128};
 use digest::dev::blobby;
-use digest::dev::raw_mac_test;
+use digest::dev::initialized_mac_test;
 use gmac::*;
 use hex_literal::hex;
 
@@ -41,6 +41,27 @@ fn debugging_kat() {
     mac.update(&hex!("e85491b2202caf1d7dce03b97e09331c32473941"));
     let actual = mac.finalize();
     assert_eq!(&expected, actual.as_bytes().as_slice());
+}
+
+#[cfg(feature = "rand_core")]
+#[test]
+fn nonce_generation() {
+    use rand::rngs::SysRng;
+
+    let fake_key = [0u8; 16];
+    let nonce = Gmac128::generate_nonce(SysRng).expect("SysRng failed");
+    let _ = Gmac128::new(&fake_key.into(), &nonce);
+}
+
+#[cfg(feature = "rand_core")]
+#[test]
+fn nonce_generation_16() {
+    use rand::rngs::SysRng;
+    use cipher::consts::U16;
+
+    let fake_key = [0u8; 16];
+    let nonce = Gmac::<Aes128Enc, U16>::generate_nonce(SysRng).expect("SysRng failed");
+    let _ = Gmac::<Aes128Enc, U16>::new(&fake_key.into(), &nonce);
 }
 
 #[test]
@@ -92,25 +113,20 @@ fn test_kats<MAC>(name: &str, kats: &[GmacTestVector])
 where
     MAC: Mac + KeyIvInit + Clone,
 {
-    let mut test_count = 0;
-    let mut skip_count = 0;
     for (idx, tv) in kats.iter().enumerate() {
         if MAC::KeySize::to_usize() != tv.key.len() {
-            skip_count += 1;
             continue;
         }
         if MAC::IvSize::to_usize() != tv.iv.len() {
-            skip_count += 1;
             continue;
         }
         if MAC::OutputSize::to_usize() < tv.tag.len() {
-            skip_count += 1;
             continue;
         }
         let mac = MAC::new_from_slices(tv.key, tv.iv).expect("Incorrect key or IV length");
 
         if MAC::OutputSize::to_usize() == tv.tag.len() {
-            if let Err(reason) = raw_mac_test(
+            if let Err(reason) = initialized_mac_test(
                 mac.clone(),
                 tv.data,
                 tv.tag,
@@ -124,7 +140,7 @@ where
                 )
             }
         }
-        if let Err(reason) = raw_mac_test(mac, tv.data, tv.tag, digest::dev::MacTruncSide::Left) {
+        if let Err(reason) = initialized_mac_test(mac, tv.data, tv.tag, digest::dev::MacTruncSide::Left) {
             panic!(
                 "\n\
                         Failed test (truncated) {name}#{idx}\n\
@@ -132,14 +148,5 @@ where
                         test vector:\t{tv:?}\n"
             )
         }
-
-        test_count += 1;
     }
-    println!(
-        "KeySize: {} IVSize: {} Tested: {} Skipped: {}\n",
-        MAC::KeySize::to_usize(),
-        MAC::IvSize::to_usize(),
-        test_count,
-        skip_count
-    );
 }

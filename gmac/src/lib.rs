@@ -6,28 +6,36 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
+pub use digest::{self, Mac};
+pub use aes::cipher::KeyIvInit;
+
 use aes::{
-    Aes128Enc, Aes192, Aes192Enc, Aes256Enc,
-    cipher::{BlockEncrypt, BlockSizeUser, IvSizeUser, KeyInit, KeyIvInit, KeySizeUser},
+    Aes128Enc, Aes192Enc, Aes256Enc,
+    cipher::{BlockEncrypt, BlockSizeUser, IvSizeUser, KeyInit, KeySizeUser},
 };
 use cipher::consts::{U12, U16};
 use core::marker::PhantomData;
-pub use digest::{self, Mac};
 use digest::{FixedOutput, MacMarker, OutputSizeUser, Update};
 use generic_array::GenericArray;
 use ghash::{GHash, universal_hash::UniversalHash};
 
 #[cfg(feature = "rand_core")]
-use common::rand_core::CryptoRng;
+use common::rand_core::{TryCryptoRng, TryRng};
 
+/// Marker trait used to identify specific ciphers which may be used with GMAC.
 pub trait GmacCipher: BlockEncrypt + BlockSizeUser<BlockSize = U16> + KeyInit {}
 impl GmacCipher for Aes128Enc {}
 impl GmacCipher for Aes192Enc {}
 impl GmacCipher for Aes256Enc {}
+
+/// GMAC with a 128-bit key and 12 byte nonce.
 pub type Gmac128 = Gmac<Aes128Enc, U12>;
+/// GMAC with a 192-bit key and 12 byte nonce.
 pub type Gmac192 = Gmac<Aes192Enc, U12>;
+/// GMAC with a 256-bit key and 12 byte nonce.
 pub type Gmac256 = Gmac<Aes256Enc, U12>;
 
+/// GMAC: Generic over an underlying AES implementation and nonce size.
 #[derive(Debug, Clone)]
 pub struct Gmac<Aes, NonceSize>
 where
@@ -56,18 +64,16 @@ where
     buffer_len: usize,
 }
 
-const BLOCK_SIZE: usize = 16;
-
-// TODO: Add creation methods
 
 impl<Aes, NonceSize> Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
     NonceSize: generic_array::ArrayLength<u8>,
 {
+    /// Fills the internal buffered block and returns the number of bytes copied from `data`
     #[inline]
     fn update_buffer(&mut self, data: &[u8]) -> usize {
-        let data_to_copy = usize::min(BLOCK_SIZE - self.buffer_len, data.len());
+        let data_to_copy = usize::min(Aes::block_size() - self.buffer_len, data.len());
         let buffer_end = self.buffer_len + data_to_copy;
         self.buffer.as_mut_slice()[self.buffer_len..buffer_end]
             .copy_from_slice(&data[..data_to_copy]);
@@ -75,16 +81,18 @@ where
         data_to_copy
     }
 
+    /// Hash the buffered block. Panics (in debug) if an entire block has not been buffered.
     #[inline]
     fn hash_buffer(&mut self) {
-        debug_assert_eq!(self.buffer_len, BLOCK_SIZE);
+        debug_assert_eq!(self.buffer_len, Aes::block_size());
         self.ghash.update(&[self.buffer]);
         self.buffer_len = 0;
     }
 
+    /// Calculates and sets the mask value used for finalizing the tag value.
     // Mostly stolen from aes-gcm
     #[inline]
-    fn init(&mut self, cipher: Aes, nonce: &GenericArray<u8, NonceSize>) {
+    fn init_mask(&mut self, cipher: Aes, nonce: &GenericArray<u8, NonceSize>) {
         let j0 = if NonceSize::to_usize() == 12 {
             let mut block = ghash::Block::default();
             block[..12].copy_from_slice(nonce);
@@ -106,31 +114,30 @@ where
         cipher.encrypt_block(&mut self.mask);
     }
 
-    #[inline]
-    fn internal_build(cipher: Aes, nonce: &GenericArray<u8, NonceSize>) -> Self {
-        let mut ghash_key = ghash::Key::default();
-        cipher.encrypt_block(&mut ghash_key);
-        let ghash = GHash::new(&ghash_key);
-
-        let mut result = Self {
-            cipher: PhantomData,
-            ghash,
-            nonce_size: PhantomData,
-            data_size: 0,
-            mask: ghash::Block::default(),
-            buffer: ghash::Block::default(),
-            buffer_len: 0,
-        };
-        result.init(cipher, nonce);
-        result
-    }
-
+    /// Generate a random nonce for use with GMAC.
+    /// 
+    /// GMAC accepts a parameter to encryption/decryption called a "nonce"
+    /// which must be unique every time a MAC is generated and never repeated for the same key.
+    /// The nonce is often prepended to the tag. The nonce used to produce a given tag must be
+    /// passed to the verification MAC calculation.
+    /// 
+    /// Nonces don’t necessarily have to be random, but it is one strategy which is implemented by this function.
+    /// 
+    /// # ⚠️Security Warning
+    /// 
+    /// GMAC fails catastrophically if the nonce is ever repeated.
+    /// 
+    /// Using random nonces runs the risk of repeating them. The best case for GMAC is with a 12 byte nonce.
+    /// With a 12-byte (96-bit) nonce, you can safely generate 2^32 (4,294,967,296) random nonces before the risk
+    /// of repeating one becomes too high.
     #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_nonce(mut rng: impl CryptoRng) -> GenericArray<u8, NonceSize> {
+    pub fn generate_nonce<Rng>(mut rng: Rng) -> Result<GenericArray<u8, NonceSize>, <Rng as TryRng>::Error>
+    where Rng: TryCryptoRng {
         let mut nonce = GenericArray::<u8, NonceSize>::default();
-        rng.fill_bytes(&mut nonce);
-        nonce
+        rng.try_fill_bytes(&mut nonce)?;
+        Ok(nonce)
     }
 }
 
@@ -170,9 +177,25 @@ where
     Aes: GmacCipher,
     NonceSize: generic_array::ArrayLength<u8>,
 {
-    fn new(key: &aes::cipher::Key<Self>, iv: &aes::cipher::Iv<Self>) -> Self {
+    fn new(key: &aes::cipher::Key<Self>, nonce: &aes::cipher::Iv<Self>) -> Self {
         let cipher = Aes::new(key);
-        Self::internal_build(cipher, iv)
+
+        let mut ghash_key = ghash::Key::default();
+        cipher.encrypt_block(&mut ghash_key);
+
+        let ghash = GHash::new(&ghash_key);
+
+        let mut result = Self {
+            cipher: PhantomData,
+            ghash,
+            nonce_size: PhantomData,
+            data_size: 0,
+            mask: ghash::Block::default(),
+            buffer: ghash::Block::default(),
+            buffer_len: 0,
+        };
+        result.init_mask(cipher, nonce);
+        result
     }
 }
 
@@ -188,17 +211,17 @@ where
 
         if self.buffer_len > 0 {
             offset += self.update_buffer(data);
-            if self.buffer_len < BLOCK_SIZE {
+            if self.buffer_len < Aes::block_size() {
                 // We don't have enough data for an entire block, so just return
                 return;
             }
             self.hash_buffer();
         }
         let data = &data[offset..];
-        let tail = data.len() % BLOCK_SIZE;
+        let tail = data.len() % Aes::block_size();
         let data_end = data.len() - tail;
         let (body, tail) = data.split_at(data_end);
-        debug_assert_eq!(body.len() % BLOCK_SIZE, 0);
+        debug_assert_eq!(body.len() % Aes::block_size(), 0);
         self.ghash.update_padded(body);
         if !tail.is_empty() {
             self.update_buffer(tail);
@@ -212,7 +235,7 @@ where
     NonceSize: generic_array::ArrayLength<u8>,
 {
     fn finalize_into(self, out: &mut digest::Output<Self>) {
-        let mut ghash = self.ghash;
+        let mut ghash = self.ghash.clone();
         // First, process any buffered data
         if self.buffer_len != 0 {
             ghash.update_padded(&self.buffer[..self.buffer_len]);
@@ -230,4 +253,34 @@ where
             *r = *a ^ *b;
         }
     }
+}
+
+// Optional features
+// Zeroize
+#[cfg(feature = "zeroize")]
+use digest::zeroize::{Zeroize, ZeroizeOnDrop};
+
+#[cfg(feature = "zeroize")]
+impl<Aes, NonceSize> Drop for Gmac<Aes, NonceSize>
+where
+    Aes: GmacCipher,
+    NonceSize: generic_array::ArrayLength<u8>,
+{
+    fn drop(&mut self) {
+        // cipher is PhantomData
+        // ghash implements ZeroizeOnDrop
+        // nonce_size is PhantomData
+        self.data_size.zeroize();
+        self.mask.zeroize();
+        self.buffer.zeroize();
+        // buffer_len is not sensitive
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<Aes, NonceSize> ZeroizeOnDrop for Gmac<Aes, NonceSize>
+where
+    Aes: GmacCipher,
+    NonceSize: generic_array::ArrayLength<u8>,
+{
 }
