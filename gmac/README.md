@@ -33,7 +33,10 @@ use gmac::{KeyIvInit, Gmac, Gmac128, Mac};
 use rand::rngs::SysRng;
 
 // Use the predefined type of `Gmac128`.
+# #[cfg(feature = "rand_core" )]
 let iv = Gmac128::generate_nonce(SysRng).unwrap();
+# #[cfg(not(feature = "rand_core" ))]
+# let iv = b"000000000000";
 let iv = iv.as_slice();
 let mut mac = Gmac128::new_from_slices(b"very secret key.", iv).unwrap();
 mac.update(b"input message");
@@ -53,8 +56,7 @@ To verify the message:
 use gmac::{KeyIvInit, Gmac, Gmac128, Mac};
 use rand::rngs::SysRng;
 
-# let iv = Gmac128::generate_nonce(SysRng).unwrap();
-# let iv = iv.as_slice();
+# let iv = b"000000000000";
 
 let mut mac = Gmac128::new_from_slices(b"very secret key.", iv).unwrap();
 
