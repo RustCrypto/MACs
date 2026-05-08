@@ -4,6 +4,7 @@ members = [
     "belt-mac",
     "cbc-mac",
     "cmac",
+    "gmac",
     "hmac",
     "pmac",
     "retail-mac",

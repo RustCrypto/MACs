@@ -1,0 +1,45 @@
+[package]
+name = "gmac"
+version = "0.1.0"
+description = "Generic implementation of the Galois Counter Mode Message Authentication Code (GMAC)"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+edition = "2024"
+readme = "README.md"
+documentation = "https://docs.rs/gmac"
+repository = "https://github.com/RustCrypto/MACs"
+keywords = ["crypto", "mac", "gmac", "digest"]
+categories = ["cryptography", "no-std"]
+rust-version = "1.85"
+
+[dependencies]
+aes = "0.8.4"
+cipher = "0.5"
+common = { version = "0.2", package = "crypto-common" }
+ctutils = "0.4"
+digest = { version = "0.11.3", features = ["mac"] }
+generic-array = { version = "0.14.7" }
+ghash = "0.5"
+
+[dev-dependencies]
+digest = { version = "0.11.3", features = ["dev"] }
+rand = { version = "0.10.0"}
+hex-literal = "1"
+
+[features]
+default = ["zeroize", "rand_core" ]
+zeroize = [
+    "aes/zeroize",
+    "cipher/zeroize",
+    "common/zeroize",
+    "digest/zeroize",
+    "generic-array/zeroize",
+    "ghash/zeroize",
+    ]
+rand_core = ["common/rand_core"]
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
