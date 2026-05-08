@@ -129,7 +129,7 @@ where
     /// Using random nonces runs the risk of repeating them. The best case for GMAC is with a 12 byte nonce.
     /// With a 12-byte (96-bit) nonce, you can safely generate 2^32 (4,294,967,296) random nonces before the risk
     /// of repeating one becomes too high.
-    /// 
+    ///
     /// # Errors
     /// - Returns an error if and only if `rng.try_fill_bytes()` returns an error.
     #[cfg(feature = "rand_core")]
