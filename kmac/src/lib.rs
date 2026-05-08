@@ -13,26 +13,45 @@
 mod encoding;
 
 use crate::encoding::{left_encode, right_encode};
-use cshake::{CShake, CShakeReader};
-use digest::block_buffer::BlockSizes;
+use cshake::CShakeReader;
 use digest::consts::{U136, U168};
 pub use digest::{self, ExtendableOutput, FixedOutput, KeyInit, Mac, XofReader};
 use digest::{InvalidLength, MacMarker, Output, OutputSizeUser, Update};
 
 mod sealed {
+    use cshake::{CShake128, CShake256, CShakeReader};
     use digest::array::ArraySize;
     use digest::consts::{U32, U64, U136, U168};
+    use digest::{ExtendableOutput, Update, XofReader};
 
-    pub trait KmacParams {
+    pub trait KmacParams: ArraySize {
         type OutputSize: ArraySize;
+        type CShake: Clone + Update + ExtendableOutput<Reader = Self::Reader>;
+        type Reader: XofReader;
+
+        fn new_cshake(function_name: &[u8], customization: &[u8]) -> Self::CShake;
     }
 
     impl KmacParams for U168 {
         type OutputSize = U32;
+        type CShake = CShake128;
+        type Reader = CShakeReader<168>;
+
+        #[inline]
+        fn new_cshake(function_name: &[u8], customization: &[u8]) -> Self::CShake {
+            CShake128::new_with_function_name(function_name, customization)
+        }
     }
 
     impl KmacParams for U136 {
         type OutputSize = U64;
+        type CShake = CShake256;
+        type Reader = CShakeReader<136>;
+
+        #[inline]
+        fn new_cshake(function_name: &[u8], customization: &[u8]) -> Self::CShake {
+            CShake256::new_with_function_name(function_name, customization)
+        }
     }
 }
 
@@ -40,8 +59,8 @@ mod sealed {
 ///
 /// [NIST SP 800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
 #[derive(Clone)]
-pub struct Kmac<Rate: BlockSizes + sealed::KmacParams> {
-    cshake: CShake<Rate>,
+pub struct Kmac<Rate: sealed::KmacParams> {
+    cshake: <Rate as sealed::KmacParams>::CShake,
 }
 
 /// KMAC128: KMAC with 128-bit security strength, as defined in Section 4 of
@@ -89,24 +108,24 @@ pub type Kmac256 = Kmac<U136>;
 /// KMACXOF128 reader, returned by calling [`ExtendableOutput::finalize_xof`] on [`Kmac128`].
 ///
 /// Implements [`XofReader`] to produce an arbitrary-length output stream (KMACXOF128).
-pub type Kmac128Reader = CShakeReader<U168>;
+pub type Kmac128Reader = CShakeReader<168>;
 
 /// KMACXOF256 reader, returned by calling [`ExtendableOutput::finalize_xof`] on [`Kmac256`].
 ///
 /// Implements [`XofReader`] to produce an arbitrary-length output stream (KMACXOF256).
-pub type Kmac256Reader = CShakeReader<U136>;
+pub type Kmac256Reader = CShakeReader<136>;
 
-impl<Rate: BlockSizes + sealed::KmacParams> MacMarker for Kmac<Rate> {}
+impl<Rate: sealed::KmacParams> MacMarker for Kmac<Rate> {}
 
-impl<Rate: BlockSizes + sealed::KmacParams> OutputSizeUser for Kmac<Rate> {
+impl<Rate: sealed::KmacParams> OutputSizeUser for Kmac<Rate> {
     type OutputSize = <Rate as sealed::KmacParams>::OutputSize;
 }
 
-impl<Rate: BlockSizes + sealed::KmacParams> digest::common::KeySizeUser for Kmac<Rate> {
+impl<Rate: sealed::KmacParams> digest::common::KeySizeUser for Kmac<Rate> {
     type KeySize = Rate;
 }
 
-impl<Rate: BlockSizes + sealed::KmacParams> KeyInit for Kmac<Rate> {
+impl<Rate: sealed::KmacParams> KeyInit for Kmac<Rate> {
     #[inline]
     fn new(key: &digest::Key<Self>) -> Self {
         Self::new_customization_inner(key.as_slice(), &[])
@@ -118,22 +137,22 @@ impl<Rate: BlockSizes + sealed::KmacParams> KeyInit for Kmac<Rate> {
     }
 }
 
-impl<Rate: BlockSizes + sealed::KmacParams> Update for Kmac<Rate> {
+impl<Rate: sealed::KmacParams> Update for Kmac<Rate> {
     #[inline(always)]
     fn update(&mut self, data: &[u8]) {
         self.cshake.update(data);
     }
 }
 
-impl<Rate: BlockSizes + sealed::KmacParams> FixedOutput for Kmac<Rate> {
+impl<Rate: sealed::KmacParams> FixedOutput for Kmac<Rate> {
     #[inline(always)]
     fn finalize_into(self, out: &mut Output<Self>) {
         self.finalize_fixed_inner(out.as_mut_slice());
     }
 }
 
-impl<Rate: BlockSizes + sealed::KmacParams> ExtendableOutput for Kmac<Rate> {
-    type Reader = CShakeReader<Rate>;
+impl<Rate: sealed::KmacParams> ExtendableOutput for Kmac<Rate> {
+    type Reader = <Rate as sealed::KmacParams>::Reader;
 
     // Finalize as KMACXOF, a variable-length (extendable) output stream, as defined in
     // Section 4.3.1 (KMAC with Arbitrary-Length Output) of [NIST SP 800-185].
@@ -143,7 +162,7 @@ impl<Rate: BlockSizes + sealed::KmacParams> ExtendableOutput for Kmac<Rate> {
     }
 }
 
-impl<Rate: BlockSizes + sealed::KmacParams> Kmac<Rate> {
+impl<Rate: sealed::KmacParams> Kmac<Rate> {
     /// Create a new KMAC with the given key and customisation.
     ///
     /// Section 4.2 of [NIST SP 800-185] specifies that KMAC takes both a key (K) and an
@@ -180,7 +199,7 @@ impl<Rate: BlockSizes + sealed::KmacParams> Kmac<Rate> {
 
     #[inline(always)]
     fn new_customization_inner(key: &[u8], customisation: &[u8]) -> Self {
-        let mut cshake = CShake::<Rate>::new_with_function_name(b"KMAC", customisation);
+        let mut cshake = <Rate as sealed::KmacParams>::new_cshake(b"KMAC", customisation);
         let block_size = Rate::USIZE;
         let mut encode_buffer = [0u8; 9];
 
@@ -226,7 +245,7 @@ impl<Rate: BlockSizes + sealed::KmacParams> Kmac<Rate> {
 
     /// Finalizes the KMAC for extendable output (XOF).
     #[inline(always)]
-    fn finalize_xof_inner(mut self) -> CShakeReader<Rate> {
+    fn finalize_xof_inner(mut self) -> <Rate as sealed::KmacParams>::Reader {
         // right_encode(0), as L = 0 for extendable output
         let mut encode_buffer = [0u8; 9];
         let re = right_encode(0, &mut encode_buffer);
