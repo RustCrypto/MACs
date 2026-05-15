@@ -123,8 +123,9 @@ dependencies = [
 
 [[package]]
 name = "cshake"
-version = "0.1.1"
-source = "git+https://github.com/RustCrypto/hashes?branch=master#12105d369b4a794267fb4e22d130d0537a66dd1c"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc3118906eaee206779f1c1d457e602fa14fd218260f058084801758cc60fcc7"
 dependencies = [
  "digest",
  "keccak",

@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.85"
 
 [dependencies]
-cshake = { git = "https://github.com/RustCrypto/hashes", branch = "master" }
+cshake = "0.2.0"
 digest = { version = "0.11.0", features = ["mac"] }
 
 [dev-dependencies]
