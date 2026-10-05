@@ -14,6 +14,7 @@ Collection of [Message Authentication Code][1] (MAC) algorithms written in pure 
 | [CBC-MAC]    | [`cbc-mac`]    |    [![crates.io](https://img.shields.io/crates/v/cbc-mac.svg)](https://crates.io/crates/cbc-mac)    |    [![Documentation](https://docs.rs/cbc-mac/badge.svg)](https://docs.rs/cbc-mac)    | ![MSRV 1.85][msrv-1.85] |
 | [CMAC]       | [`cmac`]       |       [![crates.io](https://img.shields.io/crates/v/cmac.svg)](https://crates.io/crates/cmac)       |       [![Documentation](https://docs.rs/cmac/badge.svg)](https://docs.rs/cmac)       | ![MSRV 1.85][msrv-1.85] |
 | [HMAC]       | [`hmac`]       |       [![crates.io](https://img.shields.io/crates/v/hmac.svg)](https://crates.io/crates/hmac)       |       [![Documentation](https://docs.rs/hmac/badge.svg)](https://docs.rs/hmac)       | ![MSRV 1.85][msrv-1.85] |
+| [KMAC]       | [`kmac`]       |       [![crates.io](https://img.shields.io/crates/v/kmac.svg)](https://crates.io/crates/kmac)       |       [![Documentation](https://docs.rs/kmac/badge.svg)](https://docs.rs/kmac)       | ![MSRV 1.85][msrv-1.85] |
 | [PMAC]       | [`pmac`]       |       [![crates.io](https://img.shields.io/crates/v/pmac.svg)](https://crates.io/crates/pmac)       |       [![Documentation](https://docs.rs/pmac/badge.svg)](https://docs.rs/pmac)       | ![MSRV 1.85][msrv-1.85] |
 | [Retail MAC] | [`retail-mac`] | [![crates.io](https://img.shields.io/crates/v/retail-mac.svg)](https://crates.io/crates/retail-mac) | [![Documentation](https://docs.rs/retail-mac/badge.svg)](https://docs.rs/retail-mac) | ![MSRV 1.85][msrv-1.85] |
 
@@ -45,6 +46,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`cbc-mac`]: ./cbc-mac
 [`cmac`]: ./cmac
 [`hmac`]: ./hmac
+[`kmac`]: ./kmac
 [`pmac`]: ./pmac
 [`retail-mac`]: ./retail-mac
 
@@ -58,5 +60,6 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [CBC-MAC]: https://en.wikipedia.org/wiki/CBC-MAC
 [CMAC]: https://en.wikipedia.org/wiki/One-key_MAC
 [HMAC]: https://en.wikipedia.org/wiki/HMAC
+[KMAC]: https://csrc.nist.gov/pubs/sp/800/185/final
 [PMAC]: https://en.wikipedia.org/wiki/PMAC_(cryptography)
 [Retail MAC]: https://en.wikipedia.org/wiki/ISO/IEC_9797-1#MAC_algorithm_3

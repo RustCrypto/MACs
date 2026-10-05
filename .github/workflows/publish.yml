@@ -6,6 +6,7 @@ on:
       'cbc-mac-v*',
       'cmac-v*',
       'hmac-v*',
+      'kmac-v*',
       'pmac-v*',
       'retail-mac-v*',
     ]

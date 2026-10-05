@@ -1,0 +1,30 @@
+[package]
+name = "kmac"
+version = "0.1.0"
+description = "Keccak Message Authentication Code (KMAC)"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+edition = "2024"
+readme = "README.md"
+documentation = "https://docs.rs/kmac"
+repository = "https://github.com/RustCrypto/MACs"
+keywords = ["crypto", "mac", "kmac", "digest"]
+categories = ["cryptography", "no-std"]
+rust-version = "1.85"
+
+[dependencies]
+cshake = { version = "0.2.1", default-features = false }
+digest = { version = "0.11.2", features = ["mac"] }
+
+[dev-dependencies]
+digest = { version = "0.11.2", features = ["dev"] }
+hex-literal = "1"
+
+[features]
+zeroize = ["cshake/zeroize", "digest/zeroize"]
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
