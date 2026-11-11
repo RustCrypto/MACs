@@ -2,9 +2,10 @@
 
 use aes::{
     Aes128Enc, Aes192Enc, Aes256Enc,
-    cipher::{KeyIvInit, Unsigned},
+    cipher::KeyIvInit,
 };
 use cipher::consts::{U1, U128};
+use cipher::typenum::Unsigned;
 use digest::dev::blobby;
 use digest::dev::initialized_mac_test;
 use gmac::*;
@@ -119,18 +120,18 @@ where
     MAC: Mac + KeyIvInit + Clone,
 {
     for (idx, tv) in kats.iter().enumerate() {
-        if MAC::KeySize::to_usize() != tv.key.len() {
+        if MAC::KeySize::USIZE != tv.key.len() {
             continue;
         }
-        if MAC::IvSize::to_usize() != tv.iv.len() {
+        if MAC::IvSize::USIZE != tv.iv.len() {
             continue;
         }
-        if MAC::OutputSize::to_usize() < tv.tag.len() {
+        if MAC::OutputSize::USIZE < tv.tag.len() {
             continue;
         }
         let mac = MAC::new_from_slices(tv.key, tv.iv).expect("Incorrect key or IV length");
 
-        if MAC::OutputSize::to_usize() == tv.tag.len() {
+        if MAC::OutputSize::USIZE == tv.tag.len() {
             if let Err(reason) = initialized_mac_test(
                 mac.clone(),
                 tv.data,

@@ -11,19 +11,18 @@ pub use digest::{self, Mac};
 
 use aes::{
     Aes128Enc, Aes192Enc, Aes256Enc,
-    cipher::{BlockEncrypt, BlockSizeUser, IvSizeUser, KeyInit, KeySizeUser},
+    cipher::{BlockCipherEncrypt, BlockSizeUser, IvSizeUser, KeyInit, KeySizeUser},
 };
-use cipher::consts::{U12, U16};
+use cipher::{Array, array::ArraySize, consts::{U12, U16}};
 use core::marker::PhantomData;
 use digest::{FixedOutput, MacMarker, OutputSizeUser, Update};
-use generic_array::GenericArray;
 use ghash::{GHash, universal_hash::UniversalHash};
 
 #[cfg(feature = "rand_core")]
 use common::rand_core::{TryCryptoRng, TryRng};
 
 /// Marker trait used to identify specific ciphers which may be used with GMAC.
-pub trait GmacCipher: BlockEncrypt + BlockSizeUser<BlockSize = U16> + KeyInit {}
+pub trait GmacCipher: BlockCipherEncrypt + BlockSizeUser<BlockSize = U16> + KeyInit {}
 impl GmacCipher for Aes128Enc {}
 impl GmacCipher for Aes192Enc {}
 impl GmacCipher for Aes256Enc {}
@@ -40,7 +39,7 @@ pub type Gmac256 = Gmac<Aes256Enc, U12>;
 pub struct Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     /// Encryption cipher.
     cipher: PhantomData<Aes>,
@@ -67,7 +66,7 @@ where
 impl<Aes, NonceSize> Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     /// Fills the internal buffered block and returns the number of bytes copied from `data`
     #[inline]
@@ -91,7 +90,7 @@ where
     /// Calculates and sets the mask value used for finalizing the tag value.
     // Mostly stolen from aes-gcm
     #[inline]
-    fn init_mask(&mut self, cipher: Aes, nonce: &GenericArray<u8, NonceSize>) {
+    fn init_mask(&mut self, cipher: Aes, nonce: &Array<u8, NonceSize>) {
         let j0 = if NonceSize::to_usize() == 12 {
             let mut block = ghash::Block::default();
             block[..12].copy_from_slice(nonce);
@@ -137,11 +136,11 @@ where
     #[inline]
     pub fn generate_nonce<Rng>(
         mut rng: Rng,
-    ) -> Result<GenericArray<u8, NonceSize>, <Rng as TryRng>::Error>
+    ) -> Result<Array<u8, NonceSize>, <Rng as TryRng>::Error>
     where
         Rng: TryCryptoRng,
     {
-        let mut nonce = GenericArray::<u8, NonceSize>::default();
+        let mut nonce = Array::<u8, NonceSize>::default();
         rng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
     }
@@ -150,7 +149,7 @@ where
 impl<Aes, NonceSize> OutputSizeUser for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     type OutputSize = U16;
 }
@@ -158,7 +157,7 @@ where
 impl<Aes, NonceSize> KeySizeUser for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     type KeySize = Aes::KeySize;
 }
@@ -166,7 +165,7 @@ where
 impl<Aes, NonceSize> IvSizeUser for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     type IvSize = NonceSize;
 }
@@ -174,16 +173,16 @@ where
 impl<Aes, NonceSize> MacMarker for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
 }
 
 impl<Aes, NonceSize> KeyIvInit for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
-    fn new(key: &aes::cipher::Key<Self>, nonce: &aes::cipher::Iv<Self>) -> Self {
+    fn new(key: &cipher::Key<Self>, nonce: &cipher::Iv<Self>) -> Self {
         let cipher = Aes::new(key);
 
         let mut ghash_key = ghash::Key::default();
@@ -208,7 +207,7 @@ where
 impl<Aes, NonceSize> Update for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     fn update(&mut self, data: &[u8]) {
         self.data_size += data.len();
@@ -238,7 +237,7 @@ where
 impl<Aes, NonceSize> FixedOutput for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     fn finalize_into(self, out: &mut digest::Output<Self>) {
         let mut ghash = self.ghash.clone();
@@ -270,7 +269,7 @@ use digest::zeroize::{Zeroize, ZeroizeOnDrop};
 impl<Aes, NonceSize> Drop for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
     fn drop(&mut self) {
         // cipher is PhantomData
@@ -287,6 +286,6 @@ where
 impl<Aes, NonceSize> ZeroizeOnDrop for Gmac<Aes, NonceSize>
 where
     Aes: GmacCipher,
-    NonceSize: generic_array::ArrayLength<u8>,
+    NonceSize: ArraySize,
 {
 }

@@ -13,13 +13,12 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.85"
 
 [dependencies]
-aes = "0.8.4"
+aes = "0.9"
 cipher = "0.5"
 common = { version = "0.2", package = "crypto-common" }
 ctutils = "0.4"
 digest = { version = "0.11.3", features = ["mac"] }
-generic-array = { version = "0.14.7" }
-ghash = "0.5"
+ghash = "0.6"
 
 [dev-dependencies]
 digest = { version = "0.11.3", features = ["dev"] }
@@ -33,7 +32,6 @@ zeroize = [
     "cipher/zeroize",
     "common/zeroize",
     "digest/zeroize",
-    "generic-array/zeroize",
     "ghash/zeroize",
     ]
 rand_core = ["common/rand_core"]
