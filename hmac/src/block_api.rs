@@ -10,6 +10,9 @@ use digest::{
     common::{Key, KeySizeUser},
 };
 
+#[cfg(feature = "zeroize")]
+use digest::zeroize::ZeroizeOnDrop;
+
 /// Generic core HMAC instance, which operates over blocks.
 pub struct HmacCore<D: EagerHash> {
     digest: D::Core,
@@ -97,6 +100,9 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for HmacCore<D> {
         f.write_str(">")
     }
 }
+
+#[cfg(feature = "zeroize")]
+impl<D: EagerHash> ZeroizeOnDrop for HmacCore<D> where D::Core: ZeroizeOnDrop {}
 
 impl<D: EagerHash> fmt::Debug for HmacCore<D>
 where
@@ -204,6 +210,9 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for HmacResetCore<D> {
         f.write_str(">")
     }
 }
+
+#[cfg(feature = "zeroize")]
+impl<D: EagerHash> ZeroizeOnDrop for HmacResetCore<D> where D::Core: ZeroizeOnDrop {}
 
 impl<D: EagerHash> fmt::Debug for HmacResetCore<D>
 where
