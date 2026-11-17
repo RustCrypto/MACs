@@ -31,6 +31,9 @@ pub use simple_reset::SimpleHmacReset;
 use core::fmt;
 use digest::block_api::{AlgorithmName, CoreProxy};
 
+#[cfg(feature = "zeroize")]
+use digest::zeroize::ZeroizeOnDrop;
+
 digest::buffer_fixed!(
     /// Generic HMAC instance.
     #[derive(Clone)]
@@ -44,6 +47,9 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
     }
 }
 
+#[cfg(feature = "zeroize")]
+impl<D: EagerHash> ZeroizeOnDrop for Hmac<D> where D::Core: ZeroizeOnDrop {}
+
 digest::buffer_fixed!(
     /// Generic HMAC instance with reset support.
     #[derive(Clone)]
@@ -56,3 +62,6 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for HmacReset<D> {
         <Self as CoreProxy>::Core::write_alg_name(f)
     }
 }
+
+#[cfg(feature = "zeroize")]
+impl<D: EagerHash> ZeroizeOnDrop for HmacReset<D> where D::Core: ZeroizeOnDrop {}
